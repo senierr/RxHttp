@@ -8,7 +8,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,6 +38,7 @@ public class HttpUtil {
     private final static String REQUEST_MOTHOD_GET = "GET";
     private final static String ENCODE_TYPE = "UTF-8";
     private final static int TIME_OUT = 8000;
+    private static TrustManager[] xtmArray = new TrustAllManager[] { new TrustAllManager() };
 	
     private Context context;
     private static HttpUtil httpUtil = null;
@@ -77,6 +86,9 @@ public class HttpUtil {
 				HttpURLConnection connection = null;
 		        try {
 		            URL url = new URL(urlStr);
+		            if (url.getProtocol().toLowerCase().equals("https")) {   
+		                trustAllHosts();
+		            }
 		            connection = (HttpURLConnection) url.openConnection();
 		            connection.setRequestMethod(REQUEST_MOTHOD_POST);
 		            connection.setDoInput(true);
@@ -149,7 +161,10 @@ public class HttpUtil {
 				HttpURLConnection connection = null;
 		        try {
 		        	URL url = new URL(urlStr);
-					connection = (HttpURLConnection) url.openConnection();
+		            if (url.getProtocol().toLowerCase().equals("https")) {   
+		                trustAllHosts();
+		            }
+		            connection = (HttpURLConnection) url.openConnection();
 					connection.setRequestMethod(REQUEST_MOTHOD_GET);
 					connection.setUseCaches(false);
 					connection.setConnectTimeout(TIME_OUT);
@@ -228,6 +243,25 @@ public class HttpUtil {
 		    return false;
 		} 
 	}
+	
+    /**  
+     * 信任所有主机-对于任何证书都不做检查  
+     * @throws KeyManagementException 
+     * @throws NoSuchAlgorithmException 
+     */  
+    private static void trustAllHosts() throws KeyManagementException, NoSuchAlgorithmException {   
+    	SSLContext context = SSLContext.getInstance("TLS");  
+        context.init(null, new TrustManager[] { new TrustAllManager() }, null);  
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());  
+        HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
+    }   
+  
+    static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {   
+        @Override  
+        public boolean verify(String hostname, SSLSession session) {   
+            return true;   
+        }   
+    };  
 	
 	
 }
