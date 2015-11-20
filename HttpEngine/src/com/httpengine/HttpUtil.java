@@ -38,7 +38,6 @@ public class HttpUtil {
     private final static String REQUEST_MOTHOD_GET = "GET";
     private final static String ENCODE_TYPE = "UTF-8";
     private final static int TIME_OUT = 8000;
-    private static TrustManager[] xtmArray = new TrustAllManager[] { new TrustAllManager() };
 	
     private Context context;
     private static HttpUtil httpUtil = null;
@@ -253,15 +252,12 @@ public class HttpUtil {
     	SSLContext context = SSLContext.getInstance("TLS");  
         context.init(null, new TrustManager[] { new TrustAllManager() }, null);  
         HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());  
-        HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {   
+            @Override  
+            public boolean verify(String hostname, SSLSession session) {   
+                return true;   
+            }   
+        });
     }   
   
-    static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {   
-        @Override  
-        public boolean verify(String hostname, SSLSession session) {   
-            return true;   
-        }   
-    };  
-	
-	
 }
