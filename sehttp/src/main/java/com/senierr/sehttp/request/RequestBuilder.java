@@ -1,17 +1,14 @@
 package com.senierr.sehttp.request;
 
-import android.util.Log;
-
+import com.senierr.sehttp.emitter.Emitter;
+import com.senierr.sehttp.mode.HttpRequestBody;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -30,11 +27,11 @@ public class RequestBuilder {
     // 标签
     private Object tag;
     // url参数
-    private Map<String, String> urlParams;
+    private Map<String, String> httpParams;
+    // 请求头
+    private Map<String, String> httpHeaders;
     // 请求体
     private RequestBody requestBody;
-    // 请求头
-    private Map<String, String> headers;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
@@ -46,16 +43,16 @@ public class RequestBuilder {
      *
      * @return
      */
-    private Request build() {
+    public Request build() {
         Request.Builder builder = new Request.Builder();
-        if (headers != null && !headers.isEmpty()) {
-            builder.headers(HttpUtil.buildHeaders(headers));
+        if (httpHeaders != null && !httpHeaders.isEmpty()) {
+            builder.headers(HttpUtil.buildHeaders(httpHeaders));
         }
         if (tag != null) {
             builder.tag(tag);
         }
-        if (urlParams != null && !urlParams.isEmpty()) {
-            url += HttpUtil.buildUrlParams(urlParams);
+        if (httpParams != null && !httpParams.isEmpty()) {
+            url += HttpUtil.buildUrlParams(httpParams);
         }
         builder.method(method, requestBody);
         builder.url(url);
@@ -63,56 +60,31 @@ public class RequestBuilder {
     }
 
     /**
-     * 执行请求
+     * 执行异步请求
      *
      * @param callback
      */
-    public void execute(final BaseCallback callback) {
-        if (callback != null) {
-            try {
-                callback.onStart();
-            } catch (Exception e) {
-                callback.onError(-1, e);
-                callback.onAfter();
-                return;
-            }
-        }
-        Call call = SeHttp.getInstance().getOkHttpClient().newCall(build());
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, final IOException e) {
-                // TODO: 2017/3/28 处理失败重连
-
-                if (!call.isCanceled() && callback != null) {
-                    SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onError(-1, e);
-                            callback.onAfter();
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (callback != null) {
-                    try {
-                        callback.convert(response, SeHttp.getInstance().getMainScheduler());
-                    } catch (final Exception e) {
-                        SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                callback.onError(-1, e);
-                                callback.onAfter();
-                            }
-                        });
-                    }
-                }
-            }
-        });
+    @SuppressWarnings("unchecked")
+    public <T> void execute(BaseCallback<T> callback) {
+        new Emitter(this).execute(callback);
     }
 
+    /**
+     * 执行同步请求
+     *
+     * @return
+     * @throws IOException
+     */
+    public Response execute() throws IOException {
+        return new Emitter(this).execute();
+    }
+
+    /**
+     * 添加标签
+     *
+     * @param tag
+     * @return
+     */
     public RequestBuilder tag(Object tag) {
         this.tag = tag;
         return this;
@@ -126,21 +98,28 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addParam(String key, String value) {
-        if (urlParams == null) {
-            urlParams = new HashMap<>();
+        if (httpParams == null) {
+            httpParams = new HashMap<>();
         }
-        urlParams.put(key, value);
+        httpParams.put(key, value);
         return this;
     }
 
     /**
      * 添加多个请求参数
      *
-     * @param urlParams
+     * @param params
      * @return
      */
-    public RequestBuilder urlParams(Map<String, String> urlParams) {
-        this.urlParams = urlParams;
+    public RequestBuilder addParams(Map<String, String> params) {
+        if (httpParams == null) {
+            httpParams = new HashMap<>();
+        }
+        if (params != null && !params.isEmpty()) {
+            for (String key: params.keySet()) {
+                httpParams.put(key, params.get(key));
+            }
+        }
         return this;
     }
 
@@ -151,11 +130,11 @@ public class RequestBuilder {
      * @param value
      * @return
      */
-    public RequestBuilder addHead(String key, String value) {
-        if (headers == null) {
-            headers = new HashMap<>();
+    public RequestBuilder addHeader(String key, String value) {
+        if (httpHeaders == null) {
+            httpHeaders = new HashMap<>();
         }
-        headers.put(key, value);
+        httpHeaders.put(key, value);
         return this;
     }
 
@@ -165,10 +144,29 @@ public class RequestBuilder {
      * @param headers
      * @return
      */
-    public RequestBuilder headers(Map<String, String> headers) {
-        this.headers = headers;
+    public RequestBuilder addHeaders(Map<String, String> headers) {
+        if (httpHeaders == null) {
+            httpHeaders = new HashMap<>();
+        }
+        if (headers != null && !headers.isEmpty()) {
+            for (String key: headers.keySet()) {
+                httpHeaders.put(key, headers.get(key));
+            }
+        }
         return this;
     }
+
+    /**
+     * 创建JSon格式请求体
+     *
+     * @param jsonStr
+     * @return
+     */
+    public RequestBuilder requestBody4JSon(String jsonStr) {
+        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
+        return this;
+    }
+
 
     /**
      * 设置JSon格式请求体
@@ -177,7 +175,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder jsonRequestBody(String jsonStr) {
-        this.requestBody = HttpUtil.buildRequestBody(jsonStr);
+        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
         return this;
     }
 
@@ -188,7 +186,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder requestBody(Map<String, String> bodyParams) {
-        this.requestBody = HttpUtil.buildRequestBody(bodyParams);
+        this.requestBody = HttpRequestBody.buildRequestBody4Form(bodyParams);
         return this;
     }
 }

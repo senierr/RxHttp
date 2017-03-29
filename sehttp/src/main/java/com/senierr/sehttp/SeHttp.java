@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -53,6 +54,15 @@ public class SeHttp {
     }
 
     /**
+     * 获取主线程调度器
+     *
+     * @return
+     */
+    public Handler getMainScheduler() {
+        return mainScheduler;
+    }
+
+    /**
      * 获取OkHttp请求对象
      *
      * @return
@@ -62,15 +72,6 @@ public class SeHttp {
             okHttpClient = okHttpClientBuilder.build();
         }
         return okHttpClient;
-    }
-
-    /**
-     * 获取主线程调度器
-     *
-     * @return
-     */
-    public Handler getMainScheduler() {
-        return mainScheduler;
     }
 
     /**
@@ -118,6 +119,7 @@ public class SeHttp {
         logInterceptor.setColorLevel(Log.INFO);
         logInterceptor.setPrintTag(tag);
         okHttpClientBuilder.addInterceptor(logInterceptor);
+        SeLogger.init(true, tag);
         return this;
     }
 
@@ -153,5 +155,9 @@ public class SeHttp {
 
     public static RequestBuilder get(String urlStr) {
         return new RequestBuilder("GET", urlStr);
+    }
+
+    public static RequestBuilder post(String urlStr) {
+        return new RequestBuilder("POST", urlStr);
     }
 }

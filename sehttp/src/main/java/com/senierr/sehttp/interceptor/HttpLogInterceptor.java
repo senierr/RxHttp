@@ -2,6 +2,8 @@ package com.senierr.sehttp.interceptor;
 
 import android.util.Log;
 
+import com.senierr.sehttp.util.SeLogger;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
@@ -116,7 +118,7 @@ public class HttpLogInterceptor implements Interceptor {
                 }
             }
         } catch (Exception e) {
-            log("\tException: " + e.toString());
+            SeLogger.e(e);
         } finally {
             log("--> END " + request.method());
         }
@@ -149,7 +151,7 @@ public class HttpLogInterceptor implements Interceptor {
                 }
             }
         } catch (Exception e) {
-            log("\tException: " + e.toString());
+            SeLogger.e(e);
         } finally {
             log("<-- END HTTP");
         }
@@ -189,7 +191,7 @@ public class HttpLogInterceptor implements Interceptor {
             }
             log("\tbody:" + buffer.readString(charset));
         } catch (Exception e) {
-            e.printStackTrace();
+            SeLogger.e(e);
         }
     }
 }

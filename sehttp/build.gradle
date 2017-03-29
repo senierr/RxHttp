@@ -23,3 +23,32 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     compile 'com.squareup.okio:okio:1.11.0'
 }
+
+
+/**
+ * 发布到本地仓库
+ */
+apply plugin: 'maven'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://E:/maven_repository/")
+            pom.version = '1.0.0'
+            pom.groupId = 'com.senierr.sdk'
+            pom.artifactId = 'sehttp'
+        }
+    }
+}
+
+/**
+ * 使用方法：
+ *
+ * 1.添加仓库
+ *   maven{
+ *      url 'file:////192.168.2.205/Exchange/zhouchunjie/maven_repository/'
+ *   }
+ * 2.引用
+ *   compile 'com.wztech.sdk:kdxapi:1.0.0'
+ *
+ **/

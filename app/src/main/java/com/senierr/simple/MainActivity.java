@@ -10,10 +10,11 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.cache.CacheMode;
 import com.lzy.okgo.request.BaseRequest;
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
 
-import java.io.File;
+import org.json.JSONObject;
+
+import java.util.HashMap;
 
 import okhttp3.Call;
 import okhttp3.Response;
@@ -27,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
     private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
 
-    private String path = Environment.getExternalStorageDirectory() + "/Download/";
+    private String path = Environment.getExternalStorageDirectory() + "/Download/AA/aa";
 
     private void logSe(String logStr) {
-        Log.e("SeHttp", logStr);
+        Log.e("MainActivity", logStr);
     }
 
     private void logGo(String logStr) {
@@ -69,42 +70,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void seHttpTest() {
-//        SeHttp.get(urlStr)
-//                .addParam("key", "1121")
-//                .tag(this)
-//                .execute(new StringCallback() {
-//
-//                    @Override
-//                    public void onStart() throws Exception {
-//                        logSe("onStart");
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(String s) throws Exception {
-//                        textView.setText(s);
-//                    }
-//
-//                    @Override
-//                    public void onError(int responseCode, Exception e) {
-//                        logSe("onError: " + e.toString());
-//                    }
-//
-//                    @Override
-//                    public void onAfter() {
-//                        logSe("onAfter");
-//                    }
-//                });
+        HashMap<String, String> params = new HashMap<>();
+        params.put("key1", "value1");
+        params.put("key2", "这里是需要提交的json格式数据");
+        params.put("key3", "也可以使用三方工具将对象转成json字符串");
+        params.put("key4", "其实你怎么高兴怎么写都行");
+        JSONObject jsonObject = new JSONObject(params);
 
-        SeHttp.get(urlStr)
+        SeHttp.post(Urls.URL_TEXT_UPLOAD)
+                .addHeader("head11", "aaaaa")
+                .jsonRequestBody(jsonObject.toString())
                 .tag(this)
-                .execute(new FileCallback(new File(path + "SeHttp.txt")) {
+                .execute(new StringCallback() {
                     @Override
-                    public void onSuccess(File file) throws Exception {
-                        logSe("onSuccess: " + file.getPath());
+                    public void onStart() {
+                        logSe("onStart");
                     }
 
                     @Override
-                    public void onError(int responseCode, Exception e) {
+                    public void onSuccess(String s) throws Exception {
+                        logSe("onSuccess: " + s);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
                         logSe("onError: " + e.toString());
                     }
 
@@ -113,6 +102,25 @@ public class MainActivity extends AppCompatActivity {
                         logSe("onAfter");
                     }
                 });
+
+//        SeHttp.get(urlStr)
+//                .tag(this)
+//                .execute(new FileCallback(path + "SeHttp.txt") {
+//                    @Override
+//                    public void onSuccess(File file) throws Exception {
+//                        logSe("onSuccess: " + file.getPath());
+//                    }
+//
+//                    @Override
+//                    public void onError(Exception e) {
+//                        logSe("onError: " + e.toString());
+//                    }
+//
+//                    @Override
+//                    public void onAfter() {
+//                        logSe("onAfter");
+//                    }
+//                });
     }
 
     private void okGoTest() {
