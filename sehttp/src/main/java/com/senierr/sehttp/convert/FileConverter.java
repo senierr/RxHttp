@@ -16,6 +16,9 @@ import okhttp3.Response;
 
 public class FileConverter implements Converter<File> {
 
+    // 异步刷新时间间隔
+    private static final long REFRESH_INTERVAL = 160;
+
     private FileCallback fileCallback;
     private File destFile;
 
@@ -68,7 +71,7 @@ public class FileConverter implements Converter<File> {
 
                 final long finalSum = sum;
                 long curTime = System.currentTimeMillis();
-                if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_INTERVAL || finalSum == total) {
+                if (curTime - lastRefreshUiTime >= REFRESH_INTERVAL || finalSum == total) {
                     //计算下载速度
                     long diffTime = (curTime - lastRefreshUiTime) / 1000;
                     if (diffTime == 0) diffTime += 1;

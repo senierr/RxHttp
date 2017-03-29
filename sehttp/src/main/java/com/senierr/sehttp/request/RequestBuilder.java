@@ -1,9 +1,12 @@
 package com.senierr.sehttp.request;
 
+import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.emitter.Emitter;
+import com.senierr.sehttp.mode.HttpHeaders;
+import com.senierr.sehttp.mode.HttpParams;
 import com.senierr.sehttp.mode.HttpRequestBody;
-import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.util.HttpUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,6 +17,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
+ * 请求封装类
+ *
  * @author zhouchunjie
  * @date 2017/3/27
  */
@@ -45,14 +50,18 @@ public class RequestBuilder {
      */
     public Request build() {
         Request.Builder builder = new Request.Builder();
+        // 添加公共参数
+        httpParams = HttpUtil.appendMap(httpParams, SeHttp.getInstance().getCommonParams());
+        // 添加公共头
+        httpHeaders = HttpUtil.appendMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
+        if (httpParams != null && !httpParams.isEmpty()) {
+            url = HttpParams.buildParams(url, httpParams);
+        }
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            builder.headers(HttpUtil.buildHeaders(httpHeaders));
+            builder.headers(HttpHeaders.buildHeaders(httpHeaders));
         }
         if (tag != null) {
             builder.tag(tag);
-        }
-        if (httpParams != null && !httpParams.isEmpty()) {
-            url += HttpUtil.buildUrlParams(httpParams);
         }
         builder.method(method, requestBody);
         builder.url(url);
@@ -112,14 +121,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addParams(Map<String, String> params) {
-        if (httpParams == null) {
-            httpParams = new HashMap<>();
-        }
-        if (params != null && !params.isEmpty()) {
-            for (String key: params.keySet()) {
-                httpParams.put(key, params.get(key));
-            }
-        }
+        httpParams = HttpUtil.appendMap(httpParams, params);
         return this;
     }
 
@@ -145,37 +147,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addHeaders(Map<String, String> headers) {
-        if (httpHeaders == null) {
-            httpHeaders = new HashMap<>();
-        }
-        if (headers != null && !headers.isEmpty()) {
-            for (String key: headers.keySet()) {
-                httpHeaders.put(key, headers.get(key));
-            }
-        }
-        return this;
-    }
-
-    /**
-     * 创建JSon格式请求体
-     *
-     * @param jsonStr
-     * @return
-     */
-    public RequestBuilder requestBody4JSon(String jsonStr) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
-        return this;
-    }
-
-
-    /**
-     * 设置JSon格式请求体
-     *
-     * @param jsonStr
-     * @return
-     */
-    public RequestBuilder jsonRequestBody(String jsonStr) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
+        httpHeaders = HttpUtil.appendMap(httpHeaders, headers);
         return this;
     }
 
@@ -185,8 +157,44 @@ public class RequestBuilder {
      * @param bodyParams
      * @return
      */
-    public RequestBuilder requestBody(Map<String, String> bodyParams) {
+    public RequestBuilder requestBody4Form(Map<String, String> bodyParams) {
         this.requestBody = HttpRequestBody.buildRequestBody4Form(bodyParams);
         return this;
     }
+
+    /**
+     * 设置JSON格式请求体
+     *
+     * @param jsonStr
+     * @return
+     */
+    public RequestBuilder requestBody4JSon(String jsonStr) {
+        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
+        return this;
+    }
+
+    /**
+     * 设置文本格式请求体
+     *
+     * @param textStr
+     * @returne
+     */
+    public RequestBuilder requestBody4Text(String textStr) {
+        this.requestBody = HttpRequestBody.buildRequestBody4Text(textStr);
+        return this;
+    }
+
+    /**
+     * 设置XML格式请求体
+     *
+     * @param xmlStr
+     * @returne
+     */
+    public RequestBuilder requestBody4Xml(String xmlStr) {
+        this.requestBody = HttpRequestBody.buildRequestBody4Xml(xmlStr);
+        return this;
+    }
+
+
+
 }

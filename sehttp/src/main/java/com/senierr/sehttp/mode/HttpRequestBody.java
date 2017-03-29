@@ -9,13 +9,14 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
 /**
+ * 请求体
+ *
  * @author zhouchunjie
  * @date 2017/3/29
  */
 
 public class HttpRequestBody {
 
-    public static final String MEDIA_TYPE_HTML = "text/html; charset=utf-8";
     public static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";
     public static final String MEDIA_TYPE_XML = "text/xml; charset=utf-8";
     public static final String MEDIA_TYPE_JSON = "application/json; charset=utf-8";
@@ -40,7 +41,7 @@ public class HttpRequestBody {
     }
 
     /**
-     * 创建JSon格式请求体
+     * 创建JSON格式请求体
      *
      * @param jsonStr
      * @return
@@ -56,14 +57,29 @@ public class HttpRequestBody {
     /**
      * 创建文本格式请求体
      *
-     * @param str
+     * @param textStr
      * @return
      */
-    public static RequestBody buildRequestBody4String(String str){
+    public static RequestBody buildRequestBody4Text(String textStr){
         RequestBody body = null;
-        if (!TextUtils.isEmpty(str)) {
-            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_PLAIN), str);
+        if (!TextUtils.isEmpty(textStr)) {
+            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_PLAIN), textStr);
         }
         return body;
     }
+
+    /**
+     * 创建XML格式请求体
+     *
+     * @param xmlStr
+     * @return
+     */
+    public static RequestBody buildRequestBody4Xml(String xmlStr){
+        RequestBody body = null;
+        if (!TextUtils.isEmpty(xmlStr)) {
+            body = RequestBody.create(MediaType.parse(MEDIA_TYPE_XML), xmlStr);
+        }
+        return body;
+    }
+
 }

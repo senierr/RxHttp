@@ -5,6 +5,8 @@ import java.util.Map;
 import okhttp3.Headers;
 
 /**
+ * 请求头
+ *
  * @author zhouchunjie
  * @date 2017/3/29
  */

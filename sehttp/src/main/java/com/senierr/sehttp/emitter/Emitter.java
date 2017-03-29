@@ -1,13 +1,12 @@
 package com.senierr.sehttp.emitter;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -26,14 +25,11 @@ public class Emitter<T> {
 
     // 请求实体
     private RequestBuilder requestBuilder;
-    // OkHttp发射器
-    private Call call;
     // 回调
     private BaseCallback<T> callback;
 
     public Emitter(RequestBuilder requestBuilder) {
         this.requestBuilder = requestBuilder;
-        this.call = SeHttp.getInstance().getOkHttpClient().newCall(requestBuilder.build());
     }
 
     /**
@@ -44,15 +40,21 @@ public class Emitter<T> {
     public void execute(BaseCallback<T> baseCallback) {
         this.callback = baseCallback;
         if (callback != null) {
-            callback.onStart();
+            callback.onBefore();
         }
-        call.enqueue(new Callback() {
+        getNewCall().enqueue(new Callback() {
+
+            int currentRetryCount = 0;
+
             @Override
             public void onFailure(Call call, final IOException e) {
-                // TODO: 2017/3/28 处理失败重连
-
-                if (!call.isCanceled()) {
-                    sendError(e);
+                if (e instanceof SocketTimeoutException && currentRetryCount < SeHttp.getInstance().getRetryCount()) {
+                    currentRetryCount++;
+                    getNewCall().enqueue(this);
+                } else {
+                    if (!call.isCanceled()) {
+                        sendError(e);
+                    }
                 }
             }
 
@@ -76,16 +78,24 @@ public class Emitter<T> {
      * @return
      */
     public Response execute() throws IOException {
-        return call.execute();
+        return getNewCall().execute();
     }
 
+    /**
+     * 创建Call对象
+     *
+     * @return
+     */
+    private Call getNewCall() {
+        return SeHttp.getInstance().getOkHttpClient().newCall(requestBuilder.build());
+    }
 
     /**
      * 执行成功回调
      *
      * @param t
      */
-    public void sendSuccess(final T t) {
+    private void sendSuccess(final T t) {
         if (callback == null) {
             return;
         }
@@ -107,7 +117,7 @@ public class Emitter<T> {
      *
      * @param e
      */
-    public void sendError(final Exception e) {
+    private void sendError(final Exception e) {
         if (callback == null) {
             return;
         }

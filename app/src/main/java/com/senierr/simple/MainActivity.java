@@ -6,9 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.cache.CacheMode;
-import com.lzy.okgo.request.BaseRequest;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.StringCallback;
 
@@ -16,26 +13,19 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-import okhttp3.Call;
-import okhttp3.Response;
-
 public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
-//    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
+    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
 //    private String urlStr = "http://192.168.2.155:8088/index";
-    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
+//    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
 
     private String path = Environment.getExternalStorageDirectory() + "/Download/AA/aa";
 
     private void logSe(String logStr) {
-        Log.e("MainActivity", logStr);
-    }
-
-    private void logGo(String logStr) {
-        Log.e("OkGo", logStr);
+        Log.e("SeH", logStr);
     }
 
     @Override
@@ -46,27 +36,41 @@ public class MainActivity extends AppCompatActivity {
         textView = (TextView) findViewById(R.id.tv_text);
 
         SeHttp.getInstance()
-                .setConnectTimeout(10000)
-                .setReadTimeout(10000)
-                .setWriteTimeout(10000)
-                .setDebug("SeHttp");
+                // 开启调试
+                .debug("SeHttp")
+//                .debug(tag, isLogException)
+                // 设置超时，默认30秒
+                .setConnectTimeout(5000)
+                .setReadTimeout(5000)
+                .setWriteTimeout(5000)
+                // 添加全局拦截器
+//                .addInterceptor()
+                // 设置域名匹配规则
+//                .setHostnameVerifier()
+                // 添加全局头
+                .addCommonHeader("comHeader", "comValue")
+//                .addCommonHeaders()
+                // 添加全局参数
+                .addCommonParam("comKey", "comValue")
+//                .addCommonParams()
+                // 设置超时重连次数，默认0次
+                .setRetryCount(3);
 
-        OkGo.init(getApplication());
-        OkGo.getInstance().debug("OkGo")
-                .setConnectTimeout(10000)
-                .setCacheMode(CacheMode.NO_CACHE)
-                .setReadTimeOut(10000)
-                .setWriteTimeOut(10000);
+        /**
+         * todo:
+         *
+         * 缓存
+         * cookie
+         * HTTPS，证书
+         */
 
         seHttpTest();
-//        okGoTest();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         SeHttp.getInstance().cancelTag(this);
-        OkGo.getInstance().cancelTag(this);
     }
 
     private void seHttpTest() {
@@ -75,16 +79,19 @@ public class MainActivity extends AppCompatActivity {
         params.put("key2", "这里是需要提交的json格式数据");
         params.put("key3", "也可以使用三方工具将对象转成json字符串");
         params.put("key4", "其实你怎么高兴怎么写都行");
-        JSONObject jsonObject = new JSONObject(params);
+        final JSONObject jsonObject = new JSONObject(params);
 
-        SeHttp.post(Urls.URL_TEXT_UPLOAD)
-                .addHeader("head11", "aaaaa")
-                .jsonRequestBody(jsonObject.toString())
+        SeHttp.post(urlStr)
+                .addParam("key", "value")
+//                .addParams()
+                .addHeader("header", "value")
+//                .addHeaders()
+                .requestBody4JSon(jsonObject.toString())
                 .tag(this)
                 .execute(new StringCallback() {
                     @Override
-                    public void onStart() {
-                        logSe("onStart");
+                    public void onBefore() {
+                        logSe("onBefore");
                     }
 
                     @Override
@@ -122,53 +129,6 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
     }
-
-    private void okGoTest() {
-        OkGo.get(urlStr)
-                .tag(this)
-                .execute(new com.lzy.okgo.callback.StringCallback() {
-
-                    @Override
-                    public void onBefore(BaseRequest request) {
-                        logGo("onBefore");
-                    }
-
-                    @Override
-                    public void onSuccess(String s, Call call, Response response) {
-                        logGo("onSuccess: " + s);
-                    }
-
-                    @Override
-                    public void onError(Call call, Response response, Exception e) {
-                        logGo("onError");
-                    }
-
-                    @Override
-                    public void onAfter(String s, Exception e) {
-                        logGo("onAfter");
-                    }
-                });
-
-//        OkGo.get(urlStr)
-//                .tag(this)
-//                .execute(new com.lzy.okgo.callback.FileCallback(path, "OkGo.txt") {
-//                    @Override
-//                    public void onSuccess(File file, Call call, Response response) {
-//                        logGo("onSuccess: " + file.getPath());
-//                    }
-//
-//                    @Override
-//                    public void onError(Call call, Response response, Exception e) {
-//                        logGo("onError: " + e.toString());
-//                    }
-//
-//                    @Override
-//                    public void onAfter(File file, Exception e) {
-//                        logGo("onAfter");
-//                    }
-//                });
-    }
-
 
 
 }

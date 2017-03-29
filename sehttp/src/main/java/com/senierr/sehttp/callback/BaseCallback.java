@@ -10,7 +10,7 @@ import com.senierr.sehttp.convert.Converter;
 
 public abstract class BaseCallback<T> implements Converter<T> {
 
-    public void onStart() {}
+    public void onBefore() {}
 
     public abstract void onSuccess(T t) throws Exception;
 
