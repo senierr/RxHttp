@@ -9,8 +9,7 @@ import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -36,9 +35,9 @@ public class SeHttp {
     // 网络请求对象
     private OkHttpClient okHttpClient;
     // 公共请求参数
-    private Map<String, String> commonParams;
+    private LinkedHashMap<String, String> commonParams;
     // 公共请求头
-    private Map<String, String> commonHeaders;
+    private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
     private int retryCount;
 
@@ -87,7 +86,7 @@ public class SeHttp {
      *
      * @return
      */
-    public Map<String, String> getCommonParams() {
+    public LinkedHashMap<String, String> getCommonParams() {
         return commonParams;
     }
 
@@ -96,7 +95,7 @@ public class SeHttp {
      *
      * @return
      */
-    public Map<String, String> getCommonHeaders() {
+    public LinkedHashMap<String, String> getCommonHeaders() {
         return commonHeaders;
     }
 
@@ -196,7 +195,7 @@ public class SeHttp {
      */
     public SeHttp addCommonParam(String key, String value) {
         if (commonParams == null) {
-            commonParams = new HashMap<>();
+            commonParams = new LinkedHashMap<>();
         }
         commonParams.put(key, value);
         return this;
@@ -208,8 +207,8 @@ public class SeHttp {
      * @param params
      * @return
      */
-    public SeHttp addCommonParams(Map<String, String> params) {
-        commonParams = HttpUtil.appendMap(commonParams, params);
+    public SeHttp addCommonParams(LinkedHashMap<String, String> params) {
+        commonParams = HttpUtil.appendStringMap(commonParams, params);
         return this;
     }
 
@@ -222,7 +221,7 @@ public class SeHttp {
      */
     public SeHttp addCommonHeader(String key, String value) {
         if (commonHeaders == null) {
-            commonHeaders = new HashMap<>();
+            commonHeaders = new LinkedHashMap<>();
         }
         commonHeaders.put(key, value);
         return this;
@@ -234,8 +233,8 @@ public class SeHttp {
      * @param headers
      * @return
      */
-    public SeHttp addCommonHeaders(Map<String, String> headers) {
-        commonHeaders = HttpUtil.appendMap(commonHeaders, headers);
+    public SeHttp addCommonHeaders(LinkedHashMap<String, String> headers) {
+        commonHeaders = HttpUtil.appendStringMap(commonHeaders, headers);
         return this;
     }
 
@@ -357,4 +356,13 @@ public class SeHttp {
         return new RequestBuilder("PATCH", urlStr);
     }
 
+    /**
+     * options请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder options(String urlStr) {
+        return new RequestBuilder("OPTIONS", urlStr);
+    }
 }

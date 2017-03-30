@@ -7,10 +7,12 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +67,13 @@ public class MainActivity extends AppCompatActivity {
          */
 
         seHttpTest();
+
+        textView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                seHttpTest();
+            }
+        }, 5000);
     }
 
     @Override
@@ -82,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         final JSONObject jsonObject = new JSONObject(params);
 
         SeHttp.post(urlStr)
-                .addParam("key", "value")
+                .addUrlParam("key", "value")
 //                .addParams()
                 .addHeader("header", "value")
 //                .addHeaders()
@@ -113,6 +122,21 @@ public class MainActivity extends AppCompatActivity {
 //        SeHttp.get(urlStr)
 //                .tag(this)
 //                .execute(new FileCallback(path + "SeHttp.txt") {
+//                    @Override
+//                    public void onBefore() {
+//                        logSe("onBefore");
+//                    }
+//
+//                    @Override
+//                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+//                        logSe("downloadProgress: " + progress);
+//                    }
+//
+//                    @Override
+//                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+//                        logSe("uploadProgress: " + progress);
+//                    }
+//
 //                    @Override
 //                    public void onSuccess(File file) throws Exception {
 //                        logSe("onSuccess: " + file.getPath());

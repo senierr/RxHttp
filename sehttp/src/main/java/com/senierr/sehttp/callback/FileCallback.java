@@ -38,16 +38,6 @@ public abstract class FileCallback extends BaseCallback<File> {
         return false;
     }
 
-    /**
-     * 下载进度回调
-     *
-     * @param currentSize
-     * @param totalSize
-     * @param progress
-     * @param networkSpeed
-     */
-    public void onProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
-
     @Override
     public File convert(Response response) throws Exception {
         return new FileConverter(this).convert(response);

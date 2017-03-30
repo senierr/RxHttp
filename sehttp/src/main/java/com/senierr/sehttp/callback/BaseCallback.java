@@ -12,6 +12,10 @@ public abstract class BaseCallback<T> implements Converter<T> {
 
     public void onBefore() {}
 
+    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
+
+    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
+
     public abstract void onSuccess(T t) throws Exception;
 
     public abstract void onError(Exception e);

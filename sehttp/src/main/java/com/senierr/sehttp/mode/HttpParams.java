@@ -29,7 +29,12 @@ public class HttpParams {
             for (String key: urlParams.keySet()) {
                 strParams.append("&").append(key).append("=").append(urlParams.get(key));
             }
+
             strParams.deleteCharAt(1);
+            if (url.indexOf("?") == url.length() - 1) {
+                strParams.deleteCharAt(0);
+            }
+
             strParams.insert(0, url);
             url = strParams.toString();
         }

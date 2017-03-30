@@ -2,16 +2,19 @@ package com.senierr.sehttp.request;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.emitter.Emitter;
+import com.senierr.sehttp.mode.FileMap;
 import com.senierr.sehttp.mode.HttpHeaders;
 import com.senierr.sehttp.mode.HttpParams;
 import com.senierr.sehttp.mode.HttpRequestBody;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.SeLogger;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
+import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -32,15 +35,16 @@ public class RequestBuilder {
     // 标签
     private Object tag;
     // url参数
-    private Map<String, String> httpParams;
+    private LinkedHashMap<String, String> httpParams;
     // 请求头
-    private Map<String, String> httpHeaders;
+    private LinkedHashMap<String, String> httpHeaders;
     // 请求体
-    private RequestBody requestBody;
+    private HttpRequestBody httpRequestBody;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
         this.url = url;
+        httpRequestBody = new HttpRequestBody();
     }
 
     /**
@@ -48,21 +52,35 @@ public class RequestBuilder {
      *
      * @return
      */
-    public Request build() {
+    public Request build(BaseCallback callback) {
         Request.Builder builder = new Request.Builder();
         // 添加公共参数
-        httpParams = HttpUtil.appendMap(httpParams, SeHttp.getInstance().getCommonParams());
+        httpParams = HttpUtil.appendStringMap(httpParams, SeHttp.getInstance().getCommonParams());
         // 添加公共头
-        httpHeaders = HttpUtil.appendMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
+        httpHeaders = HttpUtil.appendStringMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
         if (httpParams != null && !httpParams.isEmpty()) {
             url = HttpParams.buildParams(url, httpParams);
         }
+
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
             builder.headers(HttpHeaders.buildHeaders(httpHeaders));
         }
         if (tag != null) {
             builder.tag(tag);
         }
+
+        RequestBody requestBody = httpRequestBody.create(callback);
+        try {
+            if (requestBody != null) {
+                long contentLength = requestBody.contentLength();
+                if (contentLength > 0) {
+                    addHeader("Content-Length", String.valueOf(contentLength));
+                }
+            }
+        } catch (IOException e) {
+            SeLogger.e(e);
+        }
+
         builder.method(method, requestBody);
         builder.url(url);
         return builder.build();
@@ -106,9 +124,9 @@ public class RequestBuilder {
      * @param value
      * @return
      */
-    public RequestBuilder addParam(String key, String value) {
+    public RequestBuilder addUrlParam(String key, String value) {
         if (httpParams == null) {
-            httpParams = new HashMap<>();
+            httpParams = new LinkedHashMap<>();
         }
         httpParams.put(key, value);
         return this;
@@ -120,8 +138,8 @@ public class RequestBuilder {
      * @param params
      * @return
      */
-    public RequestBuilder addParams(Map<String, String> params) {
-        httpParams = HttpUtil.appendMap(httpParams, params);
+    public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
+        httpParams = HttpUtil.appendStringMap(httpParams, params);
         return this;
     }
 
@@ -134,7 +152,7 @@ public class RequestBuilder {
      */
     public RequestBuilder addHeader(String key, String value) {
         if (httpHeaders == null) {
-            httpHeaders = new HashMap<>();
+            httpHeaders = new LinkedHashMap<>();
         }
         httpHeaders.put(key, value);
         return this;
@@ -146,19 +164,74 @@ public class RequestBuilder {
      * @param headers
      * @return
      */
-    public RequestBuilder addHeaders(Map<String, String> headers) {
-        httpHeaders = HttpUtil.appendMap(httpHeaders, headers);
+    public RequestBuilder addHeaders(LinkedHashMap<String, String> headers) {
+        httpHeaders = HttpUtil.appendStringMap(httpHeaders, headers);
         return this;
     }
 
     /**
-     * 设置键值对请求体
+     * 设置请求体
      *
-     * @param bodyParams
+     * @param requestBody
      * @return
      */
-    public RequestBuilder requestBody4Form(Map<String, String> bodyParams) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Form(bodyParams);
+    public RequestBuilder requestBody(RequestBody requestBody) {
+        httpRequestBody.setRequestBody(requestBody);
+        return this;
+    }
+
+    /**
+     * 添加请求体参数
+     *
+     * @param key
+     * @param file
+     * @return
+     */
+    public RequestBuilder addRequestParam(String key, File file) {
+        FileMap fileParams = httpRequestBody.getFileParams();
+        if (fileParams == null) {
+            fileParams = new FileMap();
+        }
+        fileParams.add(key, file);
+        return this;
+    }
+
+    /**
+     * 添加请求体参数
+     *
+     * @param fileParams
+     * @returns
+     */
+    public RequestBuilder addRequestFileParams(FileMap fileParams) {
+        httpRequestBody.setFileParams(HttpUtil.appendFileMap(httpRequestBody.getFileParams(), fileParams));
+        return this;
+    }
+
+
+    /**
+     * 添加请求体参数
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public RequestBuilder addRequestParam(String key, String value) {
+        LinkedHashMap<String, String> stringParams = httpRequestBody.getStringParams();
+        if (stringParams == null) {
+            stringParams = new LinkedHashMap<>();
+        }
+        stringParams.put(key, value);
+        return this;
+    }
+
+    /**
+     * 添加请求体参数
+     *
+     * @param stringParams
+     * @returns
+     */
+    public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
+        httpRequestBody.setStringParams(HttpUtil.appendStringMap(httpRequestBody.getStringParams(), stringParams));
         return this;
     }
 
@@ -169,7 +242,8 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder requestBody4JSon(String jsonStr) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Json(jsonStr);
+        httpRequestBody.setStringContent(jsonStr);
+        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_JSON));
         return this;
     }
 
@@ -180,7 +254,8 @@ public class RequestBuilder {
      * @returne
      */
     public RequestBuilder requestBody4Text(String textStr) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Text(textStr);
+        httpRequestBody.setStringContent(textStr);
+        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_PLAIN));
         return this;
     }
 
@@ -191,10 +266,21 @@ public class RequestBuilder {
      * @returne
      */
     public RequestBuilder requestBody4Xml(String xmlStr) {
-        this.requestBody = HttpRequestBody.buildRequestBody4Xml(xmlStr);
+        httpRequestBody.setStringContent(xmlStr);
+        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_XML));
         return this;
     }
 
-
+    /**
+     * 设置字节流请求体
+     *
+     * @param bytes
+     * @return
+     */
+    public RequestBuilder requestBody4Byte(byte[] bytes) {
+        httpRequestBody.setBytes(bytes);
+        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_STREAM));
+        return this;
+    }
 
 }

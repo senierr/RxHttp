@@ -80,7 +80,7 @@ public class FileConverter implements Converter<File> {
                     SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
-                            fileCallback.onProgress(finalSum, total, (int) (finalSum * 100 / total), networkSpeed);
+                            fileCallback.downloadProgress(finalSum, total, (int) (finalSum * 100 / total), networkSpeed);
                         }
                     });
 

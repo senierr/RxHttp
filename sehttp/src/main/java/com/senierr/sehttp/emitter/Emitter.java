@@ -3,7 +3,6 @@ package com.senierr.sehttp.emitter;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.request.RequestBuilder;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -87,7 +86,7 @@ public class Emitter<T> {
      * @return
      */
     private Call getNewCall() {
-        return SeHttp.getInstance().getOkHttpClient().newCall(requestBuilder.build());
+        return SeHttp.getInstance().getOkHttpClient().newCall(requestBuilder.build(callback));
     }
 
     /**
