@@ -68,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
 
         seHttpTest();
 
-        textView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                seHttpTest();
-            }
-        }, 5000);
+//        textView.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                seHttpTest();
+//            }
+//        }, 5000);
     }
 
     @Override

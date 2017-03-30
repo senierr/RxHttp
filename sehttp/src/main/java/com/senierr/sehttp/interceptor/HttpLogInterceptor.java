@@ -82,7 +82,7 @@ public class HttpLogInterceptor implements Interceptor {
         try {
             response = chain.proceed(request);
         } catch (Exception e) {
-            log("<-- HTTP FAILED: " + e);
+            log("║--> 请求失败: " + e);
             throw e;
         }
         long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
@@ -99,28 +99,28 @@ public class HttpLogInterceptor implements Interceptor {
         Protocol protocol = connection != null ? connection.protocol() : Protocol.HTTP_1_1;
 
         try {
-            String requestStartMessage = "--> " + request.method() + ' ' + request.url() + ' ' + protocol;
+            log(" -----------> 开始请求 <-----------");
+            String requestStartMessage = "║\t" + request.method() + ' ' + request.url() + ' ' + protocol;
             log(requestStartMessage);
-
             if (logHeaders) {
                 Headers headers = request.headers();
                 for (int i = 0, count = headers.size(); i < count; i++) {
-                    log("\t" + headers.name(i) + ": " + headers.value(i));
+                    log("║\t" + headers.name(i) + ": " + headers.value(i));
                 }
 
-                log(" ");
+                log("║---------------------------------");
                 if (logBody && hasRequestBody) {
                     if (isPlaintext(requestBody.contentType())) {
                         bodyToString(request);
                     } else {
-                        log("\tbody: maybe [file part] , too large too print , ignored!");
+                        log("║\tbody maybe [file part] , too large too print , ignored!");
                     }
                 }
             }
         } catch (Exception e) {
             SeLogger.e(e);
         } finally {
-            log("--> END " + request.method());
+            log(" -----------> 结束请求 <-----------");
         }
     }
 
@@ -132,28 +132,30 @@ public class HttpLogInterceptor implements Interceptor {
         boolean logHeaders = (printLevel == LEVEL_BODY || printLevel == LEVEL_HEADERS);
 
         try {
-            log("<-- " + clone.code() + ' ' + clone.message() + ' ' + clone.request().url() + " (" + tookMs + "ms）");
+            log(" -----------> 开始响应 <-----------");
+            log("║\t" + clone.code() + ' ' + clone.message() + ' ' + clone.request().url() + " (" + tookMs + "ms）");
             if (logHeaders) {
                 Headers headers = clone.headers();
                 for (int i = 0, count = headers.size(); i < count; i++) {
-                    log("\t" + headers.name(i) + ": " + headers.value(i));
+                    log("║\t" + headers.name(i) + ": " + headers.value(i));
                 }
-                log(" ");
+
+                log("║---------------------------------");
                 if (logBody && HttpHeaders.hasBody(clone)) {
                     if (isPlaintext(responseBody.contentType())) {
                         String body = responseBody.string();
-                        log("\tbody:" + body);
+                        log("║\t" + body);
                         responseBody = ResponseBody.create(responseBody.contentType(), body);
                         return response.newBuilder().body(responseBody).build();
                     } else {
-                        log("\tbody: maybe [file part] , too large too print , ignored!");
+                        log("║\tbody: maybe [file part] , too large too print , ignored!");
                     }
                 }
             }
         } catch (Exception e) {
             SeLogger.e(e);
         } finally {
-            log("<-- END HTTP");
+            log(" -----------> 结束响应 <-----------");
         }
         return response;
     }
@@ -189,7 +191,7 @@ public class HttpLogInterceptor implements Interceptor {
             if (contentType != null) {
                 charset = contentType.charset(UTF8);
             }
-            log("\tbody:" + buffer.readString(charset));
+            log("║\t" + buffer.readString(charset));
         } catch (Exception e) {
             SeLogger.e(e);
         }
