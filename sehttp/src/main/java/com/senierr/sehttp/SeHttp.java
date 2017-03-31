@@ -19,13 +19,17 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 /**
+ * SeHttp网络请求框架
+ *
  * @author zhouchunjie
  * @date 2017/3/27
  */
 
 public class SeHttp {
     // 默认超时时间
-    private static final int DEFAULT_MILLISECONDS = 30000;
+    public static final int DEFAULT_TIMEOUT = 30000;
+    // 默认刷新时间
+    public static final int REFRESH_MIN_INTERVAL = 100;
 
     private static volatile SeHttp seHttp;
     // 主线程调度器
@@ -35,7 +39,7 @@ public class SeHttp {
     // 网络请求对象
     private OkHttpClient okHttpClient;
     // 公共请求参数
-    private LinkedHashMap<String, String> commonParams;
+    private LinkedHashMap<String, String> commonUrlParams;
     // 公共请求头
     private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
@@ -43,9 +47,9 @@ public class SeHttp {
 
     private SeHttp() {
         okHttpClientBuilder = new OkHttpClient.Builder();
-        okHttpClientBuilder.connectTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS);
-        okHttpClientBuilder.readTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS);
-        okHttpClientBuilder.writeTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS);
+        okHttpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         mainScheduler = new Handler(Looper.getMainLooper());
     }
 
@@ -86,8 +90,8 @@ public class SeHttp {
      *
      * @return
      */
-    public LinkedHashMap<String, String> getCommonParams() {
-        return commonParams;
+    public LinkedHashMap<String, String> getCommonUrlParams() {
+        return commonUrlParams;
     }
 
     /**
@@ -115,7 +119,7 @@ public class SeHttp {
      * @param connectTimeout
      * @return
      */
-    public SeHttp setConnectTimeout(long connectTimeout) {
+    public SeHttp connectTimeout(long connectTimeout) {
         okHttpClientBuilder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS);
         return this;
     }
@@ -126,7 +130,7 @@ public class SeHttp {
      * @param readTimeout
      * @return
      */
-    public SeHttp setReadTimeout(long readTimeout) {
+    public SeHttp readTimeout(long readTimeout) {
         okHttpClientBuilder.readTimeout(readTimeout, TimeUnit.MILLISECONDS);
         return this;
     }
@@ -137,7 +141,7 @@ public class SeHttp {
      * @param writeTimeout
      * @return
      */
-    public SeHttp setWriteTimeout(long writeTimeout) {
+    public SeHttp writeTimeout(long writeTimeout) {
         okHttpClientBuilder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS);
         return this;
     }
@@ -181,7 +185,7 @@ public class SeHttp {
      * @param hostnameVerifier
      * @return
      */
-    public SeHttp setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+    public SeHttp hostnameVerifier(HostnameVerifier hostnameVerifier) {
         okHttpClientBuilder.hostnameVerifier(hostnameVerifier);
         return this;
     }
@@ -193,11 +197,11 @@ public class SeHttp {
      * @param value
      * @return
      */
-    public SeHttp addCommonParam(String key, String value) {
-        if (commonParams == null) {
-            commonParams = new LinkedHashMap<>();
+    public SeHttp addCommonUrlParam(String key, String value) {
+        if (commonUrlParams == null) {
+            commonUrlParams = new LinkedHashMap<>();
         }
-        commonParams.put(key, value);
+        commonUrlParams.put(key, value);
         return this;
     }
 
@@ -207,8 +211,8 @@ public class SeHttp {
      * @param params
      * @return
      */
-    public SeHttp addCommonParams(LinkedHashMap<String, String> params) {
-        commonParams = HttpUtil.appendStringMap(commonParams, params);
+    public SeHttp addCommonUrlParams(LinkedHashMap<String, String> params) {
+        commonUrlParams = HttpUtil.appendStringMap(commonUrlParams, params);
         return this;
     }
 
@@ -255,7 +259,7 @@ public class SeHttp {
      * @param retryCount
      * @return
      */
-    public SeHttp setRetryCount(int retryCount) {
+    public SeHttp retryCount(int retryCount) {
         this.retryCount = retryCount;
         return this;
     }

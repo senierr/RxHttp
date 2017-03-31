@@ -34,7 +34,7 @@ public abstract class FileCallback extends BaseCallback<File> {
      *
      * @return
      */
-    public boolean isDiff() {
+    public boolean isDiff(Response response, File destFile) {
         return false;
     }
 

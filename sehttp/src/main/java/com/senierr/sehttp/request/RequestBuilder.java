@@ -4,7 +4,7 @@ import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.mode.FileMap;
 import com.senierr.sehttp.mode.HttpHeaders;
-import com.senierr.sehttp.mode.HttpParams;
+import com.senierr.sehttp.mode.HttpUrlParams;
 import com.senierr.sehttp.mode.HttpRequestBody;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.util.HttpUtil;
@@ -35,7 +35,7 @@ public class RequestBuilder {
     // 标签
     private Object tag;
     // url参数
-    private LinkedHashMap<String, String> httpParams;
+    private LinkedHashMap<String, String> httpUrlParams;
     // 请求头
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
@@ -55,19 +55,9 @@ public class RequestBuilder {
     public Request build(BaseCallback callback) {
         Request.Builder builder = new Request.Builder();
         // 添加公共参数
-        httpParams = HttpUtil.appendStringMap(httpParams, SeHttp.getInstance().getCommonParams());
+        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, SeHttp.getInstance().getCommonUrlParams());
         // 添加公共头
         httpHeaders = HttpUtil.appendStringMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
-        if (httpParams != null && !httpParams.isEmpty()) {
-            url = HttpParams.buildParams(url, httpParams);
-        }
-
-        if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            builder.headers(HttpHeaders.buildHeaders(httpHeaders));
-        }
-        if (tag != null) {
-            builder.tag(tag);
-        }
 
         RequestBody requestBody = httpRequestBody.create(callback);
         try {
@@ -79,6 +69,18 @@ public class RequestBuilder {
             }
         } catch (IOException e) {
             SeLogger.e(e);
+        }
+
+        if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
+            url = HttpUrlParams.buildParams(url, httpUrlParams);
+        }
+
+        if (httpHeaders != null && !httpHeaders.isEmpty()) {
+            builder.headers(HttpHeaders.buildHeaders(httpHeaders));
+        }
+
+        if (tag != null) {
+            builder.tag(tag);
         }
 
         builder.method(method, requestBody);
@@ -125,10 +127,10 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addUrlParam(String key, String value) {
-        if (httpParams == null) {
-            httpParams = new LinkedHashMap<>();
+        if (httpUrlParams == null) {
+            httpUrlParams = new LinkedHashMap<>();
         }
-        httpParams.put(key, value);
+        httpUrlParams.put(key, value);
         return this;
     }
 
@@ -139,7 +141,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
-        httpParams = HttpUtil.appendStringMap(httpParams, params);
+        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, params);
         return this;
     }
 

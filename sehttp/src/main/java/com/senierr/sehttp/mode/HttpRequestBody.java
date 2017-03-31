@@ -44,7 +44,6 @@ public class HttpRequestBody extends RequestBody {
 
     private RequestBody delegate;  //实际的待包装请求体
     private BaseCallback callback;     //进度回调接口
-    private CountingSink countingSink; //包装完成的BufferedSink
 
     public HttpRequestBody() {
         super();
@@ -68,8 +67,7 @@ public class HttpRequestBody extends RequestBody {
     /** 重写进行写入 */
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
-        countingSink = new CountingSink(sink);
-        BufferedSink bufferedSink = Okio.buffer(countingSink);
+        BufferedSink bufferedSink = Okio.buffer(new CountingSink(sink));
         delegate.writeTo(bufferedSink);
         bufferedSink.flush();  //必须调用flush，否则最后一部分数据可能不会被写入
     }
@@ -77,11 +75,11 @@ public class HttpRequestBody extends RequestBody {
     /**
      * Sink封装
      */
-    protected final class CountingSink extends ForwardingSink {
-        private long bytesWritten = 0;   //当前写入字节数
-        private long contentLength = 0;  //总字节长度，避免多次调用contentLength()方法
-        private long lastRefreshUiTime;  //最后一次刷新的时间
-        private long lastWriteBytes;     //最后一次写入字节数据
+    private final class CountingSink extends ForwardingSink {
+        private long bytesWritten = 0;
+        private long contentLength = 0;
+        private long lastRefreshUiTime;
+        private long lastWriteBytes;
 
         public CountingSink(Sink delegate) {
             super(delegate);
@@ -90,13 +88,11 @@ public class HttpRequestBody extends RequestBody {
         @Override
         public void write(Buffer source, long byteCount) throws IOException {
             super.write(source, byteCount);
-            if (contentLength <= 0) contentLength = contentLength(); //获得contentLength的值，后续不再调用
+            if (contentLength <= 0) contentLength = contentLength();
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            //每100毫秒刷新一次数据
-            if (curTime - lastRefreshUiTime >= 100 || bytesWritten == contentLength) {
-                //计算下载速度
+            if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
                 long diffTime = (curTime - lastRefreshUiTime) / 1000;
                 if (diffTime == 0) diffTime += 1;
                 long diffBytes = bytesWritten - lastWriteBytes;

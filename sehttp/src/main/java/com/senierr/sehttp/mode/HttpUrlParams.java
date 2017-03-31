@@ -9,7 +9,7 @@ import java.util.Map;
  * @date 2017/3/29
  */
 
-public class HttpParams {
+public class HttpUrlParams {
 
     /**
      * 创建URL参数

@@ -2,6 +2,7 @@ package com.senierr.sehttp.convert;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,9 +16,6 @@ import okhttp3.Response;
  */
 
 public class FileConverter implements Converter<File> {
-
-    // 异步刷新时间间隔
-    private static final long REFRESH_INTERVAL = 160;
 
     private FileCallback fileCallback;
     private File destFile;
@@ -35,18 +33,17 @@ public class FileConverter implements Converter<File> {
         }
 
         File destFileDir = new File(destFile.getParent() + File.separator);
-
         if (!destFileDir.exists()) {
             destFileDir.mkdirs();
         }
         if (destFile.exists()) {
-            if (fileCallback.isDiff()) {
+            if (fileCallback.isDiff(response, destFile)) {
                 return destFile;
             } else {
                 destFile.delete();
             }
         }
-        File tempFile = new File(destFile.getAbsolutePath() + "_temp");
+        File tempFile = new File(destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis());
         if (tempFile.exists()) {
             tempFile.delete();
         }
@@ -71,7 +68,7 @@ public class FileConverter implements Converter<File> {
 
                 final long finalSum = sum;
                 long curTime = System.currentTimeMillis();
-                if (curTime - lastRefreshUiTime >= REFRESH_INTERVAL || finalSum == total) {
+                if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || finalSum == total) {
                     //计算下载速度
                     long diffTime = (curTime - lastRefreshUiTime) / 1000;
                     if (diffTime == 0) diffTime += 1;
@@ -89,8 +86,12 @@ public class FileConverter implements Converter<File> {
                 }
             }
             fos.flush();
+            if (destFile.exists()) {
+                destFile.delete();
+            }
             if (!tempFile.renameTo(destFile)) {
-                throw new Exception("File rename error!");
+                SeLogger.e(tempFile.getName() + " rename to " + destFile.getName() + " failure!");
+                return tempFile;
             }
         } finally {
             if (is != null) is.close();
