@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -50,6 +51,7 @@ public class SeHttp {
         okHttpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        okHttpClientBuilder.retryOnConnectionFailure(false);
         mainScheduler = new Handler(Looper.getMainLooper());
     }
 
@@ -264,7 +266,10 @@ public class SeHttp {
         return this;
     }
 
-
+    public SeHttp cache(Cache cache) {
+        okHttpClientBuilder.cache(cache);
+        return this;
+    }
 
 
 

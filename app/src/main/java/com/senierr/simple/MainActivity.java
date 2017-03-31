@@ -10,23 +10,31 @@ import android.widget.TextView;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
+import com.senierr.sehttp.callback.StringCallback;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.HashMap;
 
+import okhttp3.Cache;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
     private Button button;
 
-//    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
+    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
 //    private String urlStr = "http://192.168.2.155:8088/index";
-    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
+//    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
 
     private String path = Environment.getExternalStorageDirectory() + "/Download/AA/";
+
+
+    private static final long cacheSize = 1024*1024*20;//缓存文件最大限制大小20M
+    private static String cachedirectory = Environment.getExternalStorageDirectory() + "/Download/AA/";  //设置缓存文件路径
+    private static Cache cache = new Cache(new File(cachedirectory), cacheSize);  //
 
     private void logSe(String logStr) {
         Log.e("SeH", logStr);
@@ -59,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
 //                .addCommonHeaders()
                 .addCommonUrlParam("comKey", "comValue")    // 添加全局参数
 //                .addCommonUrlParams()
-                .retryCount(3);                             // 设置超时重连次数，默认不重连
-
+                .retryCount(3)                              // 设置超时重连次数，默认不重连
+                .cache(cache);
         /**
          * todo:
          *
@@ -93,8 +101,9 @@ public class MainActivity extends AppCompatActivity {
         params.put("key4", "其实你怎么高兴怎么写都行");
         final JSONObject jsonObject = new JSONObject(params);
 
-//        SeHttp
-//                .post(urlStr)                           // 请求方式及URL
+        SeHttp
+
+                .get(urlStr)                           // 请求方式及URL
 //                .addUrlParam("key", "value")          // 添加单个URL参数
 //                .addUrlParams()                       // 添加多个URL参数
 //                .addHeader("header", "value")         // 添加单个请求头
@@ -108,52 +117,18 @@ public class MainActivity extends AppCompatActivity {
 //                .addRequestParam("key", new File())   // 添加单个请求体键值对（文件）
 //                .addRequestStringParams()             // 添加多个请求体键值对（字符串）
 //                .addRequestFileParams()               // 添加多个请求体键值对（文件）
-//                .tag(this)                            // 设置标签，用于取消请求
+                .tag(this)                            // 设置标签，用于取消请求
 //                .build()                              // 生成OkHttp请求
 //                .execute()                            // 同步请求
-//                .execute(new StringCallback() {         // 异步请求
-//                    @Override
-//                    public void onBefore() {
-//                        logSe("onBefore");
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(String s) throws Exception {
-//                        logSe("onSuccess: " + s);
-//                    }
-//
-//                    @Override
-//                    public void onError(Exception e) {
-//                        logSe("onError: " + e.toString());
-//                    }
-//
-//                    @Override
-//                    public void onAfter() {
-//                        logSe("onAfter");
-//                    }
-//                });
-
-        SeHttp.get(Urls.URL_DOWNLOAD)
-                .tag(this)
-                .execute(new FileCallback(path + "SeHttp.txt") {
+                .execute(new StringCallback() {         // 异步请求
                     @Override
                     public void onBefore() {
                         logSe("onBefore");
                     }
 
                     @Override
-                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-                        logSe("downloadProgress: " + progress);
-                    }
-
-                    @Override
-                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-                        logSe("uploadProgress: " + progress);
-                    }
-
-                    @Override
-                    public void onSuccess(File file) throws Exception {
-                        logSe("onSuccess: " + file.getPath());
+                    public void onSuccess(String s) throws Exception {
+                        logSe("onSuccess: " + s);
                     }
 
                     @Override
@@ -166,6 +141,40 @@ public class MainActivity extends AppCompatActivity {
                         logSe("onAfter");
                     }
                 });
+
+//        SeHttp.get(Urls.URL_DOWNLOAD)
+//                .tag(this)
+//                .execute(new FileCallback(path + "SeHttp.txt") {
+//                    @Override
+//                    public void onBefore() {
+//                        logSe("onBefore");
+//                    }
+//
+//                    @Override
+//                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+//                        logSe("downloadProgress: " + progress);
+//                    }
+//
+//                    @Override
+//                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+//                        logSe("uploadProgress: " + progress);
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(File file) throws Exception {
+//                        logSe("onSuccess: " + file.getPath());
+//                    }
+//
+//                    @Override
+//                    public void onError(Exception e) {
+//                        logSe("onError: " + e.toString());
+//                    }
+//
+//                    @Override
+//                    public void onAfter() {
+//                        logSe("onAfter");
+//                    }
+//                });
     }
 
 

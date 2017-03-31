@@ -43,9 +43,18 @@ public class FileConverter implements Converter<File> {
                 destFile.delete();
             }
         }
+
+        // 生成非重复的临时文件
+        int index = 1;
         File tempFile = new File(destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis());
+        // 临时文件存在,则+1
+        while (index < 10 && tempFile.exists()) {
+            tempFile = new File(destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis() + "_" + index);
+            index++;
+        }
+        // 若还存在
         if (tempFile.exists()) {
-            tempFile.delete();
+            throw new Exception("TempFile create failure!");
         }
 
         // 上次刷新的时间

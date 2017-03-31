@@ -18,6 +18,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.ByteString;
 
 /**
  * 请求封装类
@@ -182,6 +183,31 @@ public class RequestBuilder {
         return this;
     }
 
+    public RequestBuilder requestBody(MediaType contentType, File file) {
+        httpRequestBody.setRequestBody(RequestBody.create(contentType, file));
+        return this;
+    }
+
+    public RequestBuilder requestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
+        httpRequestBody.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
+        return this;
+    }
+
+    public RequestBuilder requestBody(MediaType contentType, byte[] content) {
+        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        return this;
+    }
+
+    public RequestBuilder requestBody(MediaType contentType, ByteString content) {
+        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        return this;
+    }
+
+    public RequestBuilder requestBody(MediaType contentType, String content) {
+        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        return this;
+    }
+
     /**
      * 添加请求体参数
      *
@@ -208,7 +234,6 @@ public class RequestBuilder {
         httpRequestBody.setFileParams(HttpUtil.appendFileMap(httpRequestBody.getFileParams(), fileParams));
         return this;
     }
-
 
     /**
      * 添加请求体参数
@@ -284,5 +309,6 @@ public class RequestBuilder {
         httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_STREAM));
         return this;
     }
+
 
 }

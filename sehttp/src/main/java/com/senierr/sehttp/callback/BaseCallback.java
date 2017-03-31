@@ -18,7 +18,7 @@ public abstract class BaseCallback<T> implements Converter<T> {
 
     public abstract void onSuccess(T t) throws Exception;
 
-    public abstract void onError(Exception e);
+    public void onError(Exception e) {}
 
     public void onAfter() {}
 }
