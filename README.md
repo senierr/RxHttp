@@ -1,9 +1,8 @@
-# OkHttp-SeHttp
+# SeHttp
 
-基于okhttp3的网络请求框架
+>`SeHttp`是基于`okhttp3`封装的网络请求框架。
 
 ## 基本用法
-
 
 #### 1.导入仓库：
 
@@ -14,22 +13,22 @@ maven { url 'https://jitpack.io' }
 #### 2.添加依赖
 
 ```java
-compile 'com.github.senierr:OkHttp-SeHttp:1.0.0'
+compile 'com.github.senierr:sehttp:1.0.0'
 
 或者
 
-compile 'com.github.senierr:OkHttp-SeHttp:+'        //版本号使用 + 可以自动引用最新版
+compile 'com.github.senierr:sehttp:+'        //版本号使用 + 可以自动引用最新版
 ```
 
 ## 注意事项
-`SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖：<br>
+`SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖:
 ```java
 compile 'com.squareup.okhttp3:okhttp:3.6.0'
 compile 'com.squareup.okio:okio:1.11.0'
 ```
 
 ## 目前支持
-* 一般的 get, post, put, delete, head, options, patch请求
+* 普通get, post, put, delete, head, options, patch请求
 * 多文件和多参数统一的表单上传
 * 自定义请求体
 * 文件下载和下载进度回调
@@ -107,6 +106,12 @@ SeHttp.get(Urls.URL_DOWNLOAD)
                     @Override
                     public void onBefore() {
                         logSe("onBefore");
+                    }
+                    
+                    @Override
+                    public boolean isDiff(Response response, File destFile) {
+                        // 判断destFile是否是需要下载的文件，默认返回false
+                        return super.isDiff(response, destFile);
                     }
 
                     @Override

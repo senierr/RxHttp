@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.HashMap;
 
 import okhttp3.Cache;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -133,39 +134,45 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-//        SeHttp.get(Urls.URL_DOWNLOAD)
-//                .tag(this)
-//                .execute(new FileCallback(path + "SeHttp.txt") {
-//                    @Override
-//                    public void onBefore() {
-//                        logSe("onBefore");
-//                    }
-//
-//                    @Override
-//                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-//                        logSe("downloadProgress: " + progress);
-//                    }
-//
-//                    @Override
-//                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-//                        logSe("uploadProgress: " + progress);
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(File file) throws Exception {
-//                        logSe("onSuccess: " + file.getPath());
-//                    }
-//
-//                    @Override
-//                    public void onError(Exception e) {
-//                        logSe("onError: " + e.toString());
-//                    }
-//
-//                    @Override
-//                    public void onAfter() {
-//                        logSe("onAfter");
-//                    }
-//                });
+        SeHttp.get(Urls.URL_DOWNLOAD)
+                .tag(this)
+                .execute(new FileCallback(path + "SeHttp.txt") {
+                    @Override
+                    public void onBefore() {
+                        logSe("onBefore");
+                    }
+
+                    @Override
+                    public boolean isDiff(Response response, File destFile) {
+                        // 判断destFile是否是需要下载的文件，默认返回false
+                        return super.isDiff(response, destFile);
+                    }
+
+                    @Override
+                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+                        logSe("downloadProgress: " + progress);
+                    }
+
+                    @Override
+                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+                        logSe("uploadProgress: " + progress);
+                    }
+
+                    @Override
+                    public void onSuccess(File file) throws Exception {
+                        logSe("onSuccess: " + file.getPath());
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        logSe("onError: " + e.toString());
+                    }
+
+                    @Override
+                    public void onAfter() {
+                        logSe("onAfter");
+                    }
+                });
     }
 
 
