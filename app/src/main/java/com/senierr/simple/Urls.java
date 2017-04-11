@@ -1,14 +1,5 @@
 package com.senierr.simple;
 
-/**
- * ================================================
- * 作    者：jeasonlzy（廖子尧）
- * 版    本：1.0
- * 创建日期：2016/4/6
- * 描    述：我的Github地址  https://github.com/jeasonlzy
- * 修订历史：
- * ================================================
- */
 public class Urls {
     public static final String SERVER = "http://server.jeasonlzy.com/OkHttpUtils/";
     //    public static final String SERVER = "http://192.168.1.121:8080/OkHttpUtils/";

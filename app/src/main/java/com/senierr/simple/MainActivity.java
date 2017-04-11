@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
 //                .addCommonHeaders()
                 .addCommonUrlParam("comKey", "comValue")    // 添加全局参数
 //                .addCommonUrlParams()
-                .retryCount(3)                              // 设置超时重连次数，默认不重连
-                .cache(cache);
+                .retryCount(3);                              // 设置超时重连次数，默认不重连
+
         /**
          * todo:
          *
@@ -77,14 +77,6 @@ public class MainActivity extends AppCompatActivity {
          * HTTPS，证书
          */
 
-
-
-//        textView.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                seHttpTest();
-//            }
-//        }, 5000);
     }
 
     @Override
@@ -102,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         final JSONObject jsonObject = new JSONObject(params);
 
         SeHttp
-
                 .get(urlStr)                           // 请求方式及URL
 //                .addUrlParam("key", "value")          // 添加单个URL参数
 //                .addUrlParams()                       // 添加多个URL参数
