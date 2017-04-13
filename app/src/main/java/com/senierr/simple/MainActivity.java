@@ -94,45 +94,45 @@ public class MainActivity extends AppCompatActivity {
         params.put("key4", "其实你怎么高兴怎么写都行");
         final JSONObject jsonObject = new JSONObject(params);
 
-        SeHttp
-                .get(urlStr)                           // 请求方式及URL
-//                .addUrlParam("key", "value")          // 添加单个URL参数
-//                .addUrlParams()                       // 添加多个URL参数
-//                .addHeader("header", "value")         // 添加单个请求头
-//                .addHeaders()                         // 添加多个请求头
-//                .requestBody4Text()                   // 设置文本格式请求体
-//                .requestBody4JSon(jsonObject.toString())                   // 设置JSON格式请求体
-//                .requestBody4Xml()                    // 设置XML格式请求体
-//                .requestBody4Byte()                   // 设置字节流格式请求提
-//                .requestBody()                        // 设置自定义请求体
-//                .addRequestParam("key", "param")      // 添加单个请求体键值对（字符串）
-//                .addRequestParam("key", new File())   // 添加单个请求体键值对（文件）
-//                .addRequestStringParams()             // 添加多个请求体键值对（字符串）
-//                .addRequestFileParams()               // 添加多个请求体键值对（文件）
-                .tag(this)                            // 设置标签，用于取消请求
-//                .build()                              // 生成OkHttp请求
-//                .execute()                            // 同步请求
-                .execute(new StringCallback() {         // 异步请求
-                    @Override
-                    public void onBefore() {
-                        logSe("onBefore");
-                    }
-
-                    @Override
-                    public void onSuccess(String s) throws Exception {
-                        logSe("onSuccess: " + s);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        logSe("onError: " + e.toString());
-                    }
-
-                    @Override
-                    public void onAfter() {
-                        logSe("onAfter");
-                    }
-                });
+//        SeHttp
+//                .get(urlStr)                           // 请求方式及URL
+////                .addUrlParam("key", "value")          // 添加单个URL参数
+////                .addUrlParams()                       // 添加多个URL参数
+////                .addHeader("header", "value")         // 添加单个请求头
+////                .addHeaders()                         // 添加多个请求头
+////                .requestBody4Text()                   // 设置文本格式请求体
+////                .requestBody4JSon(jsonObject.toString())                   // 设置JSON格式请求体
+////                .requestBody4Xml()                    // 设置XML格式请求体
+////                .requestBody4Byte()                   // 设置字节流格式请求提
+////                .requestBody()                        // 设置自定义请求体
+////                .addRequestParam("key", "param")      // 添加单个请求体键值对（字符串）
+////                .addRequestParam("key", new File())   // 添加单个请求体键值对（文件）
+////                .addRequestStringParams()             // 添加多个请求体键值对（字符串）
+////                .addRequestFileParams()               // 添加多个请求体键值对（文件）
+//                .tag(this)                            // 设置标签，用于取消请求
+////                .build()                              // 生成OkHttp请求
+////                .execute()                            // 同步请求
+//                .execute(new StringCallback() {         // 异步请求
+//                    @Override
+//                    public void onBefore() {
+//                        logSe("onBefore");
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(String s) throws Exception {
+//                        logSe("onSuccess: " + s);
+//                    }
+//
+//                    @Override
+//                    public void onError(Exception e) {
+//                        logSe("onError: " + e.toString());
+//                    }
+//
+//                    @Override
+//                    public void onAfter() {
+//                        logSe("onAfter");
+//                    }
+//                });
 
         SeHttp.get(Urls.URL_DOWNLOAD)
                 .tag(this)

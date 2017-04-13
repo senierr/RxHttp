@@ -51,9 +51,7 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall().enqueue(this);
                 } else {
-                    if (!call.isCanceled()) {
-                        sendError(e);
-                    }
+                    sendError(call, e);
                 }
             }
 
@@ -61,9 +59,9 @@ public class Emitter<T> {
             public void onResponse(Call call, final Response response) throws IOException {
                 if (callback != null) {
                     try {
-                        sendSuccess(callback.convert(response));
+                        sendSuccess(call, callback.convert(response));
                     } catch (Exception e) {
-                        sendError(e);
+                        sendError(call, e);
                     }
                 }
                 response.close();
@@ -94,7 +92,7 @@ public class Emitter<T> {
      *
      * @param t
      */
-    private void sendSuccess(final T t) {
+    private void sendSuccess(final Call call, final T t) {
         if (callback == null) {
             return;
         }
@@ -105,7 +103,7 @@ public class Emitter<T> {
                     callback.onSuccess(t);
                     callback.onAfter();
                 } catch (Exception e) {
-                    sendError(e);
+                    sendError(call, e);
                 }
             }
         });
@@ -116,16 +114,18 @@ public class Emitter<T> {
      *
      * @param e
      */
-    private void sendError(final Exception e) {
+    private void sendError(Call call, final Exception e) {
         if (callback == null) {
             return;
         }
-        SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onError(e);
-                callback.onAfter();
-            }
-        });
+        if (!call.isCanceled()) {
+            SeHttp.getInstance().getMainScheduler().post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onError(e);
+                    callback.onAfter();
+                }
+            });
+        }
     }
 }
