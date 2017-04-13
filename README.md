@@ -99,6 +99,17 @@ compile 'com.squareup.okio:okio:1.11.0'
 ```
 
 ### 2.下载文件
+
+下载时会生成临时文件，命名规则：  
+
+`destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis() + "_" + index`  
+
+所以，可以简单判断文件是否已下载：  
+
+`if (destFile.exists())`  
+
+更详细的判断方式，请在`isDiff()`中重写。
+
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
                 .tag(this)
