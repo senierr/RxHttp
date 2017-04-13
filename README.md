@@ -13,7 +13,7 @@ maven { url 'https://jitpack.io' }
 #### 2.添加依赖
 
 ```java
-compile 'com.github.senierr:sehttp:1.0.0'
+compile 'com.github.senierr:sehttp:1.0.1'
 
 或者
 
