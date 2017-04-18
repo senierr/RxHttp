@@ -28,8 +28,8 @@ public class FileConverter implements Converter<File> {
     @Override
     public File convert(Response response) throws Exception {
         int responseCode = response.code();
-        if (responseCode != 200) {
-            throw new Exception("ResponseCode is not 200!");
+        if (!response.isSuccessful()) {
+            throw new Exception("Response is not successful! responseCode: " + responseCode);
         }
 
         File destFileDir = new File(destFile.getParent() + File.separator);

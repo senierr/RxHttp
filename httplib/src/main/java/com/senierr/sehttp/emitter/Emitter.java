@@ -9,6 +9,7 @@ import java.net.SocketTimeoutException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Request;
 import okhttp3.Response;
 
 /**
@@ -38,18 +39,19 @@ public class Emitter<T> {
      */
     public void execute(BaseCallback<T> baseCallback) {
         this.callback = baseCallback;
+        final Request request = requestBuilder.build(callback);
+
         if (callback != null) {
             callback.onBefore();
         }
-        getNewCall().enqueue(new Callback() {
-
+        getNewCall(request).enqueue(new Callback() {
             int currentRetryCount = 0;
 
             @Override
             public void onFailure(Call call, final IOException e) {
-                if (e instanceof SocketTimeoutException && currentRetryCount < SeHttp.getInstance().getRetryCount()) {
+                if (!call.isCanceled() && currentRetryCount < SeHttp.getInstance().getRetryCount()) {
                     currentRetryCount++;
-                    getNewCall().enqueue(this);
+                    getNewCall(request).enqueue(this);
                 } else {
                     sendError(call, e);
                 }
@@ -75,7 +77,8 @@ public class Emitter<T> {
      * @return
      */
     public Response execute() throws IOException {
-        return getNewCall().execute();
+        Request request = requestBuilder.build(callback);
+        return getNewCall(request).execute();
     }
 
     /**
@@ -83,8 +86,8 @@ public class Emitter<T> {
      *
      * @return
      */
-    private Call getNewCall() {
-        return SeHttp.getInstance().getOkHttpClient().newCall(requestBuilder.build(callback));
+    private Call getNewCall(Request request) {
+        return SeHttp.getInstance().getOkHttpClient().newCall(request);
     }
 
     /**

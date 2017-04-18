@@ -11,23 +11,33 @@ import android.widget.TextView;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
+import com.senierr.sehttp.interceptor.HttpLogInterceptor;
+import com.senierr.sehttp.interceptor.RetryInterceptor;
 
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 import okhttp3.Cache;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
     private Button button;
 
-    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
+//    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
 //    private String urlStr = "http://192.168.2.155:8088/index";
-//    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
+//    private String urlStr = "http://www.da.com";
+    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
 
     private String path = Environment.getExternalStorageDirectory() + "/Download/AA/";
@@ -68,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 //                .addCommonHeaders()
                 .addCommonUrlParam("comKey", "comValue")    // 添加全局参数
 //                .addCommonUrlParams()
-                .retryCount(3);                              // 设置超时重连次数，默认不重连
+                .retryCount(3);                              // 设置请求失败重连次数，默认不重连（0）
 
         /**
          * todo:
@@ -77,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
          * cookie
          * HTTPS，证书
          */
-
     }
 
     @Override
@@ -134,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
 
-        SeHttp.get(Urls.URL_DOWNLOAD)
+        SeHttp.get(urlStr)
                 .tag(this)
                 .execute(new FileCallback(path + "SeHttp.txt") {
                     @Override
@@ -174,6 +183,4 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
 }

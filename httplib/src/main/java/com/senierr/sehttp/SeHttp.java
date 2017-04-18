@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
+import com.senierr.sehttp.interceptor.RetryInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
@@ -14,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
-import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -263,13 +263,10 @@ public class SeHttp {
      */
     public SeHttp retryCount(int retryCount) {
         this.retryCount = retryCount;
+        okHttpClientBuilder.addNetworkInterceptor(new RetryInterceptor(retryCount));
         return this;
     }
 
-    public SeHttp cache(Cache cache) {
-        okHttpClientBuilder.cache(cache);
-        return this;
-    }
 
 
 

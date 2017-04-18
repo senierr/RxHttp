@@ -12,8 +12,8 @@ public class StringConverter implements Converter<String> {
     @Override
     public String convert(Response response) throws Exception {
         int responseCode = response.code();
-        if (responseCode != 200) {
-            throw new Exception("ResponseCode is not 200!");
+        if (!response.isSuccessful()) {
+            throw new Exception("Response is not successful! responseCode: " + responseCode);
         }
         return response.body().string();
     }

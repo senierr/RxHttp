@@ -13,7 +13,7 @@ maven { url 'https://jitpack.io' }
 #### 2.添加依赖
 
 ```java
-compile 'com.github.senierr:sehttp:1.0.1'
+compile 'com.github.senierr:sehttp:1.0.2'
 
 或者
 
@@ -53,7 +53,7 @@ compile 'com.squareup.okio:okio:1.11.0'
 //                .addCommonHeaders()
                 .addCommonUrlParam("comKey", "comValue")    // 添加全局参数
 //                .addCommonUrlParams()
-                .retryCount(3);                             // 设置超时重连次数，默认不重连
+                .retryCount(3);                             // 设置请求失败重连次数，默认不重连（0）
 ```
 
 ### 1.基本请求
