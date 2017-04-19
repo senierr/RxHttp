@@ -13,8 +13,8 @@ public class CacheConfig {
 
     // 缓存路径
     private File cacheFile;
-    // 缓存有效时间
-    private long maxTime;
+    // 缓存最大长度
+    private long maxSize;
 
     public File getCacheFile() {
         return cacheFile;
@@ -24,11 +24,11 @@ public class CacheConfig {
         this.cacheFile = cacheFile;
     }
 
-    public long getMaxTime() {
-        return maxTime;
+    public long getMaxSize() {
+        return maxSize;
     }
 
-    public void setMaxTime(long maxTime) {
-        this.maxTime = maxTime;
+    public void setMaxSize(long maxSize) {
+        this.maxSize = maxSize;
     }
 }

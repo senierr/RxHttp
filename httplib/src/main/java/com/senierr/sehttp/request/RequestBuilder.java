@@ -1,6 +1,7 @@
 package com.senierr.sehttp.request;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.mode.FileMap;
 import com.senierr.sehttp.mode.HttpHeaders;
@@ -44,7 +45,9 @@ public class RequestBuilder {
     // 缓存key
     private String cacheKey;
     // 缓存模式
-    private int cacheMode;
+    private CacheMode cacheMode;
+    // 缓存失效时长
+    private long cacheTime;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
@@ -339,7 +342,7 @@ public class RequestBuilder {
      *
      * @return
      */
-    public int getCacheMode() {
+    public CacheMode getCacheMode() {
         return cacheMode;
     }
 
@@ -348,8 +351,28 @@ public class RequestBuilder {
      *
      * @param cacheMode
      */
-    public RequestBuilder cacheMode(int cacheMode) {
+    public RequestBuilder cacheMode(CacheMode cacheMode) {
         this.cacheMode = cacheMode;
+        return this;
+    }
+
+    /**
+     * 获取缓存时长
+     *
+     * @return
+     */
+    public long getCacheTime() {
+        return cacheTime;
+    }
+
+    /**
+     * 设置缓存时长
+     *
+     * @param cacheTime
+     * @return
+     */
+    public RequestBuilder cacheTime(long cacheTime) {
+        this.cacheTime = cacheTime;
         return this;
     }
 }

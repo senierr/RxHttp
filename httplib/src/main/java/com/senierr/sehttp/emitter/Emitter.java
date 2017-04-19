@@ -9,6 +9,7 @@ import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.EncryptUtils;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -50,6 +51,28 @@ public class Emitter<T> {
         if (callback != null) {
             callback.onBefore();
         }
+
+        // 缓存处理
+        if (requestBuilder.getCacheMode() == null) {
+            requestBuilder.cacheMode(CacheMode.NO_CACHE);
+        }
+        if (requestBuilder.getCacheMode() == CacheMode.CACHE_FAILED_REQUEST) {
+            // 先读取缓存，成功则使用缓存，失败请求网络
+            CacheEntity cacheEntity = readCache();
+            if (cacheEntity != null) {
+                sendSuccess(null, (T) cacheEntity.getCacheContent(), true);
+                return;
+            }
+        }
+        if (requestBuilder.getCacheMode() == CacheMode.CACHE_THEN_REQUEST) {
+            // 先读取缓存，无论成功与否，然后请求网络
+            CacheEntity cacheEntity = readCache();
+            if (cacheEntity != null) {
+                sendSuccess(null, (T) cacheEntity.getCacheContent(), true);
+            }
+        }
+
+        // 网络请求
         getNewCall(request).enqueue(new Callback() {
             int currentRetryCount = 0;
 
@@ -67,7 +90,7 @@ public class Emitter<T> {
             public void onResponse(Call call, final Response response) throws IOException {
                 if (callback != null) {
                     try {
-                        sendSuccess(call, callback.convert(response));
+                        sendSuccess(call, callback.convert(response), false);
                     } catch (Exception e) {
                         sendError(call, e);
                     }
@@ -101,7 +124,7 @@ public class Emitter<T> {
      *
      * @param t
      */
-    private void sendSuccess(final Call call, final T t) {
+    private void sendSuccess(final Call call, final T t, final boolean isCache) {
         if (callback == null) {
             return;
         }
@@ -109,22 +132,15 @@ public class Emitter<T> {
             @Override
             public void run() {
                 try {
-                    callback.onSuccess(t);
+                    callback.onSuccess(t, false);
                     callback.onAfter();
                     // 判断是否缓存
                     if (requestBuilder.getCacheMode() != CacheMode.NO_CACHE
                             && t.getClass() == String.class
+                            && !isCache
+                            && ((String) t).length() <= SeHttp.getInstance().getCacheConfig().getMaxSize()
                             && !TextUtils.isEmpty(requestBuilder.getCacheKey())) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                CacheEntity cacheEntity = new CacheEntity();
-                                cacheEntity.setKey(requestBuilder.getCacheKey());
-                                cacheEntity.setCacheContent((String) t);
-                                cacheEntity.setUpdateDate(System.currentTimeMillis());
-                                Cache.writeCache(cacheEntity);
-                            }
-                        }).start();
+                        writeCache((String) t);
                     }
                 } catch (Exception e) {
                     sendError(call, e);
@@ -138,27 +154,68 @@ public class Emitter<T> {
      *
      * @param e
      */
-    private void sendError(Call call, final Exception e) {
+    private void sendError(final Call call, final Exception e) {
         if (callback == null) {
             return;
         }
 
-        // 检查缓存
-        String cacheKey = requestBuilder.getCacheKey();
-        if (!TextUtils.isEmpty(cacheKey)) {
-
-
-
-        }
-
-        if (!call.isCanceled()) {
+        if (call == null || !call.isCanceled()) {
             SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                 @Override
                 public void run() {
+                    if (requestBuilder.getCacheMode() == CacheMode.REQUEST_FAILED_CACHE) {
+
+                    }
+                    // 检查缓存
+                    String cacheKey = requestBuilder.getCacheKey();
+                    if (!TextUtils.isEmpty(cacheKey)) {
+                        CacheEntity cacheEntity = Cache.readCache(cacheKey);
+                        if (cacheEntity != null) {
+                            sendSuccess(call, (T) cacheEntity.getCacheContent());
+                            return;
+                        }
+                    }
                     callback.onError(e);
                     callback.onAfter();
                 }
             });
         }
+    }
+
+    /**
+     * 获取缓存
+     *
+     * @return
+     */
+    private CacheEntity readCache() {
+        String cacheKey = requestBuilder.getCacheKey();
+        if (!TextUtils.isEmpty(cacheKey)) {
+            CacheEntity cacheEntity = Cache.readCache(cacheKey);
+            if (cacheEntity != null
+                    && System.currentTimeMillis() - cacheEntity.getUpdateDate()
+                    <= (requestBuilder.getCacheTime() <= 0
+                    ? 1000 * 3600 * 24 : requestBuilder.getCacheTime())) {
+                return cacheEntity;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 写入缓存
+     *
+     * @param responseStr
+     */
+    private void writeCache(final String responseStr) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CacheEntity cacheEntity = new CacheEntity();
+                cacheEntity.setKey(requestBuilder.getCacheKey());
+                cacheEntity.setCacheContent(responseStr);
+                cacheEntity.setUpdateDate(System.currentTimeMillis());
+                Cache.writeCache(cacheEntity);
+            }
+        }).start();
     }
 }

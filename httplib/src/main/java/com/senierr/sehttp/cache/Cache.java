@@ -3,6 +3,7 @@ package com.senierr.sehttp.cache;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.util.EncryptUtils;
 import com.senierr.sehttp.util.FileUtil;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -48,8 +49,7 @@ public class Cache {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new FileWriter(cacheFile, true));
-            bw.write(new String(EncryptUtils.encryptAES(cacheEntity.toJson().getBytes(),
-                    EncryptUtils.encryptMD5ToString(cacheEntity.getKey()).getBytes())));
+            bw.write(cacheEntity.toJson());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -78,7 +78,7 @@ public class Cache {
             return null;
         }
 
-        File cacheFile = new File(cacheConfig.getCacheFile(), key);
+        File cacheFile = new File(cacheConfig.getCacheFile(), EncryptUtils.encryptMD5ToString(key));
         if (!cacheFile.exists()) {
             return null;
         }
@@ -91,9 +91,7 @@ public class Cache {
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-            CacheEntity cacheEntity = CacheEntity.parseJson(
-                    new String(EncryptUtils.decryptAES(sb.toString().getBytes(), EncryptUtils.encryptMD5ToString(key).getBytes())));
-            return cacheEntity;
+            return CacheEntity.parseJson(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
             return null;

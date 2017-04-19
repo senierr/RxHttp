@@ -16,7 +16,7 @@ public abstract class BaseCallback<T> implements Converter<T> {
 
     public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
 
-    public abstract void onSuccess(T t) throws Exception;
+    public abstract void onSuccess(T t, boolean isCache) throws Exception;
 
     public void onError(Exception e) {}
 

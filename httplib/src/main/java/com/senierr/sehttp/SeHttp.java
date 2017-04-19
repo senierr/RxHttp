@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
-import com.senierr.sehttp.interceptor.RetryInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.FileUtil;
 import com.senierr.sehttp.util.HttpUtil;
@@ -37,7 +36,7 @@ public class SeHttp {
 
     private static volatile SeHttp seHttp;
     // 应用进程
-    private Application application;
+    private static Application application;
     // 主线程调度器
     private Handler mainScheduler;
     // 网络请求对象
@@ -64,16 +63,17 @@ public class SeHttp {
         cacheConfig.setCacheFile(
                 FileUtil.getCacheDirectory(
                         application.getApplicationContext(), null));
-        cacheConfig.setMaxTime(3600 * 24);
+        cacheConfig.setMaxSize(1024 * 1024);
     }
 
     /**
      * 初始化，必须调用
      *
-     * @param application
+     * @param app
      */
-    public void init(Application application) {
-        this.application = application;
+    public static SeHttp init(Application app) {
+        application = app;
+        return getInstance();
     }
 
     public static SeHttp getInstance() {
@@ -302,7 +302,6 @@ public class SeHttp {
      */
     public SeHttp retryCount(int retryCount) {
         this.retryCount = retryCount;
-        okHttpClientBuilder.addNetworkInterceptor(new RetryInterceptor(retryCount));
         return this;
     }
 
