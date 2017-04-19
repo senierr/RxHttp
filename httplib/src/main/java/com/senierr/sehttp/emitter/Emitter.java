@@ -1,8 +1,14 @@
 package com.senierr.sehttp.emitter;
 
+import android.text.TextUtils;
+
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.Cache;
+import com.senierr.sehttp.cache.CacheEntity;
+import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.util.EncryptUtils;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -105,6 +111,21 @@ public class Emitter<T> {
                 try {
                     callback.onSuccess(t);
                     callback.onAfter();
+                    // 判断是否缓存
+                    if (requestBuilder.getCacheMode() != CacheMode.NO_CACHE
+                            && t.getClass() == String.class
+                            && !TextUtils.isEmpty(requestBuilder.getCacheKey())) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                CacheEntity cacheEntity = new CacheEntity();
+                                cacheEntity.setKey(requestBuilder.getCacheKey());
+                                cacheEntity.setCacheContent((String) t);
+                                cacheEntity.setUpdateDate(System.currentTimeMillis());
+                                Cache.writeCache(cacheEntity);
+                            }
+                        }).start();
+                    }
                 } catch (Exception e) {
                     sendError(call, e);
                 }
@@ -113,7 +134,7 @@ public class Emitter<T> {
     }
 
     /**
-     * 执行错误回调
+     * 执行失败回调
      *
      * @param e
      */
@@ -121,6 +142,15 @@ public class Emitter<T> {
         if (callback == null) {
             return;
         }
+
+        // 检查缓存
+        String cacheKey = requestBuilder.getCacheKey();
+        if (!TextUtils.isEmpty(cacheKey)) {
+
+
+
+        }
+
         if (!call.isCanceled()) {
             SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                 @Override

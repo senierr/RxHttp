@@ -41,6 +41,10 @@ public class RequestBuilder {
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
     private HttpRequestBody httpRequestBody;
+    // 缓存key
+    private String cacheKey;
+    // 缓存模式
+    private int cacheMode;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
@@ -310,5 +314,42 @@ public class RequestBuilder {
         return this;
     }
 
+    /**
+     * 获取缓存key
+     *
+     * @return
+     */
+    public String getCacheKey() {
+        return cacheKey;
+    }
 
+    /**
+     * 设置缓存key
+     *
+     * @param cacheKey
+     * @return
+     */
+    public RequestBuilder cacheKey(String cacheKey) {
+        this.cacheKey = cacheKey;
+        return this;
+    }
+
+    /**
+     * 获取缓存类型
+     *
+     * @return
+     */
+    public int getCacheMode() {
+        return cacheMode;
+    }
+
+    /**
+     * 设置缓存类型
+     *
+     * @param cacheMode
+     */
+    public RequestBuilder cacheMode(int cacheMode) {
+        this.cacheMode = cacheMode;
+        return this;
+    }
 }

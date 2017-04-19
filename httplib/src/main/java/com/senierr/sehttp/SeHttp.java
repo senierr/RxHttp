@@ -1,12 +1,15 @@
 package com.senierr.sehttp;
 
+import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.interceptor.RetryInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.util.FileUtil;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
 
@@ -33,6 +36,8 @@ public class SeHttp {
     public static final int REFRESH_MIN_INTERVAL = 100;
 
     private static volatile SeHttp seHttp;
+    // 应用进程
+    private Application application;
     // 主线程调度器
     private Handler mainScheduler;
     // 网络请求对象
@@ -45,6 +50,8 @@ public class SeHttp {
     private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
     private int retryCount;
+    // 缓存配置
+    private CacheConfig cacheConfig;
 
     private SeHttp() {
         okHttpClientBuilder = new OkHttpClient.Builder();
@@ -53,6 +60,20 @@ public class SeHttp {
         okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.retryOnConnectionFailure(false);
         mainScheduler = new Handler(Looper.getMainLooper());
+        cacheConfig = new CacheConfig();
+        cacheConfig.setCacheFile(
+                FileUtil.getCacheDirectory(
+                        application.getApplicationContext(), null));
+        cacheConfig.setMaxTime(3600 * 24);
+    }
+
+    /**
+     * 初始化，必须调用
+     *
+     * @param application
+     */
+    public void init(Application application) {
+        this.application = application;
     }
 
     public static SeHttp getInstance() {
@@ -64,6 +85,15 @@ public class SeHttp {
             }
         }
         return seHttp;
+    }
+
+    /**
+     * 获取当前进程
+     *
+     * @return
+     */
+    public Application getApplication() {
+        return application;
     }
 
     /**
@@ -113,6 +143,15 @@ public class SeHttp {
      */
     public int getRetryCount() {
         return retryCount;
+    }
+
+    /**
+     * 获取
+     *
+     * @return
+     */
+    public CacheConfig getCacheConfig() {
+        return cacheConfig;
     }
 
     /**
@@ -267,7 +306,16 @@ public class SeHttp {
         return this;
     }
 
-
+    /**
+     * 设置缓存配置
+     *
+     * @param cacheConfig
+     * @return
+     */
+    public SeHttp cacheConfig(CacheConfig cacheConfig) {
+        this.cacheConfig = cacheConfig;
+        return this;
+    }
 
 
 
