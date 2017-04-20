@@ -13,7 +13,7 @@ public class CacheConfig {
 
     // 缓存路径
     private File cacheFile;
-    // 缓存最大长度
+    // 单个缓存最大长度
     private long maxSize;
 
     public File getCacheFile() {

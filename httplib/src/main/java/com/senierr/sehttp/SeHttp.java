@@ -63,7 +63,7 @@ public class SeHttp {
         cacheConfig.setCacheFile(
                 FileUtil.getCacheDirectory(
                         application.getApplicationContext(), null));
-        cacheConfig.setMaxSize(1024 * 1024);
+        cacheConfig.setMaxSize(1024 * 10);
     }
 
     /**

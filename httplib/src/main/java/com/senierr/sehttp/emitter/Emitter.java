@@ -82,6 +82,14 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
+                    if (requestBuilder.getCacheMode() == CacheMode.REQUEST_FAILED_CACHE) {
+                        // 先请求网络，成功则使用网络，失败读取缓存
+                        CacheEntity cacheEntity = readCache();
+                        if (cacheEntity != null) {
+                            sendSuccess(null, (T) cacheEntity.getCacheContent(), true);
+                            return;
+                        }
+                    }
                     sendError(call, e);
                 }
             }
@@ -132,7 +140,7 @@ public class Emitter<T> {
             @Override
             public void run() {
                 try {
-                    callback.onSuccess(t, false);
+                    callback.onSuccess(t, isCache);
                     callback.onAfter();
                     // 判断是否缓存
                     if (requestBuilder.getCacheMode() != CacheMode.NO_CACHE
@@ -158,23 +166,10 @@ public class Emitter<T> {
         if (callback == null) {
             return;
         }
-
         if (call == null || !call.isCanceled()) {
             SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                 @Override
                 public void run() {
-                    if (requestBuilder.getCacheMode() == CacheMode.REQUEST_FAILED_CACHE) {
-
-                    }
-                    // 检查缓存
-                    String cacheKey = requestBuilder.getCacheKey();
-                    if (!TextUtils.isEmpty(cacheKey)) {
-                        CacheEntity cacheEntity = Cache.readCache(cacheKey);
-                        if (cacheEntity != null) {
-                            sendSuccess(call, (T) cacheEntity.getCacheContent());
-                            return;
-                        }
-                    }
                     callback.onError(e);
                     callback.onAfter();
                 }

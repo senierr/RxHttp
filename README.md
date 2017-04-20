@@ -13,7 +13,7 @@ maven { url 'https://jitpack.io' }
 #### 2.添加依赖
 
 ```java
-compile 'com.github.senierr:sehttp:1.0.2'
+compile 'com.github.senierr:sehttp:1.1.0'
 
 或者
 
@@ -39,51 +39,59 @@ compile 'com.squareup.okio:okio:1.11.0'
 * 根据Tag取消请求
 * 自定义Callback
 
-## 全局配置
+## 全局配置/初始化
+
+初始化必须执行
+
 ```java
-        SeHttp.getInstance()
-                .debug("SeHttp")                            // 开启调试
+        SeHttp.init(getApplication())
+//                .debug("SeHttp")                              // 开启调试
 //                .debug(tag, isLogException)
-                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)     // 设置超时，默认30秒
-                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
-                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .addInterceptor()                         // 添加全局拦截器
-//                .hostnameVerifier()                       // 设置域名匹配规则
-                .addCommonHeader("comHeader", "comValue")   // 添加全局头
+//                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
+//                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
+//                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
+//                .addInterceptor()                             // 添加全局拦截器
+//                .hostnameVerifier()                           // 设置域名匹配规则
+//                .addCommonHeader("comHeader", "comValue")     // 添加全局头
 //                .addCommonHeaders()
-                .addCommonUrlParam("comKey", "comValue")    // 添加全局参数
+//                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
 //                .addCommonUrlParams()
-                .retryCount(3);                             // 设置请求失败重连次数，默认不重连（0）
+//                .cacheConfig()                                // 设置缓存参数
+                .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
 ```
 
 ### 1.基本请求
+
 ```java
-        SeHttp.get(urlStr)                           // 请求方式及URL
-//                .addUrlParam("key", "value")          // 添加单个URL参数
-//                .addUrlParams()                       // 添加多个URL参数
-//                .addHeader("header", "value")         // 添加单个请求头
-//                .addHeaders()                         // 添加多个请求头
-//                .requestBody4Text()                   // 设置文本格式请求体
-//                .requestBody4JSon(jsonObject.toString())                   // 设置JSON格式请求体
-//                .requestBody4Xml()                    // 设置XML格式请求体
-//                .requestBody4Byte()                   // 设置字节流格式请求提
-//                .requestBody()                        // 设置自定义请求体
-//                .addRequestParam("key", "param")      // 添加单个请求体键值对（字符串）
-//                .addRequestParam("key", new File())   // 添加单个请求体键值对（文件）
-//                .addRequestStringParams()             // 添加多个请求体键值对（字符串）
-//                .addRequestFileParams()               // 添加多个请求体键值对（文件）
-                .tag(this)                            // 设置标签，用于取消请求
-//                .build()                              // 生成OkHttp请求
-//                .execute()                            // 同步请求
-                .execute(new StringCallback() {         // 异步请求
+        SeHttp.get(urlStr)                                      // 请求方式及URL
+                .tag(this)                                      // 设置标签，用于取消请求
+//                .addUrlParam("key", "value")                  // 添加单个URL参数
+//                .addUrlParams()                               // 添加多个URL参数
+//                .addHeader("header", "value")                 // 添加单个请求头
+//                .addHeaders()                                 // 添加多个请求头
+//                .requestBody4Text()                           // 设置文本格式请求体
+//                .requestBody4JSon(jsonObject.toString())      // 设置JSON格式请求体
+//                .requestBody4Xml()                            // 设置XML格式请求体
+//                .requestBody4Byte()                           // 设置字节流格式请求提
+//                .requestBody()                                // 设置自定义请求体
+//                .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
+//                .addRequestParam("key", new File())           // 添加单个请求体键值对（文件）
+//                .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
+//                .addRequestFileParams()                       // 添加多个请求体键值对（文件）
+//                .build()                                      // 生成OkHttp请求
+//                .cacheKey(urlStr)                             // 设置缓存key
+//                .cacheMode(CacheMode.CACHE_FAILED_REQUEST)    // 设置缓存模式，默认NO_CACHE
+//                .cacheTime(1000 * 10)                         // 设置缓存有效时长
+//                .execute()                                    // 同步请求
+                .execute(new StringCallback() {                 // 异步请求
                     @Override
                     public void onBefore() {
                         logSe("onBefore");
                     }
 
                     @Override
-                    public void onSuccess(String s) throws Exception {
-                        logSe("onSuccess: " + s);
+                    public void onSuccess(String s, boolean isCache) throws Exception {
+                        logSe(isCache+ ", onSuccess: " + s);
                     }
 
                     @Override
@@ -145,6 +153,52 @@ SeHttp.get(Urls.URL_DOWNLOAD)
                         logSe("onAfter");
                     }
                 });
+```
+
+## 缓存管理
+
+当前缓存只支持`String`类型返回数据的缓存，其他格式暂不支持。
+
+```java
+CacheConfig cacheConfig = new CacheConfig();  // 缓存配置
+cacheConfig.setCacheFile();                   // 设置缓存路径，默认在应用缓存目录
+cacheConfig.setMaxSize();                     // 设置单个缓存大小限制，默认10KB
+```
+
+可以在以下配置：
+
+>SeHttp.init(getApplication()).cacheConfig(cacheConfig);
+或
+>SeHttp.getInstance().cacheConfig(cacheConfig);
+
+缓存类型`CacheMode`，如下：
+
+```java
+
+NO_CACHE,               // 不缓存
+
+REQUEST_FAILED_CACHE,   // 先请求网络，成功则使用网络，失败读取缓存
+
+CACHE_FAILED_REQUEST,   // 先读取缓存，成功则使用缓存，失败请求网络
+
+CACHE_THEN_REQUEST      // 先读取缓存，无论成功与否，然后请求网络
+```
+
+使用方式如下：
+
+```java
+SeHttp.get(urlStr)
+        .cacheKey(key)
+        .cacheMode(CacheMode.NO_CACHE)
+        .cacheTime(1000 * 60);
+```
+回调：
+
+```java
+@Override
+public void onSuccess(String s, boolean isCache) throws Exception {
+    // isCache: 是否是缓存数据
+}
 ```
 
 ## 取消请求

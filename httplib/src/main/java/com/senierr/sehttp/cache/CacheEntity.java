@@ -1,7 +1,5 @@
 package com.senierr.sehttp.cache;
 
-import com.senierr.sehttp.util.EncryptUtils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
