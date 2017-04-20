@@ -1,6 +1,7 @@
 package com.senierr.sehttp.request;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.mode.FileMap;
@@ -362,7 +363,7 @@ public class RequestBuilder {
      * @return
      */
     public long getCacheTime() {
-        return cacheTime;
+        return cacheTime <= 0 ? CacheConfig.DEFAULT_CACHE_TIME : cacheTime;
     }
 
     /**

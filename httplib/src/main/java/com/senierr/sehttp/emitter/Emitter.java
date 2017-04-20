@@ -16,6 +16,7 @@ import java.net.SocketTimeoutException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -188,8 +189,7 @@ public class Emitter<T> {
             CacheEntity cacheEntity = Cache.readCache(cacheKey);
             if (cacheEntity != null
                     && System.currentTimeMillis() - cacheEntity.getUpdateDate()
-                    <= (requestBuilder.getCacheTime() <= 0
-                    ? 1000 * 3600 * 24 : requestBuilder.getCacheTime())) {
+                    <= requestBuilder.getCacheTime()) {
                 return cacheEntity;
             }
         }

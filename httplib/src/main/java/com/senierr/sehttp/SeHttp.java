@@ -59,11 +59,6 @@ public class SeHttp {
         okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.retryOnConnectionFailure(false);
         mainScheduler = new Handler(Looper.getMainLooper());
-        cacheConfig = new CacheConfig();
-        cacheConfig.setCacheFile(
-                FileUtil.getCacheDirectory(
-                        application.getApplicationContext(), null));
-        cacheConfig.setMaxSize(1024 * 10);
     }
 
     /**
@@ -151,6 +146,9 @@ public class SeHttp {
      * @return
      */
     public CacheConfig getCacheConfig() {
+        if (cacheConfig == null) {
+            cacheConfig = new CacheConfig();
+        }
         return cacheConfig;
     }
 

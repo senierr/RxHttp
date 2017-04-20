@@ -93,7 +93,6 @@ public class Cache {
             }
             return CacheEntity.parseJson(sb.toString());
         } catch (IOException e) {
-            e.printStackTrace();
             return null;
         } finally {
             if (reader != null) {
