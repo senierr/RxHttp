@@ -229,6 +229,7 @@ public class RequestBuilder {
             fileParams = new FileMap();
         }
         fileParams.add(key, file);
+        httpRequestBody.setFileParams(fileParams);
         return this;
     }
 
@@ -256,6 +257,7 @@ public class RequestBuilder {
             stringParams = new LinkedHashMap<>();
         }
         stringParams.put(key, value);
+        httpRequestBody.setStringParams(stringParams);
         return this;
     }
 
