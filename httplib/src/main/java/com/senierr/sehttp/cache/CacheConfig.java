@@ -14,39 +14,48 @@ import java.io.File;
 
 public class CacheConfig {
 
-    public static final long DEFAULT_MAX_SIZE = 1024 * 1024;
+    public static final long DEFAULT_MAX_SIZE = 1024 * 1024 * 10;
     public static final long DEFAULT_CACHE_TIME = 1000 * 3600 * 24;
 
     // 缓存路径
     private File cacheFile;
-    // 单个缓存最大长度
+    // 缓存大小
     private long maxSize;
+    // 缓存有效时长
+    private long cacheTime;
 
-    public CacheConfig() {
+    private CacheConfig() {
     }
 
-    public CacheConfig(File cacheFile, long maxSize) {
-        this.cacheFile = cacheFile;
-        this.maxSize = maxSize;
+    public static CacheConfig build() {
+        return new CacheConfig();
     }
 
     public File getCacheFile() {
-        if (cacheFile == null) {
-            cacheFile = FileUtil.getCacheDirectory(
-                    SeHttp.getInstance().getApplication().getApplicationContext(), null);
-        }
-        return cacheFile;
+        return cacheFile == null ? FileUtil.getCacheDirectory(
+                SeHttp.getInstance().getApplication().getApplicationContext(), null) : cacheFile;
     }
 
-    public void setCacheFile(File cacheFile) {
+    public CacheConfig cacheFile(File cacheFile) {
         this.cacheFile = cacheFile;
+        return this;
     }
 
     public long getMaxSize() {
         return maxSize == 0 ? DEFAULT_MAX_SIZE : maxSize;
     }
 
-    public void setMaxSize(long maxSize) {
+    public CacheConfig maxSize(long maxSize) {
         this.maxSize = maxSize;
+        return this;
+    }
+
+    public long getCacheTime() {
+        return cacheTime == 0 ? DEFAULT_CACHE_TIME : cacheTime;
+    }
+
+    public CacheConfig cacheTime(long cacheTime) {
+        this.cacheTime = cacheTime;
+        return this;
     }
 }

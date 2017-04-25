@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.senierr.sehttp.cache.CacheConfig;
+import com.senierr.sehttp.interceptor.CacheInterceptor;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.FileUtil;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -141,13 +143,13 @@ public class SeHttp {
     }
 
     /**
-     * 获取
+     * 获取全局缓存配置
      *
      * @return
      */
     public CacheConfig getCacheConfig() {
         if (cacheConfig == null) {
-            cacheConfig = new CacheConfig();
+            cacheConfig = CacheConfig.build();
         }
         return cacheConfig;
     }
@@ -313,7 +315,6 @@ public class SeHttp {
         this.cacheConfig = cacheConfig;
         return this;
     }
-
 
 
 

@@ -3,6 +3,8 @@ package com.senierr.sehttp.cache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * 缓存实体
  *
@@ -10,10 +12,12 @@ import org.json.JSONObject;
  * @date 2017/4/19
  */
 
-public class CacheEntity {
+public class CacheEntity<T> implements Serializable {
+
+    private static final long serialVersionUID = -4337711009801627866L;
 
     private String key;
-    private String cacheContent;
+    private T cacheContent;
     private long updateDate;
 
     public String getKey() {
@@ -24,11 +28,11 @@ public class CacheEntity {
         this.key = key;
     }
 
-    public String getCacheContent() {
+    public T getCacheContent() {
         return cacheContent;
     }
 
-    public void setCacheContent(String cacheContent) {
+    public void setCacheContent(T cacheContent) {
         this.cacheContent = cacheContent;
     }
 

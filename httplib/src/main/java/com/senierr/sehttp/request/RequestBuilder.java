@@ -1,5 +1,7 @@
 package com.senierr.sehttp.request;
 
+import android.text.TextUtils;
+
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheMode;
@@ -326,7 +328,7 @@ public class RequestBuilder {
      * @return
      */
     public String getCacheKey() {
-        return cacheKey;
+        return TextUtils.isEmpty(cacheKey) ? url : cacheKey;
     }
 
     /**
@@ -346,7 +348,7 @@ public class RequestBuilder {
      * @return
      */
     public CacheMode getCacheMode() {
-        return cacheMode;
+        return cacheMode == null ? CacheMode.NO_CACHE : cacheMode;
     }
 
     /**
@@ -365,7 +367,7 @@ public class RequestBuilder {
      * @return
      */
     public long getCacheTime() {
-        return cacheTime <= 0 ? CacheConfig.DEFAULT_CACHE_TIME : cacheTime;
+        return cacheTime == 0 ? SeHttp.getInstance().getCacheConfig().getCacheTime() : cacheTime;
     }
 
     /**
