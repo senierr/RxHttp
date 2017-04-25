@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 //                .addCommonHeaders()
 //                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
 //                .addCommonUrlParams()
-                .cacheConfig(cacheConfig)                                // 设置缓存参数
+//                .cacheConfig(cacheConfig)                     // 设置缓存参数
                 .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
 
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         params.put("key4", "其实你怎么高兴怎么写都行");
         final JSONObject jsonObject = new JSONObject(params);
 
-        SeHttp.post(urlStr)                                      // 请求方式及URL
+        SeHttp.get(urlStr)                                      // 请求方式及URL
                 .tag(this)                                      // 设置标签，用于取消请求
 //                .addUrlParam("key", "value")                  // 添加单个URL参数
 //                .addUrlParams()                               // 添加多个URL参数
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 //                .requestBody4Xml()                            // 设置XML格式请求体
 //                .requestBody4Byte()                           // 设置字节流格式请求提
 //                .requestBody()                                // 设置自定义请求体
-                .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
+//                .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
 //                .addRequestParam("key", new File())           // 添加单个请求体键值对（文件）
 //                .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
 //                .addRequestFileParams()                       // 添加多个请求体键值对（文件）

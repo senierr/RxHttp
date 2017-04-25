@@ -6,10 +6,8 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.senierr.sehttp.cache.CacheConfig;
-import com.senierr.sehttp.interceptor.CacheInterceptor;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
-import com.senierr.sehttp.util.FileUtil;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
 
@@ -18,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
-import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;

@@ -59,7 +59,7 @@ compile 'com.squareup.okio:okio:1.11.0'
 //                .addCommonHeaders()
 //                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
 //                .addCommonUrlParams()
-//                .cacheConfig()                                // 设置缓存参数
+//                .cacheConfig(cacheConfig)                     // 设置缓存参数
                 .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
 ```
 
@@ -160,18 +160,21 @@ SeHttp.get(Urls.URL_DOWNLOAD)
 
 ## 缓存管理
 
-当前缓存只支持`String`类型返回数据的缓存，其他格式暂不支持。
+缓存的泛型对象T必须实现Serializable接口，比如String类型；
 
 ```java
-CacheConfig cacheConfig = new CacheConfig();  // 缓存配置
-cacheConfig.setCacheFile();                   // 设置缓存路径，默认在应用缓存目录
-cacheConfig.setMaxSize();                     // 设置单个缓存大小限制，默认10KB
+CacheConfig cacheConfig = CacheConfig.build()
+                .cacheFile(FileUtil.getCacheDirectory(this, null))          // 设置缓存路径，默认在应用缓存目录
+                .cacheTime(1000 * 3600 * 24 * 7)                            // 设置缓存有效时长
+                .maxSize(1024 * 1024 * 10);                                 // 设置缓存大小
 ```
 
 可以在以下配置：
 
->SeHttp.init(getApplication()).cacheConfig(cacheConfig);  
-或者  
+>SeHttp.init(getApplication()).cacheConfig(cacheConfig);
+>
+>或
+>
 >SeHttp.getInstance().cacheConfig(cacheConfig);
 
 缓存类型`CacheMode`，如下：
