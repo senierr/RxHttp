@@ -42,15 +42,6 @@ compile 'com.github.senierr:sehttp:+'        //版本号使用 + 可以自动引
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
-
-## 注意事项
-`SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖:
-
-```java
-compile 'com.squareup.okhttp3:okhttp:3.6.0'
-compile 'com.squareup.okio:okio:1.11.0'
-```
-
 ## 全局配置/初始化
 
 **初始化必须执行, 初始化必须执行, 初始化必须执行**
@@ -189,23 +180,23 @@ SeHttp.getInstance().cacheConfig(cacheConfig);
 
 ### 缓存类型`CacheMode`及对应的回调生命周期
 
-* NO_CACHE,               // 不缓存
-```
-onBefore() -> onSuccess(t, false)/onError() -> onAfter()
-```
-* REQUEST_FAILED_CACHE,   // 先请求网络，成功则使用网络，失败读取缓存
-```
-onBefore() -> onSuccess(t, false/true)/onError() -> onAfter()
-```
-* CACHE_FAILED_REQUEST,   // 先读取缓存，成功则使用缓存，失败请求网络
-```
-onBefore() -> onSuccess(t, true/false)/onError() -> onAfter()
-```
-* CACHE_THEN_REQUEST      // 先读取缓存，无论成功与否，然后请求网络
-```
-有缓存：onBefore() -> onSuccess(t, true) -> onAfter() -> onSuccess(t, false)/onError() -> onAfter()
-没缓存：onBefore() -> onSuccess(t, false)/onError() -> onAfter()
-```
+**NO_CACHE // 无缓存模式**
+
+>onBefore() -> onSuccess(t, false)/onError() -> onAfter()
+
+**REQUEST_FAILED_CACHE // 先请求网络，成功则使用网络，失败读取缓存**
+
+>onBefore() -> onSuccess(t, false/true)/onError() -> onAfter()
+
+**CACHE_FAILED_REQUEST // 先读取缓存，成功则使用缓存，失败请求网络**
+
+>onBefore() -> onSuccess(t, true/false)/onError() -> onAfter()
+
+**CACHE_THEN_REQUEST // 先读取缓存，无论成功与否，然后请求网络**
+
+>有缓存：onBefore() -> onSuccess(t, true) -> onAfter() -> onSuccess(t, false)/onError() -> onAfter()  
+>没缓存：onBefore() -> onSuccess(t, false)/onError() -> onAfter()
+
 ### 使用方式
 
 ```java
@@ -224,11 +215,21 @@ public void onSuccess(String s, boolean isCache) throws Exception {
 ```
 
 ## 取消请求
+
 ```java
 // 取消对应tag请求
 SeHttp.getInstance().cancelTag(tag);
 // 取消所有请求
 SeHttp.getInstance().cancelAll();
+```
+
+## 注意事项
+
+`SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖:
+
+```java
+compile 'com.squareup.okhttp3:okhttp:3.6.0'
+compile 'com.squareup.okio:okio:1.11.0'
 ```
 
 ## 混淆
