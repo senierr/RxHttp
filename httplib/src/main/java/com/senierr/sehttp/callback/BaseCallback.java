@@ -1,6 +1,7 @@
 package com.senierr.sehttp.callback;
 
 import com.senierr.sehttp.convert.Converter;
+import com.senierr.sehttp.request.RequestBuilder;
 
 /**
  * 请求回调基类
@@ -10,7 +11,7 @@ import com.senierr.sehttp.convert.Converter;
 
 public abstract class BaseCallback<T> implements Converter<T> {
 
-    public void onBefore() {}
+    public void onBefore(RequestBuilder requestBuilder) {}
 
     public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
 

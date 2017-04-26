@@ -387,7 +387,6 @@ public class DiskLruCacheHelper {
             DiskLruCache.Snapshot snapshot = mDiskLruCache.get(Utils.hashKeyForDisk(key));
             if (snapshot == null) //not find entry , or entry.readable = false
             {
-                Log.e(TAG, "not find entry , or entry.readable = false");
                 return null;
             }
             //write READ

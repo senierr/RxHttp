@@ -14,7 +14,9 @@ import com.senierr.sehttp.util.SeLogger;
 import com.senierr.sehttp.util.ThreadPoolUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -85,6 +87,106 @@ public class SeHttp {
             }
         }
         return seHttp;
+    }
+
+    /**
+     * get请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder get(String urlStr) {
+        return new RequestBuilder("GET", urlStr);
+    }
+
+    /**
+     * post请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder post(String urlStr) {
+        return new RequestBuilder("POST", urlStr);
+    }
+
+    /**
+     * head请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder head(String urlStr) {
+        return new RequestBuilder("HEAD", urlStr);
+    }
+
+    /**
+     * delete请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder delete(String urlStr) {
+        return new RequestBuilder("DELETE", urlStr);
+    }
+
+    /**
+     * put请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder put(String urlStr) {
+        return new RequestBuilder("PUT", urlStr);
+    }
+
+    /**
+     * patch请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder patch(String urlStr) {
+        return new RequestBuilder("PATCH", urlStr);
+    }
+
+    /**
+     * options请求
+     *
+     * @param urlStr
+     * @return
+     */
+    public static RequestBuilder options(String urlStr) {
+        return new RequestBuilder("OPTIONS", urlStr);
+    }
+
+    /**
+     * 根据tag取消请求
+     *
+     * @param tag
+     */
+    public void cancelTag(Object tag) {
+        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+    }
+
+    /**
+     * 取消所有请求
+     */
+    public void cancelAll() {
+        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
+            call.cancel();
+        }
+        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
+            call.cancel();
+        }
     }
 
     /**
@@ -365,105 +467,5 @@ public class SeHttp {
             }
         }
         return diskLruCacheHelper;
-    }
-
-    /**
-     * 根据tag取消请求
-     *
-     * @param tag
-     */
-    public void cancelTag(Object tag) {
-        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
-            if (tag.equals(call.request().tag())) {
-                call.cancel();
-            }
-        }
-        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
-            if (tag.equals(call.request().tag())) {
-                call.cancel();
-            }
-        }
-    }
-
-    /**
-     * 取消所有请求
-     */
-    public void cancelAll() {
-        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
-            call.cancel();
-        }
-        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
-            call.cancel();
-        }
-    }
-
-    /**
-     * get请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder get(String urlStr) {
-        return new RequestBuilder("GET", urlStr);
-    }
-
-    /**
-     * post请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder post(String urlStr) {
-        return new RequestBuilder("POST", urlStr);
-    }
-
-    /**
-     * head请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder head(String urlStr) {
-        return new RequestBuilder("HEAD", urlStr);
-    }
-
-    /**
-     * delete请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder delete(String urlStr) {
-        return new RequestBuilder("DELETE", urlStr);
-    }
-
-    /**
-     * put请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder put(String urlStr) {
-        return new RequestBuilder("PUT", urlStr);
-    }
-
-    /**
-     * patch请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder patch(String urlStr) {
-        return new RequestBuilder("PATCH", urlStr);
-    }
-
-    /**
-     * options请求
-     *
-     * @param urlStr
-     * @return
-     */
-    public static RequestBuilder options(String urlStr) {
-        return new RequestBuilder("OPTIONS", urlStr);
     }
 }

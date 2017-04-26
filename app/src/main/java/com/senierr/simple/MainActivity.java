@@ -1,6 +1,7 @@
 package com.senierr.simple;
 
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,7 @@ import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
+import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.FileUtil;
 
 import org.json.JSONObject;
@@ -20,6 +22,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import okhttp3.Cache;
 import okhttp3.Response;
@@ -32,15 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
 //    private String urlStr = "http://192.168.2.155:8088/index";
 //    private String urlStr = "http://www.da.com";
-//    private String urlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
-
+    private String downloadUrlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
     private String path = Environment.getExternalStorageDirectory() + "/Download/AA/";
-
-
-    private static final long cacheSize = 1024*1024*20;//缓存文件最大限制大小20M
-    private static String cachedirectory = Environment.getExternalStorageDirectory() + "/Download/AA/";  //设置缓存文件路径
-    private static Cache cache = new Cache(new File(cachedirectory), cacheSize);  //
 
     private void logSe(String logStr) {
         Log.e("SeH", logStr);
@@ -125,11 +124,12 @@ public class MainActivity extends AppCompatActivity {
 //                .build()                                      // 生成OkHttp请求
                 .cacheKey(urlStr)                             // 设置缓存key
                 .cacheMode(CacheMode.CACHE_THEN_REQUEST)      // 设置缓存模式，默认NO_CACHE
-                .cacheTime(1000 * 10)                         // 设置缓存有效时长
+                .cacheTime(1000 * 20)                         // 设置缓存有效时长
 //                .execute()                                    // 同步请求
                 .execute(new StringCallback() {                 // 异步请求
                     @Override
-                    public void onBefore() {
+                    public void onBefore(RequestBuilder requestBuilder) {
+                        requestBuilder.addHeader("onBefore", "requestBuilder");
                         logSe("onBefore");
                     }
 
@@ -155,41 +155,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void test2() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final Response response = SeHttp.get(urlStr)
-                            .tag(this)
-                            .execute();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                if (response == null) {
-                                    textView.setText("response == null");
-                                } else {
-                                    textView.setText(response.code() + ", response: " + response.body().string());
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                } catch (IOException e) {
-                    logSe(e.toString());
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-    private void test3() {
-        SeHttp.get(urlStr)
+        SeHttp.get(downloadUrlStr)
                 .tag(this)
                 .execute(new FileCallback(path + "SeHttp.txt") {
                     @Override
-                    public void onBefore() {
+                    public void onBefore(RequestBuilder requestBuilder) {
                         logSe("onBefore");
                     }
 
