@@ -261,6 +261,7 @@ public class DiskLruCacheHelper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getAsSerializable(String key) {
         T t = null;
         InputStream is = get(key);

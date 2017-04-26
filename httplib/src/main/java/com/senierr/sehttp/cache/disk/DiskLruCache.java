@@ -458,7 +458,7 @@ public final class DiskLruCache implements Closeable {
   }
 
   private synchronized Editor edit(String key, long expectedSequenceNumber) throws IOException {
-      checkNotClosed();
+    checkNotClosed();
     validateKey(key);
     Entry entry = lruEntries.get(key);
     if (expectedSequenceNumber != ANY_SEQUENCE_NUMBER && (entry == null

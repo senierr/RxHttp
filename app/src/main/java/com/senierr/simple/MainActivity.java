@@ -11,15 +11,18 @@ import android.widget.TextView;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheMode;
+import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
 import com.senierr.sehttp.util.FileUtil;
 
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 import okhttp3.Cache;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                seHttpTest();
+                test1();
             }
         });
 
@@ -69,20 +72,20 @@ public class MainActivity extends AppCompatActivity {
 //                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
 //                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
 //                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .addInterceptor()                             // 添加全局拦截器
+//                .addInterceptor()                             // 添加应用层拦截器
+//                .addNetworkInterceptor()                      // 添加网络层拦截器
 //                .hostnameVerifier()                           // 设置域名匹配规则
 //                .addCommonHeader("comHeader", "comValue")     // 添加全局头
 //                .addCommonHeaders()
 //                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
 //                .addCommonUrlParams()
-//                .cacheConfig(cacheConfig)                     // 设置缓存参数
+                .cacheConfig(cacheConfig)                       // 设置缓存参数
                 .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
 
 
         /**
          * todo:
          *
-         * 缓存
          * cookie
          * HTTPS，证书
          */
@@ -94,7 +97,9 @@ public class MainActivity extends AppCompatActivity {
         SeHttp.getInstance().cancelTag(this);
     }
 
-    private void seHttpTest() {
+    private void test1() {
+        long a = System.currentTimeMillis();
+
         HashMap<String, String> params = new HashMap<>();
         params.put("key1", "value1");
         params.put("key2", "这里是需要提交的json格式数据");
@@ -118,9 +123,9 @@ public class MainActivity extends AppCompatActivity {
 //                .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
 //                .addRequestFileParams()                       // 添加多个请求体键值对（文件）
 //                .build()                                      // 生成OkHttp请求
-//                .cacheKey(urlStr)                             // 设置缓存key
-//                .cacheMode(CacheMode.CACHE_THEN_REQUEST)      // 设置缓存模式，默认NO_CACHE
-//                .cacheTime(1000 * 10)                         // 设置缓存有效时长
+                .cacheKey(urlStr)                             // 设置缓存key
+                .cacheMode(CacheMode.CACHE_THEN_REQUEST)      // 设置缓存模式，默认NO_CACHE
+                .cacheTime(1000 * 10)                         // 设置缓存有效时长
 //                .execute()                                    // 同步请求
                 .execute(new StringCallback() {                 // 异步请求
                     @Override
@@ -131,6 +136,82 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String s, boolean isCache) throws Exception {
                         logSe(isCache+ ", onSuccess: " + s);
+                        textView.setText(isCache+ ", onSuccess: " + s);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        logSe("onError: " + e.toString());
+                        textView.setText("onError: " + e.toString());
+                    }
+
+                    @Override
+                    public void onAfter() {
+                        logSe("onAfter");
+                    }
+                });
+
+        logSe("time: " + (System.currentTimeMillis() - a));
+    }
+
+    private void test2() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Response response = SeHttp.get(urlStr)
+                            .tag(this)
+                            .execute();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (response == null) {
+                                    textView.setText("response == null");
+                                } else {
+                                    textView.setText(response.code() + ", response: " + response.body().string());
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (IOException e) {
+                    logSe(e.toString());
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void test3() {
+        SeHttp.get(urlStr)
+                .tag(this)
+                .execute(new FileCallback(path + "SeHttp.txt") {
+                    @Override
+                    public void onBefore() {
+                        logSe("onBefore");
+                    }
+
+                    @Override
+                    public boolean isDiff(Response response, File destFile) {
+                        // 判断destFile是否是需要下载的文件，默认返回false
+                        return super.isDiff(response, destFile);
+                    }
+
+                    @Override
+                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+                        logSe("downloadProgress: " + progress);
+                    }
+
+                    @Override
+                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
+                        logSe("uploadProgress: " + progress);
+                    }
+
+                    @Override
+                    public void onSuccess(File file, boolean isCache) throws Exception {
+                        logSe("onSuccess: " + file.getPath());
                     }
 
                     @Override
@@ -143,45 +224,5 @@ public class MainActivity extends AppCompatActivity {
                         logSe("onAfter");
                     }
                 });
-
-//        SeHttp.get(urlStr)
-//                .tag(this)
-//                .execute(new FileCallback(path + "SeHttp.txt") {
-//                    @Override
-//                    public void onBefore() {
-//                        logSe("onBefore");
-//                    }
-//
-//                    @Override
-//                    public boolean isDiff(Response response, File destFile) {
-//                        // 判断destFile是否是需要下载的文件，默认返回false
-//                        return super.isDiff(response, destFile);
-//                    }
-//
-//                    @Override
-//                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-//                        logSe("downloadProgress: " + progress);
-//                    }
-//
-//                    @Override
-//                    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-//                        logSe("uploadProgress: " + progress);
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(File file) throws Exception {
-//                        logSe("onSuccess: " + file.getPath());
-//                    }
-//
-//                    @Override
-//                    public void onError(Exception e) {
-//                        logSe("onError: " + e.toString());
-//                    }
-//
-//                    @Override
-//                    public void onAfter() {
-//                        logSe("onAfter");
-//                    }
-//                });
     }
 }

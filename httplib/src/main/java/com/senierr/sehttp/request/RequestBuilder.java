@@ -3,14 +3,13 @@ package com.senierr.sehttp.request;
 import android.text.TextUtils;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheMode;
+import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.mode.FileMap;
 import com.senierr.sehttp.mode.HttpHeaders;
-import com.senierr.sehttp.mode.HttpUrlParams;
 import com.senierr.sehttp.mode.HttpRequestBody;
-import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.mode.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
 
@@ -104,9 +103,8 @@ public class RequestBuilder {
      *
      * @param callback
      */
-    @SuppressWarnings("unchecked")
     public <T> void execute(BaseCallback<T> callback) {
-        new Emitter(this).execute(callback);
+        new Emitter<T>(this).execute(callback);
     }
 
     /**

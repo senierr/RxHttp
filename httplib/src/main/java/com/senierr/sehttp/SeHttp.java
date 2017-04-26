@@ -6,11 +6,14 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.senierr.sehttp.cache.CacheConfig;
+import com.senierr.sehttp.cache.disk.DiskLruCacheHelper;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
+import com.senierr.sehttp.util.ThreadPoolUtils;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +38,7 @@ public class SeHttp {
 
     private static volatile SeHttp seHttp;
     // 应用进程
-    private static Application application;
+    private Application application;
     // 主线程调度器
     private Handler mainScheduler;
     // 网络请求对象
@@ -50,6 +53,10 @@ public class SeHttp {
     private int retryCount;
     // 缓存配置
     private CacheConfig cacheConfig;
+    // 线程池
+    private ThreadPoolUtils threadPoolUtils;
+    // 磁盘缓存工具类
+    private DiskLruCacheHelper diskLruCacheHelper;
 
     private SeHttp() {
         okHttpClientBuilder = new OkHttpClient.Builder();
@@ -66,8 +73,7 @@ public class SeHttp {
      * @param app
      */
     public static SeHttp init(Application app) {
-        application = app;
-        return getInstance();
+        return getInstance().setApplication(app);
     }
 
     public static SeHttp getInstance() {
@@ -88,6 +94,11 @@ public class SeHttp {
      */
     public Application getApplication() {
         return application;
+    }
+
+    public SeHttp setApplication(Application application) {
+        this.application = application;
+        return this;
     }
 
     /**
@@ -292,6 +303,17 @@ public class SeHttp {
     }
 
     /**
+     * 添加网络拦截器
+     *
+     * @param interceptor
+     * @return
+     */
+    public SeHttp addNetworkInterceptor(Interceptor interceptor) {
+        okHttpClientBuilder.addNetworkInterceptor(interceptor);
+        return this;
+    }
+
+    /**
      * 设置超时重连次数
      *
      * @param retryCount
@@ -313,7 +335,37 @@ public class SeHttp {
         return this;
     }
 
+    /**
+     * 获取缓存池工具
+     *
+     * @return
+     */
+    public ThreadPoolUtils getThreadPoolUtils() {
+        if (threadPoolUtils == null) {
+            threadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 0);
+        }
+        return threadPoolUtils;
+    }
 
+    /**
+     * 获取磁盘缓存工具类
+     *
+     * @return
+     */
+    public DiskLruCacheHelper getDiskLruCacheHelper() {
+        if (diskLruCacheHelper == null) {
+            try {
+                diskLruCacheHelper = new DiskLruCacheHelper(
+                        application,
+                        cacheConfig.getCacheFile(),
+                        cacheConfig.getMaxSize());
+            } catch (IOException e) {
+                SeLogger.e("Init diskLruCacheHelper failure!");
+                diskLruCacheHelper = null;
+            }
+        }
+        return diskLruCacheHelper;
+    }
 
     /**
      * 根据tag取消请求

@@ -3,7 +3,6 @@ package com.senierr.sehttp.emitter;
 import android.text.TextUtils;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.CacheConfig;
 import com.senierr.sehttp.cache.CacheEntity;
 import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.cache.disk.DiskLruCacheHelper;
@@ -15,7 +14,6 @@ import com.senierr.sehttp.util.SeLogger;
 import java.io.IOException;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -30,25 +28,15 @@ import okhttp3.Response;
 
 public class Emitter<T> {
 
-    // 磁盘缓存工具类
-    private DiskLruCacheHelper diskLruCacheHelper;
     // 请求实体
     private RequestBuilder requestBuilder;
+    // 请求call
+    private Call call;
     // 回调
     private BaseCallback<T> callback;
 
     public Emitter(RequestBuilder requestBuilder) {
         this.requestBuilder = requestBuilder;
-        CacheConfig cacheConfig = SeHttp.getInstance().getCacheConfig();
-        try {
-            diskLruCacheHelper = new DiskLruCacheHelper(
-                    SeHttp.getInstance().getApplication(),
-                    cacheConfig.getCacheFile(),
-                    cacheConfig.getMaxSize());
-        } catch (IOException e) {
-            SeLogger.e("Init diskLruCacheHelper failure!");
-            diskLruCacheHelper = null;
-        }
     }
 
     /**
@@ -58,8 +46,7 @@ public class Emitter<T> {
      */
     public void execute(BaseCallback<T> baseCallback) {
         this.callback = baseCallback;
-        final Request request = requestBuilder.build(callback);
-
+        // Before回调
         if (callback != null) {
             SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                 @Override
@@ -68,55 +55,65 @@ public class Emitter<T> {
                 }
             });
         }
+        // 获取缓存池
+        SeHttp.getInstance().getThreadPoolUtils().execute(new Runnable() {
 
-        // 先读取缓存，成功则使用缓存，失败请求网络
-        if (requestBuilder.getCacheMode() == CacheMode.CACHE_FAILED_REQUEST) {
-            CacheEntity<T> cacheEntity = readCache();
-            if (cacheEntity != null) {
-                sendSuccess(null, cacheEntity.getCacheContent(), true);
-                return;
-            }
-        }
-        // 先读取缓存，无论成功与否，然后请求网络
-        if (requestBuilder.getCacheMode() == CacheMode.CACHE_THEN_REQUEST) {
-            CacheEntity<T>  cacheEntity = readCache();
-            if (cacheEntity != null) {
-                sendSuccess(null, cacheEntity.getCacheContent(), true);
-            }
-        }
-
-        // 网络请求
-        getNewCall(request).enqueue(new Callback() {
             int currentRetryCount = 0;
 
             @Override
-            public void onFailure(Call call, final IOException e) {
-                if (!call.isCanceled() && currentRetryCount < SeHttp.getInstance().getRetryCount()) {
-                    currentRetryCount++;
-                    getNewCall(request).enqueue(this);
-                } else {
-                    // 先请求网络，成功则使用网络，失败读取缓存
-                    if (requestBuilder.getCacheMode() == CacheMode.REQUEST_FAILED_CACHE) {
+            public void run() {
+                if (call != null && call.isExecuted()) {
+                    return;
+                }
+                try {
+                    // 先读取缓存，成功则使用缓存，失败请求网络
+                    if (requestBuilder.getCacheMode() == CacheMode.CACHE_FAILED_REQUEST) {
+                        SeLogger.d("CACHE_FAILED_REQUEST");
                         CacheEntity<T> cacheEntity = readCache();
                         if (cacheEntity != null) {
                             sendSuccess(null, cacheEntity.getCacheContent(), true);
                             return;
                         }
                     }
-                    sendError(call, e);
-                }
-            }
+                    // 先读取缓存，无论成功与否，然后请求网络
+                    if (requestBuilder.getCacheMode() == CacheMode.CACHE_THEN_REQUEST) {
+                        SeLogger.d("CACHE_THEN_REQUEST");
+                        CacheEntity<T>  cacheEntity = readCache();
+                        if (cacheEntity != null) {
+                            sendSuccess(null, cacheEntity.getCacheContent(), true);
+                        }
+                    }
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (callback != null) {
-                    try {
-                        sendSuccess(call, callback.convert(response), false);
-                    } catch (Exception e) {
+                    // 请求网络
+                    call = getNewCall(requestBuilder.build(callback));
+                    Response response = call.execute();
+                    if (callback != null) {
+                        T t = callback.convert(response);
+                        sendSuccess(call, t, false);
+                        // 缓存
+                        if (requestBuilder.getCacheMode() != CacheMode.NO_CACHE) {
+                            writeCache(t);
+                        }
+                    }
+                    response.close();
+                } catch (Exception e) {
+                    if (call != null && !call.isCanceled() && currentRetryCount < SeHttp.getInstance().getRetryCount()) {
+                        currentRetryCount++;
+                        call = null;
+                        run();
+                    } else {
+                        // 先请求网络，成功则使用网络，失败读取缓存
+                        if (requestBuilder.getCacheMode() == CacheMode.REQUEST_FAILED_CACHE) {
+                            SeLogger.d("REQUEST_FAILED_CACHE");
+                            CacheEntity<T> cacheEntity = readCache();
+                            if (cacheEntity != null) {
+                                sendSuccess(null, cacheEntity.getCacheContent(), true);
+                                return;
+                            }
+                        }
                         sendError(call, e);
                     }
                 }
-                response.close();
             }
         });
     }
@@ -155,10 +152,6 @@ public class Emitter<T> {
                 try {
                     callback.onSuccess(t, isCache);
                     callback.onAfter();
-                    // 判断是否缓存
-                    if (requestBuilder.getCacheMode() != CacheMode.NO_CACHE && !isCache) {
-                        writeCache(t);
-                    }
                 } catch (Exception e) {
                     sendError(call, e);
                 }
@@ -192,6 +185,7 @@ public class Emitter<T> {
      * @return
      */
     private CacheEntity<T> readCache() {
+        DiskLruCacheHelper diskLruCacheHelper = SeHttp.getInstance().getDiskLruCacheHelper();
         String cacheKey = EncryptUtils.encryptMD5ToString(requestBuilder.getCacheKey());
         if (!TextUtils.isEmpty(cacheKey) && diskLruCacheHelper != null) {
             CacheEntity<T> cacheEntity = diskLruCacheHelper.getAsSerializable(cacheKey);
@@ -214,10 +208,10 @@ public class Emitter<T> {
      * @param cacheObject
      */
     private void writeCache(T cacheObject) {
+        DiskLruCacheHelper diskLruCacheHelper = SeHttp.getInstance().getDiskLruCacheHelper();
         if (cacheObject == null || diskLruCacheHelper == null) {
             return;
         }
-
         CacheEntity<T> cacheEntity = new CacheEntity<>();
         cacheEntity.setKey(requestBuilder.getCacheKey());
         cacheEntity.setCacheContent(cacheObject);
