@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private Button button;
 
-    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
-//    private String urlStr = "http://192.168.2.155:8088/index";
+//    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
+    private String urlStr = "http://192.168.2.155:8088/index";
 //    private String urlStr = "http://www.da.com";
     private String downloadUrlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 

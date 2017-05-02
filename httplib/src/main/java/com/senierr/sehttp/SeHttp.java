@@ -65,7 +65,7 @@ public class SeHttp {
         okHttpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-        okHttpClientBuilder.retryOnConnectionFailure(false);
+        okHttpClientBuilder.retryOnConnectionFailure(true);
         mainScheduler = new Handler(Looper.getMainLooper());
     }
 
