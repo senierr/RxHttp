@@ -1,6 +1,8 @@
 # SeHttp
 
->`SeHttp`是基于`okhttp3`封装的网络请求框架。
+`SeHttp`是基于`okhttp3`封装的网络请求框架，用于简化网络请求。
+
+[![](https://jitpack.io/v/senierr/sehttp.svg)](https://jitpack.io/#senierr/sehttp)
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
