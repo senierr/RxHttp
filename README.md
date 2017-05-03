@@ -44,7 +44,7 @@ compile 'com.github.senierr:sehttp:+'        //版本号使用 + 可以自动引
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
-#### 4. 全局配置/初始化
+### 全局配置/初始化
 
 **初始化必须执行, 初始化必须执行, 初始化必须执行**
 
@@ -66,7 +66,7 @@ SeHttp.init(getApplication())
         .retryCount(3);                               // 设置请求失败重连次数，默认不重连（0次）
 ```
 
-#### 5. 基本请求
+### 基本请求
 
 ```java
 SeHttp.get(urlStr)                                    // 请求方式及URL
@@ -94,7 +94,7 @@ SeHttp.get(urlStr)                                    // 请求方式及URL
         });
 ```
 
-#### 6. 文件下载
+### 文件下载
 
 下载时会生成临时文件，命名规则：
 
@@ -118,7 +118,7 @@ SeHttp.get(Urls.URL_DOWNLOAD)
         });
 ```
 
-## 请求回调
+### 请求回调
 
 ```java
 /**
@@ -189,7 +189,7 @@ SeHttp的缓存是通过异步的`DiskLruCache`来实现的；
 
 所以，缓存的泛型对象T必须实现`Serializable`接口，例如`String`类型；
 
-### 缓存配置：
+#### 缓存配置：
 
 ```java
 CacheConfig cacheConfig = CacheConfig.build()
@@ -202,7 +202,7 @@ SeHttp.init(getApplication()).cacheConfig(cacheConfig);
 SeHttp.getInstance().cacheConfig(cacheConfig);
 ```
 
-### 缓存类型`CacheMode`及对应的回调生命周期
+#### 缓存类型`CacheMode`及对应的回调生命周期
 
 **NO_CACHE // 无缓存模式**
 
@@ -221,7 +221,7 @@ SeHttp.getInstance().cacheConfig(cacheConfig);
 >有缓存：onBefore() -> onSuccess(t, true) -> onAfter() -> onSuccess(t, false)/onError() -> onAfter()  
 >没缓存：onBefore() -> onSuccess(t, false)/onError() -> onAfter()
 
-### 使用方式
+#### 使用方式
 
 ```java
 SeHttp.get(urlStr)
@@ -229,7 +229,7 @@ SeHttp.get(urlStr)
         .cacheMode(CacheMode.NO_CACHE)
         .cacheTime(1000 * 60);
 ```
-### 缓存数据回调
+#### 缓存数据回调
 
 ```java
 @Override
