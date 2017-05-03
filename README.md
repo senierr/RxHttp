@@ -21,13 +21,13 @@
 
 ## 基本用法
 
-#### 1.导入仓库：
+#### 1. 导入仓库：
 
 ```java
 maven { url 'https://jitpack.io' }
 ```
 
-#### 2.添加依赖
+#### 2. 添加依赖
 
 ```java
 compile 'com.github.senierr:sehttp:RELEASE_VERSION'
@@ -37,82 +37,64 @@ compile 'com.github.senierr:sehttp:RELEASE_VERSION'
 compile 'com.github.senierr:sehttp:+'        //版本号使用 + 可以自动引用最新版
 ```
 
-#### 3.添加权限
+#### 3. 添加权限
 
 ```java
 <uses-permission android:name="android.permission.INTERNET"/>
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
-## 全局配置/初始化
+#### 4. 全局配置/初始化
 
 **初始化必须执行, 初始化必须执行, 初始化必须执行**
 
 ```java
-        SeHttp.init(getApplication())
-//                .debug("SeHttp")                              // 开启调试
-//                .debug(tag, isLogException)
-//                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
-//                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .addInterceptor()                             // 添加应用层拦截器
-//                .addNetworkInterceptor()                      // 添加网络层拦截器
-//                .hostnameVerifier()                           // 设置域名匹配规则
-//                .addCommonHeader("comHeader", "comValue")     // 添加全局头
-//                .addCommonHeaders()
-//                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
-//                .addCommonUrlParams()
-//                .cacheConfig(cacheConfig)                     // 设置缓存参数
-                .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
+SeHttp.init(getApplication())
+        .debug("SeHttp")                              // 开启调试
+        .debug(tag, isLogException)
+        .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
+        .readTimeout(SeHttp.DEFAULT_TIMEOUT)
+        .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
+        .addInterceptor()                             // 添加应用层拦截器
+        .addNetworkInterceptor()                      // 添加网络层拦截器
+        .hostnameVerifier()                           // 设置域名匹配规则
+        .addCommonHeader("comHeader", "comValue")     // 添加全局头
+        .addCommonHeaders()
+        .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
+        .addCommonUrlParams()
+        .cacheConfig(cacheConfig)                     // 设置缓存参数
+        .retryCount(3);                               // 设置请求失败重连次数，默认不重连（0次）
 ```
 
-### 1.基本请求
+#### 5. 基本请求
 
 ```java
-        SeHttp.get(urlStr)                                      // 请求方式及URL
-                .tag(this)                                      // 设置标签，用于取消请求
-//                .addUrlParam("key", "value")                  // 添加单个URL参数
-//                .addUrlParams()                               // 添加多个URL参数
-//                .addHeader("header", "value")                 // 添加单个请求头
-//                .addHeaders()                                 // 添加多个请求头
-//                .requestBody4Text()                           // 设置文本格式请求体
-//                .requestBody4JSon(jsonObject.toString())      // 设置JSON格式请求体
-//                .requestBody4Xml()                            // 设置XML格式请求体
-//                .requestBody4Byte()                           // 设置字节流格式请求提
-//                .requestBody()                                // 设置自定义请求体
-//                .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
-//                .addRequestParam("key", new File())           // 添加单个请求体键值对（文件）
-//                .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
-//                .addRequestFileParams()                       // 添加多个请求体键值对（文件）
-//                .build()                                      // 生成OkHttp请求
-//                .cacheKey(urlStr)                             // 设置缓存key
-//                .cacheMode(CacheMode.CACHE_FAILED_REQUEST)    // 设置缓存模式，默认NO_CACHE
-//                .cacheTime(1000 * 10)                         // 设置缓存有效时长
-//                .execute()                                    // 同步请求
-                .execute(new StringCallback() {                 // 异步请求
-                    @Override
-                    public void onBefore(RequestBuilder requestBuilder) {
-                        logSe("onBefore");
-                    }
-
-                    @Override
-                    public void onSuccess(String s, boolean isCache) throws Exception {
-                        logSe(isCache+ ", onSuccess: " + s);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        logSe("onError: " + e.toString());
-                    }
-
-                    @Override
-                    public void onAfter() {
-                        logSe("onAfter");
-                    }
-                });
+SeHttp.get(urlStr)                                    // 请求方式及URL
+        .tag(this)                                    // 设置标签，用于取消请求
+        .addUrlParam("key", "value")                  // 添加单个URL参数
+        .addUrlParams()                               // 添加多个URL参数
+        .addHeader("header", "value")                 // 添加单个请求头
+        .addHeaders()                                 // 添加多个请求头
+        .requestBody4Text()                           // 设置文本格式请求体
+        .requestBody4JSon(jsonObject.toString())      // 设置JSON格式请求体
+        .requestBody4Xml()                            // 设置XML格式请求体
+        .requestBody4Byte()                           // 设置字节流格式请求提
+        .requestBody()                                // 设置自定义请求体
+        .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
+        .addRequestParam("key", new File())           // 添加单个请求体键值对（文件）
+        .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
+        .addRequestFileParams()                       // 添加多个请求体键值对（文件）
+        .build()                                      // 生成OkHttp请求
+        .cacheKey(urlStr)                             // 设置缓存key
+        .cacheMode(CacheMode.CACHE_FAILED_REQUEST)    // 设置缓存模式，默认NO_CACHE
+        .cacheTime(1000 * 10)                         // 设置缓存有效时长
+        .execute()                                    // 同步请求
+        .execute(new StringCallback() {               // 异步请求
+            ......
+        });
 ```
 
-### 2.下载文件
+#### 6. 文件下载
 
 下载时会生成临时文件，命名规则：
 
@@ -122,50 +104,90 @@ compile 'com.github.senierr:sehttp:+'        //版本号使用 + 可以自动引
 
 `if (destFile.exists())`
 
-更详细的判断方式，请在`isDiff()`中重写。
+更详细的判断方式，请重写`isDiff()`方法实现。
 
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
-                .tag(this)
-                .execute(new FileCallback(path + "SeHttp.txt") {
-                    @Override
-                    public void onBefore(RequestBuilder requestBuilder) {
-                        logSe("onBefore");
-                    }
+        .execute(new FileCallback(path + "SeHttp.txt") {
+            @Override
+            public boolean isDiff(Response response, File destFile) {
+                // 判断destFile是否是需要下载的文件，默认返回false
+                return super.isDiff(response, destFile);
+            }
+            ......
+        });
+```
 
-                    @Override
-                    public boolean isDiff(Response response, File destFile) {
-                        // 判断destFile是否是需要下载的文件，默认返回false
-                        return super.isDiff(response, destFile);
-                    }
+## 请求回调
 
-                    @Override
-                    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {
-                        logSe("downloadProgress: " + progress);
-                    }
+```java
+/**
+ * 线程：UI线程
+ *
+ * 请求开始前回调，可通过requestBuilder修改请求
+ *
+ * @param requestBuilder 请求构造器
+ */
+public void onBefore(RequestBuilder requestBuilder) {}
 
-                    @Override
-                    public void onSuccess(File file) throws Exception {
-                        logSe("onSuccess: " + file.getPath());
-                    }
+/**
+ * 线程：UI线程
+ *
+ * 文件上传进度回调
+ *
+ * @param currentSize 当前已上传大小
+ * @param totalSize 上传文件总大小
+ * @param progress 进度0~100
+ * @param networkSpeed 网速
+ */
+public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
 
-                    @Override
-                    public void onError(Exception e) {
-                        logSe("onError: " + e.toString());
-                    }
+/**
+ * 线程：UI线程
+ *
+ * 文件下载进度回调
+ *
+ * @param currentSize 当前已下载大小
+ * @param totalSize 下载文件总大小
+ * @param progress 进度0~100
+ * @param networkSpeed 网速
+ */
+public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
 
-                    @Override
-                    public void onAfter() {
-                        logSe("onAfter");
-                    }
-                });
+/**
+ * 线程：UI线程
+ *
+ * 请求成功回调
+ *
+ * @param t 泛型
+ * @param isCache 是否是缓存数据
+ * @throws Exception 异常抛出，onError()会捕获
+ */
+public abstract void onSuccess(T t, boolean isCache) throws Exception;
+
+/**
+ * 线程：UI线程
+ *
+ * 请求异常回调
+ *
+ * @param isCanceled 请求是否主动终止
+ * @param e 捕获的异常
+ */
+public void onError(boolean isCanceled, Exception e) {}
+
+/**
+ * 线程：UI线程
+ *
+ * 请求结束回调
+ */
+public void onAfter() {}
 ```
 
 ## 缓存管理
 
-SeHttp的缓存是通过异步的DiskLruCache来实现的；
+SeHttp的缓存是通过异步的`DiskLruCache`来实现的；
 
-所以，缓存的泛型对象T必须实现Serializable接口，比如String类型；
+所以，缓存的泛型对象T必须实现`Serializable`接口，例如`String`类型；
 
 ### 缓存配置：
 
@@ -207,12 +229,12 @@ SeHttp.get(urlStr)
         .cacheMode(CacheMode.NO_CACHE)
         .cacheTime(1000 * 60);
 ```
-### 缓存回调
+### 缓存数据回调
 
 ```java
 @Override
 public void onSuccess(String s, boolean isCache) throws Exception {
-    // isCache: 是否是缓存数据
+    // isCache: 判断是否是缓存数据
 }
 ```
 

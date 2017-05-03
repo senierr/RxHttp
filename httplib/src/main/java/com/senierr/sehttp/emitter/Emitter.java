@@ -171,15 +171,13 @@ public class Emitter<T> {
         if (callback == null) {
             return;
         }
-        if (call == null || !call.isCanceled()) {
-            SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onError(e);
-                    callback.onAfter();
-                }
-            });
-        }
+        SeHttp.getInstance().getMainScheduler().post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onError(call != null && call.isCanceled(), e);
+                callback.onAfter();
+            }
+        });
     }
 
     /**

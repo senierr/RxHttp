@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                test1();
+                test2();
             }
         });
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Exception e) {
+                    public void onError(boolean isCanceled, Exception e) {
                         logSe("onError: " + e.toString());
                         textView.setText("onError: " + e.toString());
                     }
@@ -185,8 +185,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Exception e) {
-                        logSe("onError: " + e.toString());
+                    public void onError(boolean isCanceled, Exception e) {
+                        logSe(isCanceled + ", onError: " + e.toString());
                     }
 
                     @Override
