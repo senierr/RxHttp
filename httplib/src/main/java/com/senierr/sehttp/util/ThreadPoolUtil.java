@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException;
  *     desc  : 线程池相关工具类
  * </pre>
  */
-public final class ThreadPoolUtils {
+public final class ThreadPoolUtil {
 
     public static final int FixedThread  = 0;
     public static final int CachedThread = 1;
@@ -29,7 +29,7 @@ public final class ThreadPoolUtils {
     private ExecutorService          exec;
     private ScheduledExecutorService scheduleExec;
 
-    private ThreadPoolUtils() {
+    private ThreadPoolUtil() {
         throw new UnsupportedOperationException("u can't instantiate me...");
     }
 
@@ -39,7 +39,7 @@ public final class ThreadPoolUtils {
      * @param type         线程池类型
      * @param corePoolSize 只对Fixed和Scheduled线程池起效
      */
-    public ThreadPoolUtils(int type, int corePoolSize) {
+    public ThreadPoolUtil(int type, int corePoolSize) {
         // 构造有定时功能的线程池
         // ThreadPoolExecutor(corePoolSize, Integer.MAX_VALUE, 10L, TimeUnit.MILLISECONDS, new BlockingQueue<Runnable>)
         scheduleExec = Executors.newScheduledThreadPool(corePoolSize);

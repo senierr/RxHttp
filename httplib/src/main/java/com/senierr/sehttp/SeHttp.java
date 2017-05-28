@@ -11,12 +11,10 @@ import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
-import com.senierr.sehttp.util.ThreadPoolUtils;
+import com.senierr.sehttp.util.ThreadPoolUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -56,7 +54,7 @@ public class SeHttp {
     // 缓存配置
     private CacheConfig cacheConfig;
     // 线程池
-    private ThreadPoolUtils threadPoolUtils;
+    private ThreadPoolUtil threadPoolUtils;
     // 磁盘缓存工具类
     private DiskLruCacheHelper diskLruCacheHelper;
 
@@ -442,9 +440,9 @@ public class SeHttp {
      *
      * @return
      */
-    public ThreadPoolUtils getThreadPoolUtils() {
+    public ThreadPoolUtil getThreadPoolUtils() {
         if (threadPoolUtils == null) {
-            threadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 0);
+            threadPoolUtils = new ThreadPoolUtil(ThreadPoolUtil.CachedThread, 0);
         }
         return threadPoolUtils;
     }

@@ -96,23 +96,15 @@ SeHttp.get(urlStr)                                    // 请求方式及URL
 
 ### 文件下载
 
-下载时会生成临时文件，命名规则：
-
-`destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis() + "_" + index`
-
-所以，可以简单判断文件是否已下载：
-
-`if (destFile.exists())`
-
-更详细的判断方式，请重写`isDiff()`方法实现。
+判断文件是否已下载，请重写`onDiff()`方法实现，默认返回false;
 
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
         .execute(new FileCallback(path + "SeHttp.txt") {
             @Override
-            public boolean isDiff(Response response, File destFile) {
+            public boolean onDiff(Response response, File destFile) {
                 // 判断destFile是否是需要下载的文件，默认返回false
-                return super.isDiff(response, destFile);
+                return super.onDiff(response, destFile);
             }
             ......
         });
@@ -173,7 +165,7 @@ public abstract void onSuccess(T t, boolean isCache) throws Exception;
  * @param isCanceled 请求是否主动终止
  * @param e 捕获的异常
  */
-public void onError(boolean isCanceled, Exception e) {}
+public void onError(Exception e) {}
 
 /**
  * 线程：UI线程

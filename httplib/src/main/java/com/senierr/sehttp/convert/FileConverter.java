@@ -2,7 +2,6 @@ package com.senierr.sehttp.convert;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,24 +36,11 @@ public class FileConverter implements Converter<File> {
             destFileDir.mkdirs();
         }
         if (destFile.exists()) {
-            if (fileCallback.isDiff(response, destFile)) {
+            if (fileCallback.onDiff(response, destFile)) {
                 return destFile;
             } else {
                 destFile.delete();
             }
-        }
-
-        // 生成非重复的临时文件
-        int index = 1;
-        File tempFile = new File(destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis());
-        // 临时文件存在,则+1
-        while (index < 10 && tempFile.exists()) {
-            tempFile = new File(destFile.getAbsolutePath() + "_temp_" + System.currentTimeMillis() + "_" + index);
-            index++;
-        }
-        // 若还存在
-        if (tempFile.exists()) {
-            throw new Exception("TempFile create failure!");
         }
 
         // 上次刷新的时间
@@ -70,7 +56,7 @@ public class FileConverter implements Converter<File> {
             final long total = response.body().contentLength();
             long sum = 0;
             int len;
-            fos = new FileOutputStream(tempFile);
+            fos = new FileOutputStream(destFile);
             while ((len = is.read(buf)) != -1) {
                 sum += len;
                 fos.write(buf, 0, len);
@@ -95,13 +81,6 @@ public class FileConverter implements Converter<File> {
                 }
             }
             fos.flush();
-            if (destFile.exists()) {
-                destFile.delete();
-            }
-            if (!tempFile.renameTo(destFile)) {
-                SeLogger.e(tempFile.getName() + " rename to " + destFile.getName() + " failure!");
-                return tempFile;
-            }
         } finally {
             if (is != null) is.close();
             if (fos != null) fos.close();

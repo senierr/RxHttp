@@ -60,10 +60,9 @@ public abstract class BaseCallback<T> implements Converter<T> {
      *
      * 请求异常回调
      *
-     * @param isCanceled 请求是否主动终止
      * @param e 捕获的异常
      */
-    public void onError(boolean isCanceled, Exception e) {}
+    public void onError(Exception e) {}
 
     /**
      * 线程：UI线程

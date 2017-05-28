@@ -7,8 +7,9 @@ import com.senierr.sehttp.cache.CacheEntity;
 import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.cache.disk.DiskLruCacheHelper;
 import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.request.RequestBuilder;
-import com.senierr.sehttp.util.EncryptUtils;
+import com.senierr.sehttp.util.EncryptUtil;
 import com.senierr.sehttp.util.SeLogger;
 
 import java.io.IOException;
@@ -171,13 +172,15 @@ public class Emitter<T> {
         if (callback == null) {
             return;
         }
-        SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onError(call != null && call.isCanceled(), e);
-                callback.onAfter();
-            }
-        });
+        if (call == null || !call.isCanceled()) {
+            SeHttp.getInstance().getMainScheduler().post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onError(e);
+                    callback.onAfter();
+                }
+            });
+        }
     }
 
     /**
@@ -187,7 +190,7 @@ public class Emitter<T> {
      */
     private CacheEntity<T> readCache() {
         DiskLruCacheHelper diskLruCacheHelper = SeHttp.getInstance().getDiskLruCacheHelper();
-        String cacheKey = EncryptUtils.encryptMD5ToString(requestBuilder.getCacheKey());
+        String cacheKey = EncryptUtil.encryptMD5ToString(requestBuilder.getCacheKey());
         if (!TextUtils.isEmpty(cacheKey) && diskLruCacheHelper != null) {
             CacheEntity<T> cacheEntity = diskLruCacheHelper.getAsSerializable(cacheKey);
             if (cacheEntity != null) {
@@ -217,6 +220,6 @@ public class Emitter<T> {
         cacheEntity.setKey(requestBuilder.getCacheKey());
         cacheEntity.setCacheContent(cacheObject);
         cacheEntity.setUpdateDate(System.currentTimeMillis());
-        diskLruCacheHelper.put(EncryptUtils.encryptMD5ToString(cacheEntity.getKey()), cacheEntity);
+        diskLruCacheHelper.put(EncryptUtil.encryptMD5ToString(cacheEntity.getKey()), cacheEntity);
     }
 }

@@ -28,13 +28,10 @@ public abstract class FileCallback extends BaseCallback<File> {
     /**
      * 判断是否是同一文件
      *
-     * 默认为否，删除重新下载
-     *
-     * 返回是，则直接回调Success
-     *
-     * @return
+     * @return true: 相同文件
+     *         false: 不是相同文件
      */
-    public boolean isDiff(Response response, File destFile) {
+    public boolean onDiff(Response response, File destFile) {
         return false;
     }
 

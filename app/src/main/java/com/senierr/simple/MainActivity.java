@@ -1,7 +1,6 @@
 package com.senierr.simple;
 
 import android.os.Environment;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,13 +19,8 @@ import com.senierr.sehttp.util.FileUtil;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import okhttp3.Cache;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -140,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(boolean isCanceled, Exception e) {
+                    public void onError(Exception e) {
                         logSe("onError: " + e.toString());
                         textView.setText("onError: " + e.toString());
                     }
@@ -164,9 +158,9 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public boolean isDiff(Response response, File destFile) {
+                    public boolean onDiff(Response response, File destFile) {
                         // 判断destFile是否是需要下载的文件，默认返回false
-                        return super.isDiff(response, destFile);
+                        return super.onDiff(response, destFile);
                     }
 
                     @Override
@@ -185,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(boolean isCanceled, Exception e) {
-                        logSe(isCanceled + ", onError: " + e.toString());
+                    public void onError(Exception e) {
+                        logSe("onError: " + e.toString());
                     }
 
                     @Override
