@@ -1,6 +1,8 @@
 # SeHttp
 
-> `SeHttp`是基于`okhttp3`封装的网络请求框架，用于简化网络请求。
+> 网络请求框架，底层基于`okhttp3`
+>
+> 若需使用缓存管理，可以参考[SeCache](https://github.com/senierr/SeCache)
 
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
 
