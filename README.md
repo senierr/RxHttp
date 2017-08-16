@@ -1,6 +1,6 @@
 # SeHttp
 
-`SeHttp`是基于`okhttp3`封装的网络请求框架，用于简化网络请求。
+> `SeHttp`是基于`okhttp3`封装的网络请求框架，用于简化网络请求。
 
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
 
@@ -40,8 +40,10 @@ compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
 
 ### 全局配置/初始化
 
+`非必须`
+
 ```java
-SeHttp.init(getApplication())
+SeHttp.getInstance()
         .debug("SeHttp")                              // 开启调试
         .debug(tag, isLogException)
         .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
