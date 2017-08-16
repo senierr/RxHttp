@@ -59,18 +59,23 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
-                    sendError(call, e);
+                    sendError(e);
                 }
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
-                if (callback != null) {
-                    try {
-                        T t = callback.convert(response);
-                        sendSuccess(call, t, false);
-                    } catch (Exception e) {
-                        sendError(call, e);
+                int responseCode = response.code();
+                if (!response.isSuccessful()) {
+                    sendError(new Exception("Response is not successful! responseCode: " + responseCode));
+                } else {
+                    if (callback != null) {
+                        try {
+                            T t = callback.convert(response);
+                            sendSuccess(t);
+                        } catch (Exception e) {
+                            sendError(e);
+                        }
                     }
                 }
                 response.close();
@@ -101,18 +106,16 @@ public class Emitter<T> {
      *
      * @param t
      */
-    private void sendSuccess(final Call call, final T t, final boolean isCache) {
+    private void sendSuccess(final T t) {
         if (callback == null) {
             return;
         }
         SeHttp.getInstance().getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    callback.onSuccess(t, isCache);
+                if (callback != null) {
+                    callback.onSuccess(t);
                     callback.onAfter();
-                } catch (Exception e) {
-                    sendError(call, e);
                 }
             }
         });
@@ -123,18 +126,18 @@ public class Emitter<T> {
      *
      * @param e
      */
-    private void sendError(final Call call, final Exception e) {
+    private void sendError(final Exception e) {
         if (callback == null) {
             return;
         }
-        if (call == null || !call.isCanceled()) {
-            SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                @Override
-                public void run() {
+        SeHttp.getInstance().getMainScheduler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
                     callback.onError(e);
                     callback.onAfter();
                 }
-            });
-        }
+            }
+        });
     }
 }

@@ -50,10 +50,8 @@ public abstract class BaseCallback<T> implements Converter<T> {
      * 请求成功回调
      *
      * @param t 泛型
-     * @param isCache 是否是缓存数据
-     * @throws Exception 异常抛出，onError()会捕获
      */
-    public abstract void onSuccess(T t, boolean isCache) throws Exception;
+    public abstract void onSuccess(T t);
 
     /**
      * 线程：UI线程
