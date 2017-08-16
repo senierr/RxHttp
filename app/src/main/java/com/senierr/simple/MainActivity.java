@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private Button button;
 
 //    private String urlStr = "http://app.wz-tech.com:8091/k3dxapi";
-    private String urlStr = "http://192.168.2.155:8088/index";
-//    private String urlStr = "http://www.da.com";
+//    private String urlStr = "http://192.168.2.155:8088/index";
+    private String urlStr = "http://www.da.com";
     private String downloadUrlStr = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
     private String path = Environment.getExternalStorageDirectory() + "/Download/AA/";
@@ -47,25 +47,9 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                test2();
+                test1();
             }
         });
-
-        SeHttp.getInstance()
-                .debug("SeHttp")                              // 开启调试
-//                .debug(tag, isLogException)
-//                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
-//                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
-//                .addInterceptor()                             // 添加应用层拦截器
-//                .addNetworkInterceptor()                      // 添加网络层拦截器
-//                .hostnameVerifier()                           // 设置域名匹配规则
-//                .addCommonHeader("comHeader", "comValue")     // 添加全局头
-//                .addCommonHeaders()
-//                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
-//                .addCommonUrlParams()
-                .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
-
 
         /**
          * todo:
@@ -116,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onSuccess(String s, boolean isCache) throws Exception {
-                        logSe(isCache+ ", onSuccess: " + s);
-                        textView.setText(isCache+ ", onSuccess: " + s);
+                    public void onSuccess(String s) {
+                        logSe("onSuccess: " + s);
+                        textView.setText("onSuccess: " + s);
                     }
 
                     @Override
@@ -162,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onSuccess(File file, boolean isCache) throws Exception {
+                    public void onSuccess(File file) {
                         logSe("onSuccess: " + file.getPath());
                     }
 

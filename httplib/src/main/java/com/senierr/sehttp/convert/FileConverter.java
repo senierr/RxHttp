@@ -5,11 +5,14 @@ import com.senierr.sehttp.callback.FileCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.Response;
 
 /**
+ * File类型解析
+ *
  * @author zhouchunjie
  * @date 2017/3/29
  */
@@ -26,11 +29,6 @@ public class FileConverter implements Converter<File> {
 
     @Override
     public File convert(Response response) throws Exception {
-        int responseCode = response.code();
-        if (!response.isSuccessful()) {
-            throw new Exception("Response is not successful! responseCode: " + responseCode);
-        }
-
         File destFileDir = new File(destFile.getParent() + File.separator);
         if (!destFileDir.exists()) {
             destFileDir.mkdirs();
@@ -81,10 +79,14 @@ public class FileConverter implements Converter<File> {
                 }
             }
             fos.flush();
+            return destFile;
         } finally {
-            if (is != null) is.close();
-            if (fos != null) fos.close();
+            try {
+                if (is != null) is.close();
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return destFile;
     }
 }

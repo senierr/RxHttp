@@ -28,6 +28,8 @@ public abstract class FileCallback extends BaseCallback<File> {
     /**
      * 判断是否是同一文件
      *
+     * 异步线程
+     *
      * @return true: 相同文件
      *         false: 不是相同文件
      */
