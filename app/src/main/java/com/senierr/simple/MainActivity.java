@@ -1,20 +1,17 @@
 package com.senierr.simple;
 
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.CacheConfig;
-import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
 import com.senierr.sehttp.request.RequestBuilder;
-import com.senierr.sehttp.util.FileUtil;
 
 import org.json.JSONObject;
 
@@ -54,12 +51,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        CacheConfig cacheConfig = CacheConfig.build()
-                .cacheFile(FileUtil.getCacheDirectory(this, null))  // 设置缓存路径，默认在应用缓存目录
-                .cacheTime(1000 * 3600 * 24 * 7)                            // 设置缓存有效时长
-                .maxSize(1024 * 1024 * 10);                                 // 设置缓存大小
-
-        SeHttp.init(getApplication())
+        SeHttp.getInstance()
                 .debug("SeHttp")                              // 开启调试
 //                .debug(tag, isLogException)
 //                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
@@ -72,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
 //                .addCommonHeaders()
 //                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
 //                .addCommonUrlParams()
-                .cacheConfig(cacheConfig)                       // 设置缓存参数
                 .retryCount(3);                                 // 设置请求失败重连次数，默认不重连（0）
 
 
@@ -116,9 +107,6 @@ public class MainActivity extends AppCompatActivity {
 //                .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
 //                .addRequestFileParams()                       // 添加多个请求体键值对（文件）
 //                .build()                                      // 生成OkHttp请求
-                .cacheKey(urlStr)                             // 设置缓存key
-                .cacheMode(CacheMode.CACHE_THEN_REQUEST)      // 设置缓存模式，默认NO_CACHE
-                .cacheTime(1000 * 20)                         // 设置缓存有效时长
 //                .execute()                                    // 同步请求
                 .execute(new StringCallback() {                 // 异步请求
                     @Override

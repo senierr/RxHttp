@@ -1,9 +1,6 @@
 package com.senierr.sehttp.request;
 
-import android.text.TextUtils;
-
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.CacheMode;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.mode.FileMap;
@@ -44,12 +41,6 @@ public class RequestBuilder {
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
     private HttpRequestBody httpRequestBody;
-    // 缓存key
-    private String cacheKey;
-    // 缓存模式
-    private CacheMode cacheMode;
-    // 缓存失效时长
-    private long cacheTime;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
@@ -317,65 +308,6 @@ public class RequestBuilder {
     public RequestBuilder requestBody4Byte(byte[] bytes) {
         httpRequestBody.setBytes(bytes);
         httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_STREAM));
-        return this;
-    }
-
-    /**
-     * 获取缓存key
-     *
-     * @return
-     */
-    public String getCacheKey() {
-        return TextUtils.isEmpty(cacheKey) ? url : cacheKey;
-    }
-
-    /**
-     * 设置缓存key
-     *
-     * @param cacheKey
-     * @return
-     */
-    public RequestBuilder cacheKey(String cacheKey) {
-        this.cacheKey = cacheKey;
-        return this;
-    }
-
-    /**
-     * 获取缓存类型
-     *
-     * @return
-     */
-    public CacheMode getCacheMode() {
-        return cacheMode == null ? CacheMode.NO_CACHE : cacheMode;
-    }
-
-    /**
-     * 设置缓存类型
-     *
-     * @param cacheMode
-     */
-    public RequestBuilder cacheMode(CacheMode cacheMode) {
-        this.cacheMode = cacheMode;
-        return this;
-    }
-
-    /**
-     * 获取缓存时长
-     *
-     * @return
-     */
-    public long getCacheTime() {
-        return cacheTime == 0 ? SeHttp.getInstance().getCacheConfig().getCacheTime() : cacheTime;
-    }
-
-    /**
-     * 设置缓存时长
-     *
-     * @param cacheTime
-     * @return
-     */
-    public RequestBuilder cacheTime(long cacheTime) {
-        this.cacheTime = cacheTime;
         return this;
     }
 }

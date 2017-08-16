@@ -1,19 +1,14 @@
 package com.senierr.sehttp;
 
-import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.senierr.sehttp.cache.CacheConfig;
-import com.senierr.sehttp.cache.disk.DiskLruCacheHelper;
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
-import com.senierr.sehttp.util.ThreadPoolUtil;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -37,8 +32,6 @@ public class SeHttp {
     public static final int REFRESH_MIN_INTERVAL = 100;
 
     private static volatile SeHttp seHttp;
-    // 应用进程
-    private Application application;
     // 主线程调度器
     private Handler mainScheduler;
     // 网络请求对象
@@ -51,12 +44,6 @@ public class SeHttp {
     private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
     private int retryCount;
-    // 缓存配置
-    private CacheConfig cacheConfig;
-    // 线程池
-    private ThreadPoolUtil threadPoolUtils;
-    // 磁盘缓存工具类
-    private DiskLruCacheHelper diskLruCacheHelper;
 
     private SeHttp() {
         okHttpClientBuilder = new OkHttpClient.Builder();
@@ -65,15 +52,6 @@ public class SeHttp {
         okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         okHttpClientBuilder.retryOnConnectionFailure(true);
         mainScheduler = new Handler(Looper.getMainLooper());
-    }
-
-    /**
-     * 初始化，必须调用
-     *
-     * @param app
-     */
-    public static SeHttp init(Application app) {
-        return getInstance().setApplication(app);
     }
 
     public static SeHttp getInstance() {
@@ -188,20 +166,6 @@ public class SeHttp {
     }
 
     /**
-     * 获取当前进程
-     *
-     * @return
-     */
-    public Application getApplication() {
-        return application;
-    }
-
-    public SeHttp setApplication(Application application) {
-        this.application = application;
-        return this;
-    }
-
-    /**
      * 获取主线程调度器
      *
      * @return
@@ -248,18 +212,6 @@ public class SeHttp {
      */
     public int getRetryCount() {
         return retryCount;
-    }
-
-    /**
-     * 获取全局缓存配置
-     *
-     * @return
-     */
-    public CacheConfig getCacheConfig() {
-        if (cacheConfig == null) {
-            cacheConfig = CacheConfig.build();
-        }
-        return cacheConfig;
     }
 
     /**
@@ -422,48 +374,5 @@ public class SeHttp {
     public SeHttp retryCount(int retryCount) {
         this.retryCount = retryCount;
         return this;
-    }
-
-    /**
-     * 设置缓存配置
-     *
-     * @param cacheConfig
-     * @return
-     */
-    public SeHttp cacheConfig(CacheConfig cacheConfig) {
-        this.cacheConfig = cacheConfig;
-        return this;
-    }
-
-    /**
-     * 获取缓存池工具
-     *
-     * @return
-     */
-    public ThreadPoolUtil getThreadPoolUtils() {
-        if (threadPoolUtils == null) {
-            threadPoolUtils = new ThreadPoolUtil(ThreadPoolUtil.CachedThread, 0);
-        }
-        return threadPoolUtils;
-    }
-
-    /**
-     * 获取磁盘缓存工具类
-     *
-     * @return
-     */
-    public DiskLruCacheHelper getDiskLruCacheHelper() {
-        if (diskLruCacheHelper == null) {
-            try {
-                diskLruCacheHelper = new DiskLruCacheHelper(
-                        application,
-                        cacheConfig.getCacheFile(),
-                        cacheConfig.getMaxSize());
-            } catch (IOException e) {
-                SeLogger.e("Init diskLruCacheHelper failure!");
-                diskLruCacheHelper = null;
-            }
-        }
-        return diskLruCacheHelper;
     }
 }
