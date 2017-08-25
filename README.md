@@ -1,8 +1,10 @@
 # SeHttp
 
-> 网络请求框架，底层基于`okhttp3`
+> 高效网络请求框架，底层基于`okhttp3`
 >
-> 若需使用缓存管理，可以参考[SeCache](https://github.com/senierr/SeCache)
+> 此库专注于网络请求，不参与任何数据持久化
+>
+> 若需使用缓存及Cookie管理，可参考使用：[SeCache](https://github.com/senierr/SeCache)
 
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
 
@@ -12,9 +14,9 @@
 * 自定义请求头
 * 自定义多种请求体
 * 多文件和多参数统一的表单上传
-* 文件下载和下载进度回调
-* 文件上传和上传进度回调
+* 文件下载、上传
 * 301、302重定向
+* 多种HTTPS验证
 * 自定义失败重连次数
 * 链式调用
 * 根据Tag取消请求
