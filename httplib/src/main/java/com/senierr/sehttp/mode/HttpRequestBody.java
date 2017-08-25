@@ -64,7 +64,6 @@ public class HttpRequestBody extends RequestBody {
         }
     }
 
-    /** 重写进行写入 */
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
         BufferedSink bufferedSink = Okio.buffer(new CountingSink(sink));
@@ -79,7 +78,6 @@ public class HttpRequestBody extends RequestBody {
         private long bytesWritten = 0;
         private long contentLength = 0;
         private long lastRefreshUiTime;
-        private long lastWriteBytes;
 
         public CountingSink(Sink delegate) {
             super(delegate);
@@ -93,20 +91,17 @@ public class HttpRequestBody extends RequestBody {
 
             long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
-                long diffTime = (curTime - lastRefreshUiTime) / 1000;
-                if (diffTime == 0) diffTime += 1;
-                long diffBytes = bytesWritten - lastWriteBytes;
-                final long networkSpeed = diffBytes / diffTime;
                 if (callback != null) {
                     SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.uploadProgress(bytesWritten, contentLength, (int) (bytesWritten * 100 / contentLength), networkSpeed);
+                            if (callback != null) {
+                                callback.onProgress(contentLength, bytesWritten, (int) (bytesWritten * 100 / contentLength));
+                            }
                         }
                     });
                 }
                 lastRefreshUiTime = System.currentTimeMillis();
-                lastWriteBytes = bytesWritten;
             }
         }
     }

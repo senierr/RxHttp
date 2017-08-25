@@ -12,7 +12,7 @@ import android.util.Log;
 public class SeLogger {
 
     private static boolean isLog = true;
-    private static String logTag = "SeHttp";
+    private static String logTag = SeLogger.class.getSimpleName();
 
     public static void init(String tag) {
         init(true, tag);

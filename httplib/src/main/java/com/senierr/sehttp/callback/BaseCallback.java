@@ -23,26 +23,13 @@ public abstract class BaseCallback<T> implements Converter<T> {
     /**
      * 线程：UI线程
      *
-     * 文件上传进度回调
+     * 文件上传下载进度回调
      *
-     * @param currentSize 当前已上传大小
      * @param totalSize 上传文件总大小
+     * @param currentSize 当前已上传大小
      * @param progress 进度0~100
-     * @param networkSpeed 网速
      */
-    public void uploadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
-
-    /**
-     * 线程：UI线程
-     *
-     * 文件下载进度回调
-     *
-     * @param currentSize 当前已下载大小
-     * @param totalSize 下载文件总大小
-     * @param progress 进度0~100
-     * @param networkSpeed 网速
-     */
-    public void downloadProgress(long currentSize, long totalSize, int progress, long networkSpeed) {}
+    public void onProgress(long totalSize, long currentSize, int progress) {}
 
     /**
      * 线程：UI线程

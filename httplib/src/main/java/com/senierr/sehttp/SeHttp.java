@@ -264,23 +264,6 @@ public class SeHttp {
     }
 
     /**
-     * 设置Debug模式，可设置是否打印错误日志
-     *
-     * @param tag
-     * @param isLogException
-     * @return
-     */
-    public SeHttp debug(String tag, boolean isLogException) {
-        HttpLogInterceptor logInterceptor = new HttpLogInterceptor();
-        logInterceptor.setPrintLevel(HttpLogInterceptor.LEVEL_BODY);
-        logInterceptor.setColorLevel(Log.INFO);
-        logInterceptor.setPrintTag(tag);
-        okHttpClientBuilder.addInterceptor(logInterceptor);
-        SeLogger.init(isLogException, tag);
-        return this;
-    }
-
-    /**
      * 自定义域名访问规则
      *
      * @param hostnameVerifier
