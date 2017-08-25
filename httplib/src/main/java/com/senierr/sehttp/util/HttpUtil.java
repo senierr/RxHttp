@@ -1,8 +1,7 @@
 package com.senierr.sehttp.util;
 
-import com.senierr.sehttp.mode.FileMap;
+import com.senierr.sehttp.model.FileMap;
 
-import java.io.File;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;

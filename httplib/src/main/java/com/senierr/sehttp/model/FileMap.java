@@ -1,4 +1,4 @@
-package com.senierr.sehttp.mode;
+package com.senierr.sehttp.model;
 
 import java.io.File;
 import java.util.ArrayList;

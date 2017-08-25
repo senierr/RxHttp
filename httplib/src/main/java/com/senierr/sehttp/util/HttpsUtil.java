@@ -1,6 +1,6 @@
 package com.senierr.sehttp.util;
 
-import com.senierr.sehttp.mode.SSLParams;
+import com.senierr.sehttp.model.SSLParams;
 
 import java.io.IOException;
 import java.io.InputStream;

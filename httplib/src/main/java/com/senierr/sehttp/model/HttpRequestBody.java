@@ -1,4 +1,4 @@
-package com.senierr.sehttp.mode;
+package com.senierr.sehttp.model;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;

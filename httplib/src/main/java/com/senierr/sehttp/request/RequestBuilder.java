@@ -3,10 +3,10 @@ package com.senierr.sehttp.request;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.emitter.Emitter;
-import com.senierr.sehttp.mode.FileMap;
-import com.senierr.sehttp.mode.HttpHeaders;
-import com.senierr.sehttp.mode.HttpRequestBody;
-import com.senierr.sehttp.mode.HttpUrlParams;
+import com.senierr.sehttp.model.FileMap;
+import com.senierr.sehttp.model.HttpHeaders;
+import com.senierr.sehttp.model.HttpRequestBody;
+import com.senierr.sehttp.model.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
 

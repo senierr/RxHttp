@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
-import com.senierr.sehttp.mode.SSLParams;
+import com.senierr.sehttp.model.SSLParams;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SeLogger;
