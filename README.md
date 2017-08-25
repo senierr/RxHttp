@@ -47,13 +47,14 @@ compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
 ```java
 SeHttp.getInstance()
         .debug("SeHttp")                              // 开启调试
-        .debug(tag, isLogException)
         .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
         .readTimeout(SeHttp.DEFAULT_TIMEOUT)
         .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
         .addInterceptor()                             // 添加应用层拦截器
         .addNetworkInterceptor()                      // 添加网络层拦截器
         .hostnameVerifier()                           // 设置域名匹配规则
+        .cookieJar()                                  // 设置自定义cookie管理
+        .sslSocketFactory()                           // 设置SSL认证
         .addCommonHeader("comHeader", "comValue")     // 添加全局头
         .addCommonHeaders()
         .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
@@ -115,10 +116,10 @@ public void onBefore(RequestBuilder requestBuilder) {}
 /**
  * 线程：UI线程
  *
- * 文件上传进度回调
+ * 文件上传下载进度回调
  *
- * @param totalSize 上传文件总大小
- * @param currentSize 当前已上传大小
+ * @param totalSize 上传下载文件总大小
+ * @param currentSize 当前已上传下载大小
  * @param progress 进度0~100
  */
 public void onProgress(long totalSize, long currentSize, int progress) {}

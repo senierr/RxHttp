@@ -7,39 +7,38 @@
     tools:context="com.senierr.simple.MainActivity">
 
     <Button
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_get"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="普通get请求" />
 
     <Button
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_post"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="普通post请求" />
 
     <Button
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_download"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="下载" />
 
     <Button
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_upload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="上传" />
 
     <Button
-        android:id="@+id/btn_start"
+        android:id="@+id/btn_301"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="start" />
+        android:text="301重定向" />
 
-    <TextView
-        android:id="@+id/tv_text"
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/btn_https"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
+        android:text="https请求" />
 </LinearLayout>

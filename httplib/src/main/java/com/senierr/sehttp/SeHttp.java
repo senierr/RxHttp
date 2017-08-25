@@ -5,16 +5,21 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
+import com.senierr.sehttp.mode.SSLParams;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.HttpsUtil;
 import com.senierr.sehttp.util.SeLogger;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
+import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
@@ -253,7 +258,7 @@ public class SeHttp {
      * @param tag
      * @return
      */
-    public SeHttp debug(String tag) {
+    public SeHttp debug(String tag, int priority, int printLevel) {
         HttpLogInterceptor logInterceptor = new HttpLogInterceptor();
         logInterceptor.setPrintLevel(HttpLogInterceptor.LEVEL_BODY);
         logInterceptor.setColorLevel(Log.INFO);
@@ -271,6 +276,50 @@ public class SeHttp {
      */
     public SeHttp hostnameVerifier(HostnameVerifier hostnameVerifier) {
         okHttpClientBuilder.hostnameVerifier(hostnameVerifier);
+        return this;
+    }
+
+    /**
+     * 自定义SSL验证方式
+     *
+     * @param sslParams
+     * @return
+     */
+    public SeHttp sslSocketFactory(SSLParams sslParams) {
+        okHttpClientBuilder.sslSocketFactory(sslParams.getsSLSocketFactory(), sslParams.getTrustManager());
+        return this;
+    }
+
+    /**
+     * 自定义cookie管理
+     *
+     * @param cookieJar
+     * @return
+     */
+    public SeHttp cookieJar(CookieJar cookieJar) {
+        okHttpClientBuilder.cookieJar(cookieJar);
+        return this;
+    }
+
+    /**
+     * 添加拦截器
+     *
+     * @param interceptor
+     * @return
+     */
+    public SeHttp addInterceptor(Interceptor interceptor) {
+        okHttpClientBuilder.addInterceptor(interceptor);
+        return this;
+    }
+
+    /**
+     * 添加网络拦截器
+     *
+     * @param interceptor
+     * @return
+     */
+    public SeHttp addNetworkInterceptor(Interceptor interceptor) {
+        okHttpClientBuilder.addNetworkInterceptor(interceptor);
         return this;
     }
 
@@ -323,28 +372,6 @@ public class SeHttp {
      */
     public SeHttp addCommonHeaders(LinkedHashMap<String, String> headers) {
         commonHeaders = HttpUtil.appendStringMap(commonHeaders, headers);
-        return this;
-    }
-
-    /**
-     * 添加拦截器
-     *
-     * @param interceptor
-     * @return
-     */
-    public SeHttp addInterceptor(Interceptor interceptor) {
-        okHttpClientBuilder.addInterceptor(interceptor);
-        return this;
-    }
-
-    /**
-     * 添加网络拦截器
-     *
-     * @param interceptor
-     * @return
-     */
-    public SeHttp addNetworkInterceptor(Interceptor interceptor) {
-        okHttpClientBuilder.addNetworkInterceptor(interceptor);
         return this;
     }
 

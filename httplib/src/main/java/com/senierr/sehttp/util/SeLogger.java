@@ -11,7 +11,7 @@ import android.util.Log;
 
 public class SeLogger {
 
-    private static boolean isLog = true;
+    private static boolean isLog = false;
     private static String logTag = SeLogger.class.getSimpleName();
 
     public static void init(String tag) {
