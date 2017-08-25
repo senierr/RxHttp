@@ -23,16 +23,21 @@ import okio.Buffer;
 
 public class HttpLogInterceptor implements Interceptor {
 
-    public static final int LEVEL_NONE = 100;      //不打印log
-    public static final int LEVEL_BASIC = 101;     //只打印 请求首行 和 响应首行
-    public static final int LEVEL_HEADERS = 102;   //打印请求和响应的所有 Header
-    public static final int LEVEL_BODY = 103;      //所有数据全部打印
+    public static final int PRINT_LEVEL_NONE = 100;      //不打印log
+    public static final int PRINT_LEVEL_BASIC = 101;     //只打印 请求首行 和 响应首行
+    public static final int PRINT_LEVEL_HEADERS = 102;   //打印请求和响应的所有 Header
+    public static final int PRINT_LEVEL_BODY = 103;      //所有数据全部打印
 
+    public static final int COLOR_LEVEL_VERBOSE = Log.VERBOSE;
+    public static final int COLOR_LEVEL_DEBUG = Log.DEBUG;
+    public static final int COLOR_LEVEL_INFO = Log.INFO;
+    public static final int COLOR_LEVEL_WARN = Log.WARN;
+    public static final int COLOR_LEVEL_ERROR = Log.ERROR;
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private int printLevel;
-    private int priority;
+    private int colorLevel;
     private String tag;
 
     /**
@@ -47,10 +52,10 @@ public class HttpLogInterceptor implements Interceptor {
     /**
      * 打印日志的显示级别
      *
-     * @param priority
+     * @param colorLevel
      */
-    public void setColorLevel(int priority) {
-        this.priority = priority;
+    public void setColorLevel(int colorLevel) {
+        this.colorLevel = colorLevel;
     }
 
     /**
@@ -63,13 +68,13 @@ public class HttpLogInterceptor implements Interceptor {
     }
 
     public void log(String message) {
-        Log.println(priority, tag, message);
+        Log.println(colorLevel, tag, message);
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        if (printLevel == LEVEL_NONE) {
+        if (printLevel == PRINT_LEVEL_NONE) {
             return chain.proceed(request);
         }
 
@@ -92,8 +97,8 @@ public class HttpLogInterceptor implements Interceptor {
     }
 
     private void logForRequest(Request request, Connection connection) throws IOException {
-        boolean logBody = (printLevel == LEVEL_BODY);
-        boolean logHeaders = (printLevel == LEVEL_BODY || printLevel == LEVEL_HEADERS);
+        boolean logBody = (printLevel == PRINT_LEVEL_BODY);
+        boolean logHeaders = (printLevel == PRINT_LEVEL_BODY || printLevel == PRINT_LEVEL_HEADERS);
         RequestBody requestBody = request.body();
         boolean hasRequestBody = requestBody != null;
         Protocol protocol = connection != null ? connection.protocol() : Protocol.HTTP_1_1;
@@ -128,8 +133,8 @@ public class HttpLogInterceptor implements Interceptor {
         Response.Builder builder = response.newBuilder();
         Response clone = builder.build();
         ResponseBody responseBody = clone.body();
-        boolean logBody = (printLevel == LEVEL_BODY);
-        boolean logHeaders = (printLevel == LEVEL_BODY || printLevel == LEVEL_HEADERS);
+        boolean logBody = (printLevel == PRINT_LEVEL_BODY);
+        boolean logHeaders = (printLevel == PRINT_LEVEL_BODY || printLevel == PRINT_LEVEL_HEADERS);
 
         try {
             log(" -----------> 开始响应 <-----------");

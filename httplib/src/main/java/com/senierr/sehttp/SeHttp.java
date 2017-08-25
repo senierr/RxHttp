@@ -2,21 +2,17 @@ package com.senierr.sehttp;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.mode.SSLParams;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.HttpsUtil;
 import com.senierr.sehttp.util.SeLogger;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
 import okhttp3.CookieJar;
@@ -255,16 +251,16 @@ public class SeHttp {
     /**
      * 设置Debug模式
      *
-     * @param tag
+     * @param debugTag
      * @return
      */
-    public SeHttp debug(String tag, int priority, int printLevel) {
+    public SeHttp debug(String debugTag) {
         HttpLogInterceptor logInterceptor = new HttpLogInterceptor();
-        logInterceptor.setPrintLevel(HttpLogInterceptor.LEVEL_BODY);
-        logInterceptor.setColorLevel(Log.INFO);
-        logInterceptor.setPrintTag(tag);
+        logInterceptor.setPrintLevel(HttpLogInterceptor.PRINT_LEVEL_HEADERS);
+        logInterceptor.setColorLevel(HttpLogInterceptor.COLOR_LEVEL_DEBUG);
+        logInterceptor.setPrintTag(debugTag);
         okHttpClientBuilder.addInterceptor(logInterceptor);
-        SeLogger.init(tag);
+        SeLogger.init(debugTag);
         return this;
     }
 
@@ -286,7 +282,9 @@ public class SeHttp {
      * @return
      */
     public SeHttp sslSocketFactory(SSLParams sslParams) {
-        okHttpClientBuilder.sslSocketFactory(sslParams.getsSLSocketFactory(), sslParams.getTrustManager());
+        if (sslParams != null) {
+            okHttpClientBuilder.sslSocketFactory(sslParams.getsSLSocketFactory(), sslParams.getTrustManager());
+        }
         return this;
     }
 
