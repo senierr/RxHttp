@@ -68,39 +68,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private FileCallback fileCallback = new FileCallback(fileDir + "SeHttp.txt") {
-        @Override
-        public void onBefore(RequestBuilder requestBuilder) {
-            showLog("onBefore");
-        }
-
-        @Override
-        public boolean onDiff(Response response, File destFile) {
-            // 判断destFile是否是需要下载的文件，默认返回false
-            return super.onDiff(response, destFile);
-        }
-
-        @Override
-        public void onProgress(long totalSize, long currentSize, int progress) {
-            showLog("onProgress: " + progress);
-        }
-
-        @Override
-        public void onSuccess(File file) {
-            showLog("onSuccess: " + file.getPath());
-        }
-
-        @Override
-        public void onError(Exception e) {
-            showLog("onError: " + e.toString());
-        }
-
-        @Override
-        public void onAfter() {
-            showLog("onAfter");
-        }
-    };
-
     private void showLog(String logStr) {
         Log.e("MainActivity", logStr);
     }
@@ -180,9 +147,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestDownload() {
         SeHttp.get(Urls.URL_DOWNLOAD)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-                .execute(fileCallback);
+                .execute(new FileCallback(fileDir + "WeChatSetup.exe") {
+                    @Override
+                    public void onBefore(RequestBuilder requestBuilder) {
+                        showLog("onBefore");
+                    }
+
+                    @Override
+                    public boolean onDiff(Response response, File destFile) {
+                        // 判断destFile是否是需要下载的文件，默认返回false
+                        return super.onDiff(response, destFile);
+                    }
+
+                    @Override
+                    public void onProgress(long totalSize, long currentSize, int progress) {
+                        showLog("totalSize: " + totalSize + ", currentSize: " + currentSize + ", onProgress: " + progress);
+                    }
+
+                    @Override
+                    public void onSuccess(File file) {
+                        showLog("onSuccess: " + file.getPath());
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        showLog("onError: " + e.toString());
+                    }
+
+                    @Override
+                    public void onAfter() {
+                        showLog("onAfter");
+                    }
+                });
     }
 
     private void requestUpload() {
@@ -206,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         SeHttp.get(Urls.URL_REDIRECT)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
-                .execute(fileCallback);
+                .execute(stringCallback);
     }
 
     private void requestHttps() {

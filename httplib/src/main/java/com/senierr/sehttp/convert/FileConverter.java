@@ -1,7 +1,10 @@
 package com.senierr.sehttp.convert;
 
+import android.util.Log;
+
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
+import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +55,7 @@ public class FileConverter implements Converter<File> {
             // 上次刷新的时间
             long lastTime = 0;
 
-            byte[] bytes = new byte[512];
+            byte[] bytes = new byte[1024];
             long sum = 0;
             int len;
             while ((len = bufferedSource.read(bytes)) != -1) {
@@ -70,8 +73,8 @@ public class FileConverter implements Converter<File> {
                             }
                         }
                     });
+                    lastTime = curTime;
                 }
-                lastTime = curTime;
             }
             bufferedSink.flush();
             return destFile;
