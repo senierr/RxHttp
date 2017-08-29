@@ -1,10 +1,7 @@
 package com.senierr.sehttp.convert;
 
-import android.util.Log;
-
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,19 +21,23 @@ import okio.Okio;
 public class FileConverter implements Converter<File> {
 
     private FileCallback fileCallback;
-    private File destFile;
 
     public FileConverter(FileCallback fileCallback) {
         this.fileCallback = fileCallback;
-        destFile = fileCallback.getDestFile();
     }
 
     @Override
     public File convert(Response response) throws Exception {
-        File destFileDir = new File(destFile.getParent() + File.separator);
-        if (!destFileDir.exists()) {
-            destFileDir.mkdirs();
+        File destDir = fileCallback.getDestDir();
+        String destName = fileCallback.getDestName();
+
+        // 判断路径是否存在
+        if (!destDir.exists()) {
+            destDir.mkdirs();
         }
+
+        File destFile = new File(destDir, destName);
+        // 判断文件是否存在
         if (destFile.exists()) {
             if (fileCallback.onDiff(response, destFile)) {
                 return destFile;
@@ -86,6 +87,5 @@ public class FileConverter implements Converter<File> {
                 e.printStackTrace();
             }
         }
-
     }
 }

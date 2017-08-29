@@ -15,14 +15,12 @@ import okhttp3.Response;
 
 public abstract class FileCallback extends BaseCallback<File> {
 
-    private File destFile;
+    private File destDir;
+    private String destName;
 
-    public FileCallback(File destFile) {
-        this.destFile = destFile;
-    }
-
-    public FileCallback(String destFilePath) {
-        this.destFile = new File(destFilePath);
+    public FileCallback(File destDir, String destName) {
+        this.destDir = destDir;
+        this.destName = destName;
     }
 
     /**
@@ -42,11 +40,21 @@ public abstract class FileCallback extends BaseCallback<File> {
         return new FileConverter(this).convert(response);
     }
 
-    public File getDestFile() {
-        return destFile;
+    public File getDestDir() {
+        return destDir;
     }
 
-    public void setDestFile(File destFile) {
-        this.destFile = destFile;
+    public FileCallback setDestDir(File destDir) {
+        this.destDir = destDir;
+        return this;
+    }
+
+    public String getDestName() {
+        return destName;
+    }
+
+    public FileCallback setDestName(String destName) {
+        this.destName = destName;
+        return this;
     }
 }

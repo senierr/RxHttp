@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestDownload() {
         SeHttp.get(Urls.URL_DOWNLOAD)
-                .execute(new FileCallback(fileDir + "WeChatSetup.exe") {
+                .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
                     @Override
                     public void onBefore(RequestBuilder requestBuilder) {
                         showLog("onBefore");
