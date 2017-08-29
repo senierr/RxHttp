@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
         urlParams.put("urlParams2", "LinkedHashMap2");
 
         SeHttp.get(Urls.URL_METHOD)
+                .tag(this)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
                 .addUrlParams(urlParams)
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         requestParams.put("requestParams2", "LinkedHashMap2");
 
         SeHttp.post(Urls.URL_METHOD)
+                .tag(this)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
                 .addUrlParams(urlParams)
@@ -147,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestDownload() {
         SeHttp.get(Urls.URL_DOWNLOAD)
+                .tag(this)
                 .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
                     @Override
                     public void onBefore(RequestBuilder requestBuilder) {
@@ -190,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject(params);
 
         SeHttp.post(Urls.URL_TEXT_UPLOAD)
+                .tag(this)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
 //                .requestBody4Text("这里是需要提交的文本格式数据")        // 上传普通文本
@@ -200,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void request301() {
         SeHttp.get(Urls.URL_REDIRECT)
+                .tag(this)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
                 .execute(stringCallback);
@@ -209,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
 //        String httpsStr = "https://github.com/jeasonlzy";   // CA认证
         String httpsStr = "https://kyfw.12306.cn/otn";    // 自签名
         SeHttp.get(httpsStr)
+                .tag(this)
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
                 .execute(stringCallback);
