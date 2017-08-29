@@ -4,11 +4,12 @@ import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 /**
  * File类型解析
@@ -41,25 +42,26 @@ public class FileConverter implements Converter<File> {
             }
         }
 
-        // 上次刷新的时间
-        long lastRefreshUiTime = 0;
-
-        InputStream is = null;
-        byte[] bytes = new byte[512];
-        FileOutputStream fos = null;
+        BufferedSource bufferedSource = null;
+        BufferedSink bufferedSink = null;
         try {
-            is = response.body().byteStream();
+            bufferedSource = Okio.buffer(Okio.source(response.body().byteStream()));
+            bufferedSink = Okio.buffer(Okio.sink(destFile));
+            // 计算总大小
             final long total = response.body().contentLength();
+            // 上次刷新的时间
+            long lastTime = 0;
+
+            byte[] bytes = new byte[512];
             long sum = 0;
             int len;
-            fos = new FileOutputStream(destFile);
-            while ((len = is.read(bytes)) != -1) {
+            while ((len = bufferedSource.read(bytes)) != -1) {
                 sum += len;
-                fos.write(bytes, 0, len);
+                bufferedSink.write(bytes, 0, len);
 
                 final long finalSum = sum;
                 long curTime = System.currentTimeMillis();
-                if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || finalSum == total) {
+                if (curTime - lastTime >= SeHttp.REFRESH_MIN_INTERVAL || finalSum == total) {
                     SeHttp.getInstance().getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
@@ -68,19 +70,19 @@ public class FileConverter implements Converter<File> {
                             }
                         }
                     });
-
-                    lastRefreshUiTime = System.currentTimeMillis();
                 }
+                lastTime = curTime;
             }
-            fos.flush();
+            bufferedSink.flush();
             return destFile;
         } finally {
             try {
-                if (is != null) is.close();
-                if (fos != null) fos.close();
+                if (bufferedSource != null) bufferedSource.close();
+                if (bufferedSink != null) bufferedSink.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 }
