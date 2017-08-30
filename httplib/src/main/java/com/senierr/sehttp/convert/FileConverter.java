@@ -70,7 +70,7 @@ public class FileConverter implements Converter<File> {
                         @Override
                         public void run() {
                             if (fileCallback != null) {
-                                fileCallback.onProgress(total, finalSum, (int) (finalSum * 100 / total));
+                                fileCallback.onDownloadProgress(total, finalSum, (int) (finalSum * 100 / total));
                             }
                         }
                     });

@@ -96,7 +96,7 @@ public class HttpRequestBody extends RequestBody {
                         @Override
                         public void run() {
                             if (callback != null) {
-                                callback.onProgress(contentLength, bytesWritten, (int) (bytesWritten * 100 / contentLength));
+                                callback.onUploadProgress(contentLength, bytesWritten, (int) (bytesWritten * 100 / contentLength));
                             }
                         }
                     });

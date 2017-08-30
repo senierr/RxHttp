@@ -59,7 +59,7 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
-                    sendError(e);
+                    sendError(call.isCanceled(), e);
                 }
             }
 
@@ -67,14 +67,14 @@ public class Emitter<T> {
             public void onResponse(Call call, final Response response) throws IOException {
                 int responseCode = response.code();
                 if (!response.isSuccessful()) {
-                    sendError(new Exception("Response is not successful! responseCode: " + responseCode));
+                    sendError(call.isCanceled(), new Exception("Response is not successful! responseCode: " + responseCode));
                 } else {
                     if (callback != null) {
                         try {
                             T t = callback.convert(response);
                             sendSuccess(t);
                         } catch (Exception e) {
-                            sendError(e);
+                            sendError(call.isCanceled(), e);
                         }
                     }
                 }
@@ -124,9 +124,10 @@ public class Emitter<T> {
     /**
      * 执行失败回调
      *
+     * @param isCanceled
      * @param e
      */
-    private void sendError(final Exception e) {
+    private void sendError(final boolean isCanceled, final Exception e) {
         if (callback == null) {
             return;
         }
@@ -134,7 +135,7 @@ public class Emitter<T> {
             @Override
             public void run() {
                 if (callback != null) {
-                    callback.onError(e);
+                    callback.onError(isCanceled, e);
                     callback.onAfter();
                 }
             }

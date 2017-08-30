@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onProgress(long totalSize, long currentSize, int progress) {
+        public void onUploadProgress(long totalSize, long currentSize, int progress) {
             showLog("onProgress: " + progress);
         }
 
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onError(Exception e) {
+        public void onError(boolean isCanceled, Exception e) {
             showLog("onError: " + e.toString());
         }
 
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onProgress(long totalSize, long currentSize, int progress) {
+                    public void onDownloadProgress(long totalSize, long currentSize, int progress) {
                         showLog("totalSize: " + totalSize + ", currentSize: " + currentSize + ", onProgress: " + progress);
                     }
 
@@ -173,8 +174,9 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Exception e) {
+                    public void onError(boolean isCanceled, Exception e) {
                         showLog("onError: " + e.toString());
+                        Toast.makeText(MainActivity.this, "onError: " + isCanceled, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

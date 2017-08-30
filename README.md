@@ -93,7 +93,7 @@ SeHttp.get(urlStr)                                    // 请求方式及URL
 
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
-        .execute(new FileCallback(path) {
+        .execute(new FileCallback(...) {
             @Override
             public boolean onDiff(Response response, File destFile) {
                 // 判断destFile是否是需要下载的文件，默认返回false
@@ -107,8 +107,6 @@ SeHttp.get(Urls.URL_DOWNLOAD)
 
 ```java
 /**
- * 线程：UI线程
- *
  * 请求开始前回调，可通过requestBuilder修改请求
  *
  * @param requestBuilder 请求构造器
@@ -116,19 +114,24 @@ SeHttp.get(Urls.URL_DOWNLOAD)
 public void onBefore(RequestBuilder requestBuilder) {}
 
 /**
- * 线程：UI线程
+ * 上传进度回调
  *
- * 文件上传下载进度回调
- *
- * @param totalSize 上传下载文件总大小
- * @param currentSize 当前已上传下载大小
+ * @param totalSize 上传文件总大小
+ * @param currentSize 当前已上传大小
  * @param progress 进度0~100
  */
-public void onProgress(long totalSize, long currentSize, int progress) {}
+public void onUploadProgress(long totalSize, long currentSize, int progress) {}
 
 /**
- * 线程：UI线程
+ * 下载进度回调
  *
+ * @param totalSize 下载文件总大小
+ * @param currentSize 当前已下载大小
+ * @param progress 进度0~100
+ */
+public void onDownloadProgress(long totalSize, long currentSize, int progress) {}
+
+/**
  * 请求成功回调
  *
  * @param t 泛型
@@ -136,17 +139,14 @@ public void onProgress(long totalSize, long currentSize, int progress) {}
 public abstract void onSuccess(T t);
 
 /**
- * 线程：UI线程
- *
  * 请求异常回调
  *
+ * @param isCanceled 是否取消
  * @param e 捕获的异常
  */
-public void onError(Exception e) {}
+public void onError(boolean isCanceled, Exception e) {}
 
 /**
- * 线程：UI线程
- *
  * 请求结束回调
  */
 public void onAfter() {}
@@ -166,8 +166,8 @@ SeHttp.getInstance().cancelAll();
 `SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖:
 
 ```java
-compile 'com.squareup.okhttp3:okhttp:3.6.0'
-compile 'com.squareup.okio:okio:1.11.0'
+compile 'com.squareup.okhttp3:okhttp:3.8.1'
+compile 'com.squareup.okio:okio:1.13.0'
 ```
 
 ## 混淆
