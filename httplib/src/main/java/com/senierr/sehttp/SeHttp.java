@@ -256,7 +256,7 @@ public class SeHttp {
      */
     public SeHttp debug(String debugTag) {
         HttpLogInterceptor logInterceptor = new HttpLogInterceptor();
-        logInterceptor.setPrintLevel(HttpLogInterceptor.PRINT_LEVEL_HEADERS);
+        logInterceptor.setPrintLevel(HttpLogInterceptor.PRINT_LEVEL_BODY);
         logInterceptor.setColorLevel(HttpLogInterceptor.COLOR_LEVEL_DEBUG);
         logInterceptor.setPrintTag(debugTag);
         okHttpClientBuilder.addInterceptor(logInterceptor);

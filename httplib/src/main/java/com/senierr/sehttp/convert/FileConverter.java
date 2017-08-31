@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
@@ -33,7 +34,10 @@ public class FileConverter implements Converter<File> {
 
         // 判断路径是否存在
         if (!destDir.exists()) {
-            destDir.mkdirs();
+            boolean result = destDir.mkdirs();
+            if (!result) {
+                throw new Exception(destDir.getPath() + " create failed!");
+            }
         }
 
         File destFile = new File(destDir, destName);
@@ -42,17 +46,25 @@ public class FileConverter implements Converter<File> {
             if (fileCallback.onDiff(response, destFile)) {
                 return destFile;
             } else {
-                destFile.delete();
+                boolean result = destFile.delete();
+                if (!result) {
+                    throw new Exception(destFile.getPath() + " delete failed!");
+                }
             }
         }
 
         BufferedSource bufferedSource = null;
         BufferedSink bufferedSink = null;
         try {
-            bufferedSource = Okio.buffer(Okio.source(response.body().byteStream()));
+            ResponseBody responseBody = response.body();
+            if (responseBody == null) {
+                throw new IOException("ResponseBody is null");
+            }
+
+            bufferedSource = Okio.buffer(Okio.source(responseBody.byteStream()));
             bufferedSink = Okio.buffer(Okio.sink(destFile));
             // 计算总大小
-            final long total = response.body().contentLength();
+            final long total = responseBody.contentLength();
             // 上次刷新的时间
             long lastTime = 0;
 

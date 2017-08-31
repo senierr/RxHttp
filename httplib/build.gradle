@@ -5,10 +5,10 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 9
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     buildTypes {
         release {
@@ -19,36 +19,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.squareup.okio:okio:1.13.0'
 }
-
-
-/**
- * 发布到本地仓库
- */
-apply plugin: 'maven'
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://E:/maven_repository/")
-            pom.version = '1.0.0'
-            pom.groupId = 'com.senierr.sdk'
-            pom.artifactId = 'sehttp'
-        }
-    }
-}
-
-/**
- * 使用方法：
- *
- * 1.添加仓库
- *   maven{
- *      url 'file://E:/maven_repository/'
- *   }
- * 2.引用
- *   compile 'com.senierr.sdk:sehttp:1.0.0'
- *
- **/
