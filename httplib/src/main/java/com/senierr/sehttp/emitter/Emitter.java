@@ -40,12 +40,7 @@ public class Emitter<T> {
         this.callback = baseCallback;
         // Before回调
         if (callback != null) {
-            SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onBefore(requestBuilder);
-                }
-            });
+            callback.onBefore(requestBuilder);
         }
         // 构建请求
         final Request request = requestBuilder.build(callback);
@@ -59,7 +54,7 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
-                    sendError(call.isCanceled(), e);
+                    handleError(call.isCanceled(), e);
                 }
             }
 
@@ -67,14 +62,14 @@ public class Emitter<T> {
             public void onResponse(Call call, final Response response) throws IOException {
                 int responseCode = response.code();
                 if (!response.isSuccessful()) {
-                    sendError(call.isCanceled(), new Exception("Response is not successful! responseCode: " + responseCode));
+                    handleError(call.isCanceled(), new Exception("Response is not successful! responseCode: " + responseCode));
                 } else {
                     if (callback != null) {
                         try {
                             T t = callback.convert(response);
-                            sendSuccess(t);
+                            handleSuccess(t);
                         } catch (Exception e) {
-                            sendError(call.isCanceled(), e);
+                            handleError(call.isCanceled(), e);
                         }
                     }
                 }
@@ -106,7 +101,7 @@ public class Emitter<T> {
      *
      * @param t
      */
-    private void sendSuccess(final T t) {
+    private void handleSuccess(final T t) {
         if (callback == null) {
             return;
         }
@@ -127,7 +122,7 @@ public class Emitter<T> {
      * @param isCanceled
      * @param e
      */
-    private void sendError(final boolean isCanceled, final Exception e) {
+    private void handleError(final boolean isCanceled, final Exception e) {
         if (callback == null) {
             return;
         }
