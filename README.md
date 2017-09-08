@@ -48,7 +48,7 @@ compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
 
 ```java
 SeHttp.getInstance()
-        .debug("SeHttp")                              // 开启调试
+        .debug("SeHttp", LogLevel.BODY)               // 开启调试
         .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
         .readTimeout(SeHttp.DEFAULT_TIMEOUT)
         .writeTimeout(SeHttp.DEFAULT_TIMEOUT)

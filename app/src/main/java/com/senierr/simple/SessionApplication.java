@@ -3,6 +3,8 @@ package com.senierr.simple;
 import android.app.Application;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.interceptor.HttpLogInterceptor;
+import com.senierr.sehttp.interceptor.LogLevel;
 import com.senierr.sehttp.util.HttpsUtil;
 
 import okio.Buffer;
@@ -34,7 +36,7 @@ public class SessionApplication extends Application {
         super.onCreate();
         // 初始化
         SeHttp.getInstance()
-                .debug("SeHttp")                               // 开启调试
+                .debug("SeHttp", LogLevel.BODY)                 // 开启调试
 //                .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
 //                .readTimeout(SeHttp.DEFAULT_TIMEOUT)
 //                .writeTimeout(SeHttp.DEFAULT_TIMEOUT)

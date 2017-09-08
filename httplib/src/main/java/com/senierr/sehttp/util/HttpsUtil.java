@@ -1,5 +1,7 @@
 package com.senierr.sehttp.util;
 
+import android.util.Log;
+
 import com.senierr.sehttp.model.SSLParams;
 
 import java.io.IOException;
@@ -25,6 +27,8 @@ import javax.net.ssl.X509TrustManager;
  */
 
 public class HttpsUtil {
+
+    private static final String TAG = HttpsUtil.class.getSimpleName();
 
     /**
      * 默认信任所有证书
@@ -103,7 +107,7 @@ public class HttpsUtil {
 
             return sslParams;
         } catch (Exception e) {
-            SeLogger.e(e);
+            Log.e(TAG, Log.getStackTraceString(e));
         }
         return null;
     }
@@ -117,7 +121,7 @@ public class HttpsUtil {
             kmf.init(clientKeyStore, password.toCharArray());
             return kmf.getKeyManagers();
         } catch (Exception e) {
-            SeLogger.e(e);
+            Log.e(TAG, Log.getStackTraceString(e));
         }
         return null;
     }
@@ -136,14 +140,14 @@ public class HttpsUtil {
                 try {
                     if (certStream != null) certStream.close();
                 } catch (IOException e) {
-                    SeLogger.e(e);
+                    Log.e(TAG, Log.getStackTraceString(e));
                 }
             }
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(keyStore);
             return tmf.getTrustManagers();
         } catch (Exception e) {
-            SeLogger.e(e);
+            Log.e(TAG, Log.getStackTraceString(e));
         }
         return null;
     }

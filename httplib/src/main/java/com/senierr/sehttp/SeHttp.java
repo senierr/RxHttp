@@ -4,10 +4,10 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
+import com.senierr.sehttp.interceptor.LogLevel;
 import com.senierr.sehttp.model.SSLParams;
 import com.senierr.sehttp.request.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -249,18 +249,15 @@ public class SeHttp {
     }
 
     /**
-     * 设置Debug模式
+     * 开启Debug
      *
-     * @param debugTag
+     * @param tag
+     * @param logLevel
      * @return
      */
-    public SeHttp debug(String debugTag) {
-        HttpLogInterceptor logInterceptor = new HttpLogInterceptor();
-        logInterceptor.setPrintLevel(HttpLogInterceptor.PRINT_LEVEL_BODY);
-        logInterceptor.setColorLevel(HttpLogInterceptor.COLOR_LEVEL_DEBUG);
-        logInterceptor.setPrintTag(debugTag);
+    public SeHttp debug(String tag, LogLevel logLevel) {
+        HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
         okHttpClientBuilder.addInterceptor(logInterceptor);
-        SeLogger.init(debugTag);
         return this;
     }
 

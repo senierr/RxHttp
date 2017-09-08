@@ -3,7 +3,6 @@ package com.senierr.sehttp.model;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +58,6 @@ public class HttpRequestBody extends RequestBody {
         try {
             return delegate.contentLength();
         } catch (IOException e) {
-            SeLogger.e(e);
             return -1;
         }
     }

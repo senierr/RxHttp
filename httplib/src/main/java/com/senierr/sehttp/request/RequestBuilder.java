@@ -8,7 +8,6 @@ import com.senierr.sehttp.model.HttpHeaders;
 import com.senierr.sehttp.model.HttpRequestBody;
 import com.senierr.sehttp.model.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.SeLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,36 +54,20 @@ public class RequestBuilder {
      */
     public Request build(BaseCallback callback) {
         Request.Builder builder = new Request.Builder();
-        // 添加公共参数
         httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, SeHttp.getInstance().getCommonUrlParams());
-        // 添加公共头
         httpHeaders = HttpUtil.appendStringMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
-
-        RequestBody requestBody = httpRequestBody.create(callback);
-        try {
-            if (requestBody != null) {
-                long contentLength = requestBody.contentLength();
-                if (contentLength > 0) {
-                    addHeader("Content-Length", String.valueOf(contentLength));
-                }
-            }
-        } catch (IOException e) {
-            SeLogger.e(e);
-        }
 
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUrlParams.buildParams(url, httpUrlParams);
         }
-
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
             builder.headers(HttpHeaders.buildHeaders(httpHeaders));
         }
-
         if (tag != null) {
             builder.tag(tag);
         }
 
-        builder.method(method, requestBody);
+        builder.method(method, httpRequestBody.create(callback));
         builder.url(url);
         return builder.build();
     }
