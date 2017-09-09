@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 .addHeader("addHeader", "addHeader0")
 //                .requestBody4Text("这里是需要提交的文本格式数据")        // 上传普通文本
 //                .requestBody4JSon(jsonObject.toString())              // 上传JSON
-                .addRequestParam("", new File(fileDir + "SeHttp.txt"))     // 上传文件
+                .addRequestParam("", new File(fileDir + "upload_text.txt"))     // 上传文件
                 .execute(stringCallback);
     }
 

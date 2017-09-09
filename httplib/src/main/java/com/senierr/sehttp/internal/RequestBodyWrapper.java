@@ -42,7 +42,6 @@ public class RequestBodyWrapper extends RequestBody {
 
     private boolean isMultipart = false;
 
-    private BufferedSink bufferedSink;
     private RequestBody delegate;
     private BaseCallback callback;
 
@@ -62,9 +61,7 @@ public class RequestBodyWrapper extends RequestBody {
 
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
-        if (bufferedSink == null) {
-            bufferedSink = Okio.buffer(new CountingSink(sink));
-        }
+        BufferedSink bufferedSink = Okio.buffer(new CountingSink(sink));
         delegate.writeTo(bufferedSink);
         bufferedSink.flush();
     }
