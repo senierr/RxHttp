@@ -5,7 +5,6 @@ import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.emitter.Emitter;
 import com.senierr.sehttp.model.FileMap;
 import com.senierr.sehttp.model.HttpHeaders;
-import com.senierr.sehttp.model.HttpRequestBody;
 import com.senierr.sehttp.model.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
 
@@ -39,12 +38,12 @@ public class RequestBuilder {
     // 请求头
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
-    private HttpRequestBody httpRequestBody;
+    private RequestBodyWrapper requestBodyWrapper;
 
     public RequestBuilder(String method, String url) {
         this.method = method;
         this.url = url;
-        httpRequestBody = new HttpRequestBody();
+        requestBodyWrapper = new RequestBodyWrapper();
     }
 
     /**
@@ -67,7 +66,7 @@ public class RequestBuilder {
             builder.tag(tag);
         }
 
-        builder.method(method, httpRequestBody.create(callback));
+        builder.method(method, requestBodyWrapper.build(callback));
         builder.url(url);
         return builder.build();
     }
@@ -161,32 +160,32 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder requestBody(RequestBody requestBody) {
-        httpRequestBody.setRequestBody(requestBody);
+        requestBodyWrapper.setRequestBody(requestBody);
         return this;
     }
 
     public RequestBuilder requestBody(MediaType contentType, File file) {
-        httpRequestBody.setRequestBody(RequestBody.create(contentType, file));
+        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, file));
         return this;
     }
 
     public RequestBuilder requestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
-        httpRequestBody.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
+        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
         return this;
     }
 
     public RequestBuilder requestBody(MediaType contentType, byte[] content) {
-        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 
     public RequestBuilder requestBody(MediaType contentType, ByteString content) {
-        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 
     public RequestBuilder requestBody(MediaType contentType, String content) {
-        httpRequestBody.setRequestBody(RequestBody.create(contentType, content));
+        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 
@@ -198,12 +197,12 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addRequestParam(String key, File file) {
-        FileMap fileParams = httpRequestBody.getFileParams();
+        FileMap fileParams = requestBodyWrapper.getFileParams();
         if (fileParams == null) {
             fileParams = new FileMap();
         }
         fileParams.add(key, file);
-        httpRequestBody.setFileParams(fileParams);
+        requestBodyWrapper.setFileParams(fileParams);
         return this;
     }
 
@@ -214,7 +213,7 @@ public class RequestBuilder {
      * @returns
      */
     public RequestBuilder addRequestFileParams(FileMap fileParams) {
-        httpRequestBody.setFileParams(HttpUtil.appendFileMap(httpRequestBody.getFileParams(), fileParams));
+        requestBodyWrapper.setFileParams(HttpUtil.appendFileMap(requestBodyWrapper.getFileParams(), fileParams));
         return this;
     }
 
@@ -226,12 +225,12 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addRequestParam(String key, String value) {
-        LinkedHashMap<String, String> stringParams = httpRequestBody.getStringParams();
+        LinkedHashMap<String, String> stringParams = requestBodyWrapper.getStringParams();
         if (stringParams == null) {
             stringParams = new LinkedHashMap<>();
         }
         stringParams.put(key, value);
-        httpRequestBody.setStringParams(stringParams);
+        requestBodyWrapper.setStringParams(stringParams);
         return this;
     }
 
@@ -242,7 +241,7 @@ public class RequestBuilder {
      * @returns
      */
     public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
-        httpRequestBody.setStringParams(HttpUtil.appendStringMap(httpRequestBody.getStringParams(), stringParams));
+        requestBodyWrapper.setStringParams(HttpUtil.appendStringMap(requestBodyWrapper.getStringParams(), stringParams));
         return this;
     }
 
@@ -253,8 +252,8 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder requestBody4JSon(String jsonStr) {
-        httpRequestBody.setStringContent(jsonStr);
-        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_JSON));
+        requestBodyWrapper.setStringContent(jsonStr);
+        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_JSON));
         return this;
     }
 
@@ -265,8 +264,8 @@ public class RequestBuilder {
      * @returne
      */
     public RequestBuilder requestBody4Text(String textStr) {
-        httpRequestBody.setStringContent(textStr);
-        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_PLAIN));
+        requestBodyWrapper.setStringContent(textStr);
+        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_PLAIN));
         return this;
     }
 
@@ -277,8 +276,8 @@ public class RequestBuilder {
      * @returne
      */
     public RequestBuilder requestBody4Xml(String xmlStr) {
-        httpRequestBody.setStringContent(xmlStr);
-        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_XML));
+        requestBodyWrapper.setStringContent(xmlStr);
+        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_XML));
         return this;
     }
 
@@ -289,8 +288,8 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder requestBody4Byte(byte[] bytes) {
-        httpRequestBody.setBytes(bytes);
-        httpRequestBody.setMediaType(MediaType.parse(HttpRequestBody.MEDIA_TYPE_STREAM));
+        requestBodyWrapper.setBytes(bytes);
+        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_STREAM));
         return this;
     }
 }

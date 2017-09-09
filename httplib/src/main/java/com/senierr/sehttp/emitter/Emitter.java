@@ -3,6 +3,7 @@ package com.senierr.sehttp.emitter;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.request.ResponseBodyWrapper;
 
 import java.io.IOException;
 
@@ -13,8 +14,6 @@ import okhttp3.Response;
 
 /**
  * 请求发射器
- *
- * 用于发送执行，取消请求，缓存及事件分发等
  *
  * @author zhouchunjie
  * @date 2017/3/29
@@ -59,21 +58,24 @@ public class Emitter<T> {
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                int responseCode = response.code();
-                if (!response.isSuccessful()) {
+            public void onResponse(Call call, Response response) throws IOException {
+                final Response responseWrapper = response.newBuilder()
+                        .body(new ResponseBodyWrapper(response.body(), callback))
+                        .build();
+                int responseCode = responseWrapper.code();
+                if (!responseWrapper.isSuccessful()) {
                     handleError(call.isCanceled(), new Exception("Response is not successful! responseCode: " + responseCode));
                 } else {
                     if (callback != null) {
                         try {
-                            T t = callback.convert(response);
+                            T t = callback.convert(responseWrapper);
                             handleSuccess(t);
                         } catch (Exception e) {
                             handleError(call.isCanceled(), e);
                         }
                     }
                 }
-                response.close();
+                responseWrapper.close();
             }
         });
     }

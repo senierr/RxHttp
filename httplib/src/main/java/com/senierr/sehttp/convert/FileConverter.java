@@ -63,31 +63,11 @@ public class FileConverter implements Converter<File> {
 
             bufferedSource = Okio.buffer(Okio.source(responseBody.byteStream()));
             bufferedSink = Okio.buffer(Okio.sink(destFile));
-            // 计算总大小
-            final long total = responseBody.contentLength();
-            // 上次刷新的时间
-            long lastTime = 0;
 
             byte[] bytes = new byte[1024];
-            long sum = 0;
             int len;
             while ((len = bufferedSource.read(bytes)) != -1) {
-                sum += len;
                 bufferedSink.write(bytes, 0, len);
-
-                final long finalSum = sum;
-                long curTime = System.currentTimeMillis();
-                if (curTime - lastTime >= SeHttp.REFRESH_MIN_INTERVAL || finalSum == total) {
-                    SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (fileCallback != null) {
-                                fileCallback.onDownloadProgress(total, finalSum, (int) (finalSum * 100 / total));
-                            }
-                        }
-                    });
-                    lastTime = curTime;
-                }
             }
             bufferedSink.flush();
             return destFile;

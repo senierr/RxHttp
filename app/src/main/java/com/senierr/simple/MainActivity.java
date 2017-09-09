@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestDownload() {
+        final long start = System.currentTimeMillis();
         SeHttp.get(Urls.URL_DOWNLOAD)
                 .tag(this)
                 .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onAfter() {
-                        showLog("onAfter");
+                        showLog("onAfter: " + (System.currentTimeMillis() - start));
                     }
                 });
     }

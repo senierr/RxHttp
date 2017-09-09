@@ -3,7 +3,6 @@ package com.senierr.simple;
 import android.app.Application;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.interceptor.LogLevel;
 import com.senierr.sehttp.util.HttpsUtil;
 
