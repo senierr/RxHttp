@@ -1,4 +1,4 @@
-package com.senierr.sehttp.model;
+package com.senierr.sehttp.entity;
 
 import java.util.Map;
 

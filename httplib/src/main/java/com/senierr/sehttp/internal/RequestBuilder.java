@@ -1,11 +1,10 @@
-package com.senierr.sehttp.request;
+package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
-import com.senierr.sehttp.emitter.Emitter;
-import com.senierr.sehttp.model.FileMap;
-import com.senierr.sehttp.model.HttpHeaders;
-import com.senierr.sehttp.model.HttpUrlParams;
+import com.senierr.sehttp.entity.FileMap;
+import com.senierr.sehttp.entity.HttpHeaders;
+import com.senierr.sehttp.entity.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
 
 import java.io.File;

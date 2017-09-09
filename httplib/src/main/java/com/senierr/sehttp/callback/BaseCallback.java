@@ -1,7 +1,7 @@
 package com.senierr.sehttp.callback;
 
 import com.senierr.sehttp.convert.Converter;
-import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.internal.RequestBuilder;
 
 /**
  * 请求回调基类

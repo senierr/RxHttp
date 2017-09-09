@@ -5,8 +5,8 @@ import android.os.Looper;
 
 import com.senierr.sehttp.interceptor.HttpLogInterceptor;
 import com.senierr.sehttp.interceptor.LogLevel;
-import com.senierr.sehttp.model.SSLParams;
-import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.entity.SSLParams;
+import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
 
 import java.util.LinkedHashMap;

@@ -1,6 +1,6 @@
 package com.senierr.sehttp.util;
 
-import com.senierr.sehttp.model.FileMap;
+import com.senierr.sehttp.entity.FileMap;
 
 import java.net.FileNameMap;
 import java.net.URLConnection;

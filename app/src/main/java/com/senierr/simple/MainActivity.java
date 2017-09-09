@@ -11,7 +11,7 @@ import android.widget.Toast;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.StringCallback;
-import com.senierr.sehttp.request.RequestBuilder;
+import com.senierr.sehttp.internal.RequestBuilder;
 
 import org.json.JSONObject;
 

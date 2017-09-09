@@ -1,9 +1,7 @@
-package com.senierr.sehttp.emitter;
+package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
-import com.senierr.sehttp.request.RequestBuilder;
-import com.senierr.sehttp.request.ResponseBodyWrapper;
 
 import java.io.IOException;
 

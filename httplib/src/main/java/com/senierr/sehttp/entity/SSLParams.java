@@ -1,4 +1,4 @@
-package com.senierr.sehttp.model;
+package com.senierr.sehttp.entity;
 
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;

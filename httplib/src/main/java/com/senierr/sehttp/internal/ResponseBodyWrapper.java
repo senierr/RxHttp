@@ -1,4 +1,4 @@
-package com.senierr.sehttp.request;
+package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;

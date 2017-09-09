@@ -2,7 +2,7 @@ package com.senierr.sehttp.util;
 
 import android.util.Log;
 
-import com.senierr.sehttp.model.SSLParams;
+import com.senierr.sehttp.entity.SSLParams;
 
 import java.io.IOException;
 import java.io.InputStream;
