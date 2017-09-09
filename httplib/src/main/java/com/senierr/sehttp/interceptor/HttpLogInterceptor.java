@@ -91,7 +91,7 @@ public class HttpLogInterceptor implements Interceptor {
         try {
             response = chain.proceed(request);
         } catch (Exception e) {
-            log("\u007C--> 请求失败: " + e.getMessage());
+            log("\u007C--> 请求失败: " + e.toString());
             throw e;
         }
         long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
