@@ -6,9 +6,8 @@
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
-> 高效网络请求框架，底层基于`okhttp3`
-> 此库专注于网络请求，不参与任何数据持久化
-> 缓存及Cookie管理，参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
+> 专注于网络请求的高效框架，底层基于`okhttp3`；  
+> 此框架不参与任何数据持久化，`缓存`及`Cookie`管理，请参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -42,7 +41,7 @@ compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
 
 ```java
 <uses-permission android:name="android.permission.INTERNET"/>
-// 文件下载需要以下权限：
+// 文件下载需要以下权限
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
