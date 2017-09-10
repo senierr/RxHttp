@@ -1,12 +1,14 @@
 # SeHttp
 
-> 高效网络请求框架，底层基于`okhttp3`
->
-> 此库专注于网络请求，不参与任何数据持久化
->
-> 若需使用缓存及Cookie管理，可参考使用：[SeCache](https://github.com/senierr/SeCache)
-
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
+[![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/SeHttp)
+[![](https://img.shields.io/badge/release-1.2.3-blue.svg)](https://github.com/senierr/SeHttp)
+[![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
+[![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
+
+> 高效网络请求框架，底层基于`okhttp3`
+> 此库专注于网络请求，不参与任何数据持久化
+> 缓存及Cookie管理，参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -40,9 +42,12 @@ compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
 
 ```java
 <uses-permission android:name="android.permission.INTERNET"/>
+// 文件下载需要以下权限：
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-### 全局配置/初始化
+### 全局配置
 
 `非必须`
 
@@ -58,38 +63,48 @@ SeHttp.getInstance()
         .cookieJar()                                  // 设置自定义cookie管理
         .sslSocketFactory()                           // 设置SSL认证
         .addCommonHeader("comHeader", "comValue")     // 添加全局头
-        .addCommonHeaders()
         .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
-        .addCommonUrlParams()
-        .retryCount(3);                               // 设置请求失败重连次数，默认不重连（0次）
+        .retryCount(3);                               // 设置失败重连次数，默认不重连（0次）
 ```
 
-### 基本请求
+### 使用详情
+
+#### 1. GET请求
 
 ```java
-SeHttp.get(urlStr)                                    // 请求方式及URL
-        .tag(this)                                    // 设置标签，用于取消请求
+SeHttp.get(urlStr)
         .addUrlParam("key", "value")                  // 添加单个URL参数
-        .addUrlParams()                               // 添加多个URL参数
         .addHeader("header", "value")                 // 添加单个请求头
-        .addHeaders()                                 // 添加多个请求头
-        .requestBody4Text()                           // 设置文本格式请求体
-        .requestBody4JSon(jsonObject.toString())      // 设置JSON格式请求体
-        .requestBody4Xml()                            // 设置XML格式请求体
-        .requestBody4Byte()                           // 设置字节流格式请求提
-        .requestBody()                                // 设置自定义请求体
-        .addRequestParam("key", "param")              // 添加单个请求体键值对（字符串）
-        .addRequestParam("key", new File())           // 添加单个请求体键值对（文件）
-        .addRequestStringParams()                     // 添加多个请求体键值对（字符串）
-        .addRequestFileParams()                       // 添加多个请求体键值对（文件）
-        .build()                                      // 生成OkHttp请求
-        .execute()                                    // 同步请求
-        .execute(new BaseCallback() {               // 异步请求
-            ......
+        .execute(new StringCallback() {               // 异步请求
+            ...
         });
 ```
 
-### 文件下载
+#### 2. POST请求
+
+```java
+SeHttp.post(urlStr)
+        .requestBody4Text()                           // 设置文本
+        .requestBody4JSon(jsonObject.toString())      // 设置JSON
+        .requestBody4Xml()                            // 设置XML
+        .requestBody4Byte()                           // 设置字节流
+        .addRequestParam("key", "param")              // 添加表单键值对
+        .execute(new StringCallback() {               // 异步请求
+            ...
+        });
+```
+
+#### 3. 文件上传
+
+```java
+SeHttp.post(urlStr)
+        .addRequestParam("key", new File())           // 添加文件
+        .execute(new FileCallback(...) {               // 异步请求
+            ...
+        });
+```
+
+#### 4. 文件下载
 
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
@@ -163,7 +178,7 @@ SeHttp.getInstance().cancelAll();
 
 ## 注意事项
 
-`SeHttp`是基于`okhttp3`所扩展的网络请求框架，所以默认依赖:
+`SeHttp`底层基于`okhttp3`，所以默认依赖：
 
 ```java
 compile 'com.squareup.okhttp3:okhttp:3.8.1'
