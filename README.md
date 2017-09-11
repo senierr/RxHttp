@@ -10,10 +10,7 @@
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
-* 自定义请求参数
-* 自定义请求头
-* 自定义多种请求体
-* 多文件和多参数统一的表单上传
+* 自定义请求参数，请求头，请求体
 * 文件下载、上传
 * 301、302重定向
 * 多种HTTPS验证
@@ -45,9 +42,7 @@ compile 'com.github.senierr:SeHttp:lastest.version'
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-### 全局配置
-
-`非必须`
+### 全局配置（非必须）
 
 ```java
 SeHttp.getInstance()
