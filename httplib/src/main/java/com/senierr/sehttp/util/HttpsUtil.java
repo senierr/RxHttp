@@ -1,10 +1,7 @@
 package com.senierr.sehttp.util;
 
-import android.util.Log;
-
 import com.senierr.sehttp.entity.SSLParams;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -19,6 +16,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.internal.Util;
+
 /**
  * HTTPS工具类
  *
@@ -27,8 +26,6 @@ import javax.net.ssl.X509TrustManager;
  */
 
 public class HttpsUtil {
-
-    private static final String TAG = HttpsUtil.class.getSimpleName();
 
     /**
      * 默认信任所有证书
@@ -107,7 +104,7 @@ public class HttpsUtil {
 
             return sslParams;
         } catch (Exception e) {
-            Log.e(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }
@@ -121,7 +118,7 @@ public class HttpsUtil {
             kmf.init(clientKeyStore, password.toCharArray());
             return kmf.getKeyManagers();
         } catch (Exception e) {
-            Log.e(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }
@@ -137,17 +134,13 @@ public class HttpsUtil {
                 String certificateAlias = Integer.toString(index++);
                 Certificate cert = certificateFactory.generateCertificate(certStream);
                 keyStore.setCertificateEntry(certificateAlias, cert);
-                try {
-                    if (certStream != null) certStream.close();
-                } catch (IOException e) {
-                    Log.e(TAG, Log.getStackTraceString(e));
-                }
+                Util.closeQuietly(certStream);
             }
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(keyStore);
             return tmf.getTrustManagers();
         } catch (Exception e) {
-            Log.e(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }

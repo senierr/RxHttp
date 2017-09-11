@@ -1,6 +1,5 @@
 package com.senierr.sehttp.convert;
 
-import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
 
 import java.io.File;
