@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
@@ -72,12 +73,8 @@ public class FileConverter implements Converter<File> {
             bufferedSink.flush();
             return destFile;
         } finally {
-            try {
-                if (bufferedSource != null) bufferedSource.close();
-                if (bufferedSink != null) bufferedSink.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Util.closeQuietly(bufferedSource);
+            Util.closeQuietly(bufferedSink);
         }
     }
 }

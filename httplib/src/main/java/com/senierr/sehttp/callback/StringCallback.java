@@ -2,6 +2,8 @@ package com.senierr.sehttp.callback;
 
 import com.senierr.sehttp.convert.StringConverter;
 
+import java.nio.charset.Charset;
+
 import okhttp3.Response;
 
 /**
@@ -13,8 +15,17 @@ import okhttp3.Response;
 
 public abstract class StringCallback extends BaseCallback<String> {
 
+    private Charset charset;
+
+    public StringCallback() {
+    }
+
+    public StringCallback(Charset charset) {
+        this.charset = charset;
+    }
+
     @Override
     public String convert(Response response) throws Exception {
-        return new StringConverter().convert(response);
+        return new StringConverter(charset).convert(response);
     }
 }
