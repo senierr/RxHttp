@@ -2,7 +2,6 @@
 
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
 [![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/SeHttp)
-[![](https://img.shields.io/badge/release-1.2.3-blue.svg)](https://github.com/senierr/SeHttp)
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
@@ -34,7 +33,7 @@ maven { url 'https://jitpack.io' }
 #### 2. 添加依赖
 
 ```java
-compile 'com.github.senierr:SeHttp:RELEASE_VERSION'
+compile 'com.github.senierr:SeHttp:lastest.version'
 ```
 
 #### 3. 添加权限
@@ -66,9 +65,7 @@ SeHttp.getInstance()
         .retryCount(3);                               // 设置失败重连次数，默认不重连（0次）
 ```
 
-### 使用详情
-
-#### 1. GET请求
+### GET请求
 
 ```java
 SeHttp.get(urlStr)
@@ -79,7 +76,7 @@ SeHttp.get(urlStr)
         });
 ```
 
-#### 2. POST请求
+### POST请求
 
 ```java
 SeHttp.post(urlStr)
@@ -93,7 +90,7 @@ SeHttp.post(urlStr)
         });
 ```
 
-#### 3. 文件上传
+### 文件上传
 
 ```java
 SeHttp.post(urlStr)
@@ -103,7 +100,7 @@ SeHttp.post(urlStr)
         });
 ```
 
-#### 4. 文件下载
+### 文件下载
 
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
@@ -117,7 +114,7 @@ SeHttp.get(Urls.URL_DOWNLOAD)
         });
 ```
 
-### 请求回调
+## 请求回调
 
 ```java
 /**
