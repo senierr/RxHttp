@@ -75,7 +75,13 @@ public class ResponseBodyWrapper extends ResponseBody {
                         @Override
                         public void run() {
                             if (callback != null) {
-                                callback.onDownloadProgress(contentLength, totalBytesRead, (int) (totalBytesRead * 100 / contentLength));
+                                int progress;
+                                if (contentLength <= 0) {
+                                    progress = 100;
+                                } else {
+                                    progress = (int) (totalBytesRead * 100 / contentLength);
+                                }
+                                callback.onDownloadProgress(contentLength, totalBytesRead, progress);
                             }
                         }
                     });

@@ -91,7 +91,13 @@ public class RequestBodyWrapper extends RequestBody {
                         @Override
                         public void run() {
                             if (callback != null) {
-                                callback.onUploadProgress(contentLength, bytesWritten, (int) (bytesWritten * 100 / contentLength));
+                                int progress;
+                                if (contentLength <= 0) {
+                                    progress = 100;
+                                } else {
+                                    progress = (int) (bytesWritten * 100 / contentLength);
+                                }
+                                callback.onUploadProgress(contentLength, bytesWritten, progress);
                             }
                         }
                     });
