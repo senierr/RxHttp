@@ -1,12 +1,14 @@
 # SeHttp
 
+#### 精简、高效的网络请求框架
+
 [![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
 [![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/SeHttp)
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
-> 专注于网络请求的高效框架，底层基于`okhttp3`；  
-> 此框架不参与任何数据持久化，`缓存`及`Cookie`管理，请参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
+> 专注于网络请求的高效框架，底层基于`okhttp3`；
+> 此框架不参与任何数据持久化，`Cache`及`Cookie`管理，请参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -17,7 +19,7 @@
 * 自定义失败重连次数
 * 链式调用
 * 根据Tag取消请求
-* 可扩展Callback
+* 可多种扩展Callback
 
 ## 基本用法
 
@@ -30,7 +32,14 @@ maven { url 'https://jitpack.io' }
 #### 2. 添加依赖
 
 ```java
-compile 'com.github.senierr:SeHttp:lastest.version'
+compile 'com.github.senierr:SeHttp:<release_version>'
+```
+
+`SeHttp`底层基于`okhttp3`，所以默认依赖：
+
+```java
+compile 'com.squareup.okhttp3:okhttp:3.8.1'
+compile 'com.squareup.okio:okio:1.13.0'
 ```
 
 #### 3. 添加权限
@@ -111,14 +120,9 @@ SeHttp.get(Urls.URL_DOWNLOAD)
 
 ## 请求回调
 
-```java
-/**
- * 请求开始前回调，可通过requestBuilder修改请求
- *
- * @param requestBuilder 请求构造器
- */
-public void onBefore(RequestBuilder requestBuilder) {}
+#### 注：取消(cancel)掉请求后，此请求不会走任何回调；
 
+```java
 /**
  * 上传进度回调
  *
@@ -150,12 +154,7 @@ public abstract void onSuccess(T t);
  * @param isCanceled 是否取消
  * @param e 捕获的异常
  */
-public void onError(boolean isCanceled, Exception e) {}
-
-/**
- * 请求结束回调
- */
-public void onAfter() {}
+public void onError(Exception e) {}
 ```
 
 ## 取消请求
@@ -165,15 +164,6 @@ public void onAfter() {}
 SeHttp.getInstance().cancelTag(tag);
 // 取消所有请求
 SeHttp.getInstance().cancelAll();
-```
-
-## 注意事项
-
-`SeHttp`底层基于`okhttp3`，所以默认依赖：
-
-```java
-compile 'com.squareup.okhttp3:okhttp:3.8.1'
-compile 'com.squareup.okio:okio:1.13.0'
 ```
 
 ## 混淆
