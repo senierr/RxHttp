@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onError(boolean isCanceled, Exception e) {
+        public void onError(Exception e) {
             showLog("onError: " + e.toString());
         }
     };
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(boolean isCanceled, Exception e) {
+                    public void onError(Exception e) {
                         showLog(Log.getStackTraceString(e));
                     }
                 });
@@ -169,9 +169,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(boolean isCanceled, Exception e) {
+                    public void onError(Exception e) {
                         showLog("onError: " + e.toString());
-                        Toast.makeText(MainActivity.this, "onError: " + isCanceled, Toast.LENGTH_SHORT).show();
                     }
                 });
     }

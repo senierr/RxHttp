@@ -39,8 +39,7 @@ public abstract class BaseCallback<T> implements Converter<T> {
     /**
      * 请求异常回调
      *
-     * @param isCanceled 是否取消
      * @param e 捕获的异常
      */
-    public void onError(boolean isCanceled, Exception e) {}
+    public void onError(Exception e) {}
 }

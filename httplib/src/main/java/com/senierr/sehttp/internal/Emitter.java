@@ -29,7 +29,7 @@ public class Emitter<T> {
     }
 
     /**
-     * 异步执行
+     * 异步请求
      *
      * @param baseCallback
      */
@@ -47,7 +47,7 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
-                    handleError(call.isCanceled(), e);
+                    handleError(call, e);
                 }
             }
 
@@ -58,14 +58,14 @@ public class Emitter<T> {
                         .build();
                 int responseCode = responseWrapper.code();
                 if (!responseWrapper.isSuccessful()) {
-                    handleError(call.isCanceled(), new Exception("Response is not successful! responseCode: " + responseCode));
+                    handleError(call, new Exception("Response is not successful! responseCode: " + responseCode));
                 } else {
                     if (callback != null) {
                         try {
                             T t = callback.convert(responseWrapper);
                             handleSuccess(t);
                         } catch (Exception e) {
-                            handleError(call.isCanceled(), e);
+                            handleError(call, e);
                         }
                     }
                 }
@@ -75,7 +75,7 @@ public class Emitter<T> {
     }
 
     /**
-     * 同步执行
+     * 同步请求
      *
      * @return
      */
@@ -114,18 +114,18 @@ public class Emitter<T> {
     /**
      * 执行失败回调
      *
-     * @param isCanceled
+     * @param call
      * @param e
      */
-    private void handleError(final boolean isCanceled, final Exception e) {
-        if (callback == null) {
+    private void handleError(final Call call, final Exception e) {
+        if (callback == null || (call != null && call.isCanceled())) {
             return;
         }
         SeHttp.getInstance().getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
                 if (callback != null) {
-                    callback.onError(isCanceled, e);
+                    callback.onError(e);
                 }
             }
         });
