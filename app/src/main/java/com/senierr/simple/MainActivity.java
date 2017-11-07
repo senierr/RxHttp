@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
+import com.senierr.sehttp.callback.JsonCallback;
 import com.senierr.sehttp.callback.StringCallback;
 import com.senierr.sehttp.internal.RequestBuilder;
 
@@ -78,13 +79,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        /**
-         * todo:
-         *
-         * cookie
-         * HTTPS，证书
-         */
     }
 
     @Override
@@ -127,7 +121,23 @@ public class MainActivity extends AppCompatActivity {
                 .addUrlParam("addUrlParam", "addUrlParam0")
                 .addHeader("addHeader", "addHeader0")
                 .addUrlParams(urlParams)
-                .execute(stringCallback);
+                .execute(new JsonCallback<String>() {
+                    @Override
+                    public String parseJSon(String responseStr) throws Exception {
+                        JSONObject jsonObject = new JSONObject(responseStr);
+                        return jsonObject.getString("msg");
+                    }
+
+                    @Override
+                    public void onSuccess(String s) {
+                        showLog(s);
+                    }
+
+                    @Override
+                    public void onError(boolean isCanceled, Exception e) {
+                        showLog(Log.getStackTraceString(e));
+                    }
+                });
     }
 
     private void requestPost() {

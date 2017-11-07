@@ -1,6 +1,12 @@
 package com.senierr.sehttp.callback;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
+import okio.BufferedSource;
 
 /**
  * Json类型回调
@@ -11,8 +17,32 @@ import okhttp3.Response;
 
 public abstract class JsonCallback<T> extends BaseCallback<T> {
 
+    private Charset charset;
+
+    public JsonCallback() {}
+
+    public JsonCallback(Charset charset) {
+        this.charset = charset;
+    }
+
+    public abstract T parseJSon(String responseStr) throws Exception;
+
     @Override
     public T convert(Response response) throws Exception {
-        return null;
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            throw new IOException("ResponseBody is null");
+        }
+
+        if (charset != null) {
+            BufferedSource source = responseBody.source();
+            try {
+                return parseJSon(source.readString(charset));
+            } finally {
+                Util.closeQuietly(source);
+            }
+        } else {
+            return parseJSon(responseBody.string());
+        }
     }
 }
