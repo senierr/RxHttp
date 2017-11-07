@@ -35,10 +35,6 @@ public class Emitter<T> {
      */
     public void execute(BaseCallback<T> baseCallback) {
         this.callback = baseCallback;
-        // Before回调
-        if (callback != null) {
-            callback.onBefore(requestBuilder);
-        }
         // 构建请求
         final Request request = requestBuilder.build(callback);
         // 网络请求
@@ -110,7 +106,6 @@ public class Emitter<T> {
             public void run() {
                 if (callback != null) {
                     callback.onSuccess(t);
-                    callback.onAfter();
                 }
             }
         });
@@ -131,7 +126,6 @@ public class Emitter<T> {
             public void run() {
                 if (callback != null) {
                     callback.onError(isCanceled, e);
-                    callback.onAfter();
                 }
             }
         });

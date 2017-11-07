@@ -44,12 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     private StringCallback stringCallback = new StringCallback() {
         @Override
-        public void onBefore(RequestBuilder requestBuilder) {
-            requestBuilder.addHeader("onBefore", "requestBuilder");
-            showLog("onBefore");
-        }
-
-        @Override
         public void onUploadProgress(long totalSize, long currentSize, int progress) {
             showLog("onProgress: " + progress);
         }
@@ -62,11 +56,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onError(boolean isCanceled, Exception e) {
             showLog("onError: " + e.toString());
-        }
-
-        @Override
-        public void onAfter() {
-            showLog("onAfter");
         }
     };
 
@@ -164,11 +153,6 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
                     @Override
-                    public void onBefore(RequestBuilder requestBuilder) {
-                        showLog("onBefore");
-                    }
-
-                    @Override
                     public boolean onDiff(Response response, File destFile) {
                         // 判断destFile是否是需要下载的文件，默认返回false
                         return super.onDiff(response, destFile);
@@ -188,11 +172,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onError(boolean isCanceled, Exception e) {
                         showLog("onError: " + e.toString());
                         Toast.makeText(MainActivity.this, "onError: " + isCanceled, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onAfter() {
-                        showLog("onAfter: " + (System.currentTimeMillis() - start));
                     }
                 });
     }

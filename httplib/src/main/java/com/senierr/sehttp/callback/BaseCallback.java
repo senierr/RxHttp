@@ -12,13 +12,6 @@ import com.senierr.sehttp.internal.RequestBuilder;
 public abstract class BaseCallback<T> implements Converter<T> {
 
     /**
-     * 请求开始前回调，可通过requestBuilder修改请求
-     *
-     * @param requestBuilder 请求构造器
-     */
-    public void onBefore(RequestBuilder requestBuilder) {}
-
-    /**
      * 上传进度回调
      *
      * @param totalSize 上传文件总大小
@@ -50,9 +43,4 @@ public abstract class BaseCallback<T> implements Converter<T> {
      * @param e 捕获的异常
      */
     public void onError(boolean isCanceled, Exception e) {}
-
-    /**
-     * 请求结束回调
-     */
-    public void onAfter() {}
 }
