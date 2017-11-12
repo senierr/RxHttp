@@ -1,44 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.senierr.simple.MainActivity">
+    android:orientation="vertical">
 
     <Button
-        android:id="@+id/btn_get"
+        android:id="@+id/btn_request"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="普通get请求" />
+        android:text="普通请求" />
 
-    <Button
-        android:id="@+id/btn_post"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="普通post请求" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/btn_download"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="下载" />
+        <Button
+            android:id="@+id/btn_pause1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="暂停" />
 
-    <Button
-        android:id="@+id/btn_upload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="上传" />
+        <Button
+            android:id="@+id/btn_download1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btn_pause1"
+            android:text="开始" />
 
-    <Button
-        android:id="@+id/btn_301"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="301重定向" />
+        <ProgressBar
+            android:id="@+id/pb_progress1"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_toStartOf="@id/btn_download1"
+            android:layout_centerVertical="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
 
-    <Button
-        android:id="@+id/btn_https"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="https请求" />
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_pause2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="暂停" />
+
+        <Button
+            android:id="@+id/btn_download2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btn_pause2"
+            android:text="开始" />
+
+        <ProgressBar
+            android:id="@+id/pb_progress2"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_toStartOf="@id/btn_download2"
+            android:layout_centerVertical="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_pause3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="暂停" />
+
+        <Button
+            android:id="@+id/btn_download3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btn_pause3"
+            android:text="开始" />
+
+        <ProgressBar
+            android:id="@+id/pb_progress3"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_toStartOf="@id/btn_download3"
+            android:layout_centerVertical="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>

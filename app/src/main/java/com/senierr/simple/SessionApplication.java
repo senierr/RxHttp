@@ -3,8 +3,8 @@ package com.senierr.simple;
 import android.app.Application;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.entity.SSLParams;
 import com.senierr.sehttp.interceptor.LogLevel;
-import com.senierr.sehttp.util.HttpsUtil;
 
 import okio.Buffer;
 
@@ -42,8 +42,8 @@ public class SessionApplication extends Application {
 //                .addInterceptor()                             // 添加应用层拦截器
 //                .addNetworkInterceptor()                      // 添加网络层拦截器
 //                .hostnameVerifier()                           // 设置域名匹配规则
-                .sslSocketFactory(HttpsUtil.getSslSocketFactory(
-                        new Buffer().writeUtf8(CER_12306).inputStream()))
+//                .sslSocketFactory(SSLParams.create(
+//                        new Buffer().writeUtf8(CER_12306).inputStream()))
                 .addCommonHeader("comHeader", "comValue")     // 添加全局头
 //                .addCommonHeaders()
                 .addCommonUrlParam("comKey", "comValue")      // 添加全局参数

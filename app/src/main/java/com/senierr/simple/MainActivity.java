@@ -3,22 +3,19 @@ package com.senierr.simple;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.FileCallback;
+import com.senierr.sehttp.callback.FileCallback1;
 import com.senierr.sehttp.callback.JsonCallback;
-import com.senierr.sehttp.callback.StringCallback;
-import com.senierr.sehttp.internal.RequestBuilder;
-
-import org.json.JSONObject;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,41 +24,33 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.btn_get)
-    Button btnGet;
-    @BindView(R.id.btn_post)
-    Button btnPost;
-    @BindView(R.id.btn_download)
-    Button btnDownload;
-    @BindView(R.id.btn_upload)
-    Button btnUpload;
-    @BindView(R.id.btn_301)
-    Button btn301;
-    @BindView(R.id.btn_https)
-    Button btnHttps;
+    public static final String URL = "https://www.baidu.com";
+    public static final String URL_DOWNLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
+
+    @BindView(R.id.btn_request)
+    Button btnRequest;
+    @BindView(R.id.btn_pause1)
+    Button btnPause1;
+    @BindView(R.id.btn_download1)
+    Button btnDownload1;
+    @BindView(R.id.pb_progress1)
+    ProgressBar pbProgress1;
+    @BindView(R.id.btn_pause2)
+    Button btnPause2;
+    @BindView(R.id.btn_download2)
+    Button btnDownload2;
+    @BindView(R.id.pb_progress2)
+    ProgressBar pbProgress2;
+    @BindView(R.id.btn_pause3)
+    Button btnPause3;
+    @BindView(R.id.btn_download3)
+    Button btnDownload3;
+    @BindView(R.id.pb_progress3)
+    ProgressBar pbProgress3;
+    @BindView(R.id.tv_text)
+    TextView tvText;
 
     private String fileDir = Environment.getExternalStorageDirectory() + "/Download/AA/";
-
-    private StringCallback stringCallback = new StringCallback() {
-        @Override
-        public void onUploadProgress(long totalSize, long currentSize, int progress) {
-            showLog("onProgress: " + progress);
-        }
-
-        @Override
-        public void onSuccess(String s) {
-            showLog("onSuccess: " + s);
-        }
-
-        @Override
-        public void onError(Exception e) {
-            showLog("onError: " + e.toString());
-        }
-    };
-
-    private void showLog(String logStr) {
-        Log.e("MainActivity", logStr);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,82 +65,88 @@ public class MainActivity extends AppCompatActivity {
         SeHttp.getInstance().cancelTag(this);
     }
 
-    @OnClick({R.id.btn_get, R.id.btn_post, R.id.btn_download, R.id.btn_upload, R.id.btn_301, R.id.btn_https})
-    public void onViewClicked(View view) {
+    @OnClick({R.id.btn_request, R.id.btn_pause1, R.id.btn_download1, R.id.btn_pause2, R.id.btn_download2, R.id.btn_pause3, R.id.btn_download3})
+    public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_get:
-                requestGet();
+            case R.id.btn_request:
+                request();
                 break;
-            case R.id.btn_post:
-                requestPost();
+            case R.id.btn_pause1:
+                SeHttp.getInstance().cancelAll();
+                startPoint = _currentSize;
                 break;
-            case R.id.btn_download:
-                requestDownload();
+            case R.id.btn_download1:
+                download();
                 break;
-            case R.id.btn_upload:
-                requestUpload();
+            case R.id.btn_pause2:
                 break;
-            case R.id.btn_301:
-                request301();
+            case R.id.btn_download2:
                 break;
-            case R.id.btn_https:
-                requestHttps();
+            case R.id.btn_pause3:
+                break;
+            case R.id.btn_download3:
                 break;
         }
     }
 
-    private void requestGet() {
-        LinkedHashMap<String, String> urlParams = new LinkedHashMap<>();
-        urlParams.put("urlParams1", "LinkedHashMap1");
-        urlParams.put("urlParams2", "LinkedHashMap2");
-
-        SeHttp.get(Urls.URL_METHOD)
-                .tag(this)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-                .addUrlParams(urlParams)
+    /**
+     * 普通请求
+     */
+    private void request() {
+        SeHttp
+                .get(URL)                           // 请求：post/put/delete/head/options/patch
+                .tag(this)                          // 标签：关闭请求时使用
+//                .addUrlParam("key", "value")      // 添加URL参数
+//                .addUrlParams(...)
+//                .addHeader("key", "value")        // 添加头
+//                .addHeaders(...)
+//                .addRequestParam("key", "value")  // 添加请求体参数
+//                .addRequestStringParams(...)
+//                .addRequestParam("key", ...)
+//                .addRequestFileParams(...)
+//                .requestBody4Text(...)            // 设置请求体：文本
+//                .requestBody4JSon(...)            // 设置请求体：JSon
+//                .requestBody4Xml(...)             // 设置请求体：XML
+//                .requestBody4Byte(...)            // 设置请求体：字节流
+//                .requestBody(...)                 // 设置自定义请求体
+//                .build(...)                       // 生成OkHttp请求
+//                .execute()                        // 同步请求
+//                .execute(new StringCallback() {   // 异步String回调
+//                    @Override
+//                    public void onSuccess(String s) {
+//                    }
+//                })
                 .execute(new JsonCallback<String>() {
                     @Override
                     public String parseJSon(String responseStr) throws Exception {
-                        JSONObject jsonObject = new JSONObject(responseStr);
-                        return jsonObject.getString("msg");
+                        // 解析JSon
+                        return responseStr;
                     }
 
                     @Override
                     public void onSuccess(String s) {
-                        showLog(s);
+                        tvText.setText(s);
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        showLog(Log.getStackTraceString(e));
+                        tvText.setText(Log.getStackTraceString(e));
                     }
                 });
     }
 
-    private void requestPost() {
-        LinkedHashMap<String, String> urlParams = new LinkedHashMap<>();
-        urlParams.put("urlParams1", "LinkedHashMap1");
-        urlParams.put("urlParams2", "LinkedHashMap2");
+    long _totalSize;
+    long _currentSize;
+    long startPoint;
 
-        LinkedHashMap<String, String> requestParams = new LinkedHashMap<>();
-        requestParams.put("requestParams1", "LinkedHashMap1");
-        requestParams.put("requestParams2", "LinkedHashMap2");
-
-        SeHttp.post(Urls.URL_METHOD)
+    /**
+     * 下载
+     */
+    private void download() {
+        SeHttp.get(URL_DOWNLOAD)
                 .tag(this)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-                .addUrlParams(urlParams)
-                .addRequestStringParams(requestParams)
-                .execute(stringCallback);
-    }
-
-    private void requestDownload() {
-        final long start = System.currentTimeMillis();
-        SeHttp.get(Urls.URL_DOWNLOAD)
-                .tag(this)
-                .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
+                .addHeader("RANGE", "bytes=" + startPoint + "-")
+                .execute(new FileCallback1(new File(fileDir), "WeChatSetup.exe", startPoint) {
                     @Override
                     public boolean onDiff(Response response, File destFile) {
                         // 判断destFile是否是需要下载的文件，默认返回false
@@ -160,54 +155,31 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onDownloadProgress(long totalSize, long currentSize, int progress) {
-                        showLog("totalSize: " + totalSize + ", currentSize: " + currentSize + ", onProgress: " + progress);
+                        tvText.setText("totalSize: " + totalSize + "\n currentSize: " + currentSize + "\n onProgress: " + progress);
+                        if (_currentSize == 0) {
+                            _totalSize = totalSize;
+                            pbProgress1.setMax((int) _totalSize);
+                        }
+
+                        if (_totalSize == totalSize) {
+                            _currentSize = currentSize;
+                        } else {
+                            _currentSize = startPoint + currentSize;
+                        }
+
+                        pbProgress1.setProgress((int) _currentSize);
+                        Log.e("download", _totalSize + ": " + startPoint + ", " + _currentSize);
                     }
 
                     @Override
                     public void onSuccess(File file) {
-                        showLog("onSuccess: " + file.getPath());
+                        tvText.setText("onSuccess: " + file.getPath() + ", " + file.length());
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        showLog("onError: " + e.toString());
+                        tvText.setText(Log.getStackTraceString(e));
                     }
                 });
-    }
-
-    private void requestUpload() {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("key1", "value1");
-        params.put("key2", "这里是需要提交的json格式数据");
-        params.put("key3", "也可以使用三方工具将对象转成json字符串");
-        params.put("key4", "其实你怎么高兴怎么写都行");
-        JSONObject jsonObject = new JSONObject(params);
-
-        SeHttp.post(Urls.URL_TEXT_UPLOAD)
-                .tag(this)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-//                .requestBody4Text("这里是需要提交的文本格式数据")        // 上传普通文本
-//                .requestBody4JSon(jsonObject.toString())              // 上传JSON
-                .addRequestParam("", new File(fileDir + "upload_text.txt"))     // 上传文件
-                .execute(stringCallback);
-    }
-
-    private void request301() {
-        SeHttp.get(Urls.URL_REDIRECT)
-                .tag(this)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-                .execute(stringCallback);
-    }
-
-    private void requestHttps() {
-//        String httpsStr = "https://github.com/jeasonlzy";   // CA认证
-        String httpsStr = "https://kyfw.12306.cn/otn";    // 自签名
-        SeHttp.get(httpsStr)
-                .tag(this)
-                .addUrlParam("addUrlParam", "addUrlParam0")
-                .addHeader("addHeader", "addHeader0")
-                .execute(stringCallback);
     }
 }
