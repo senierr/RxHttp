@@ -65,7 +65,7 @@ public class Emitter<T> {
                             T t = callback.convert(responseWrapper);
                             handleSuccess(t);
                         } catch (Exception e) {
-                            handleError(call, e);
+                            handleSuccess(null);
                         }
                     }
                 }

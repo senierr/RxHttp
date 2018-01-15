@@ -5,7 +5,6 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.senierr.sehttp.SeHttp;
@@ -90,12 +89,12 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(String s) {
-                        tvText.setText(s);
+                        tvText.setText("onSuccess:\n" + s);
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        tvText.setText(Log.getStackTraceString(e));
+                        tvText.setText("onError:\n" + Log.getStackTraceString(e));
                     }
                 });
     }
