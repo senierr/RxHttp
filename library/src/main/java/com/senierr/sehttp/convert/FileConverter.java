@@ -13,7 +13,7 @@ import okio.BufferedSource;
 import okio.Okio;
 
 /**
- * File类型解析
+ * 文件类型解析
  *
  * @author zhouchunjie
  * @date 2017/3/29

@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 //                })
                 .execute(new JsonCallback<String>() {
                     @Override
-                    public String parseJSon(String responseStr) throws Exception {
+                    public String parseJson(String responseStr) throws Exception {
                         // 解析JSon
                         return responseStr;
                     }

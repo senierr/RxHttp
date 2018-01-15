@@ -17,8 +17,7 @@ public abstract class StringCallback extends BaseCallback<String> {
 
     private Charset charset;
 
-    public StringCallback() {
-    }
+    public StringCallback() {}
 
     public StringCallback(Charset charset) {
         this.charset = charset;
