@@ -6,10 +6,20 @@ import com.senierr.sehttp.internal.RequestBuilder;
 /**
  * 请求回调基类
  *
- * Created by zhouchunjie on 2017/3/28.
+ * @author zhouchunjie
+ * @date 2017/3/28
  */
 
 public abstract class BaseCallback<T> implements Converter<T> {
+
+    /**
+     * 请求发起前
+     *
+     * 注：执行线程为请求发起线程，并不一定是UI线程
+     *
+     * @param requestBuilder 请求构造器
+     */
+    public void onBefore(RequestBuilder requestBuilder) {}
 
     /**
      * 上传进度回调
@@ -37,9 +47,14 @@ public abstract class BaseCallback<T> implements Converter<T> {
     public abstract void onSuccess(T t);
 
     /**
-     * 请求异常回调
+     * 请求失败回调
      *
-     * @param e 捕获的异常
+     * @param e 失败异常
      */
-    public void onError(Exception e) {}
+    public void onFailure(Exception e) {}
+
+    /**
+     * 请求发起后
+     */
+    public void onAfter() {}
 }

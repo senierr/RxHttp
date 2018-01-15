@@ -154,7 +154,7 @@ public abstract void onSuccess(T t);
  * @param isCanceled 是否取消
  * @param e 捕获的异常
  */
-public void onError(Exception e) {}
+public void onFailure(Exception e) {}
 ```
 
 ## 取消请求

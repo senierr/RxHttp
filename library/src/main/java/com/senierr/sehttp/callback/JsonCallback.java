@@ -25,6 +25,13 @@ public abstract class JsonCallback<T> extends BaseCallback<T> {
         this.charset = charset;
     }
 
+    /**
+     * JSON解析
+     *
+     * @param responseStr 待解析字符串
+     * @return 解析结果
+     * @throws Exception 解析失败异常
+     */
     public abstract T parseJSon(String responseStr) throws Exception;
 
     @Override

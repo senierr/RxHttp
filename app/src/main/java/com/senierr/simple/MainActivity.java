@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Exception e) {
-                        tvText.setText("onError:\n" + Log.getStackTraceString(e));
+                    public void onFailure(Exception e) {
+                        tvText.setText("onFailure:\n" + Log.getStackTraceString(e));
                     }
                 });
     }
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Exception e) {
+                    public void onFailure(Exception e) {
                         tvText.setText(Log.getStackTraceString(e));
                     }
                 });

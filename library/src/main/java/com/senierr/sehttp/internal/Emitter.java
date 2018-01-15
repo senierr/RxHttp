@@ -35,6 +35,9 @@ public class Emitter<T> {
      */
     public void execute(BaseCallback<T> baseCallback) {
         this.callback = baseCallback;
+        if (callback != null) {
+            callback.onBefore(requestBuilder);
+        }
         // 构建请求
         final Request request = requestBuilder.build(callback);
         // 网络请求
@@ -47,7 +50,7 @@ public class Emitter<T> {
                     currentRetryCount++;
                     getNewCall(request).enqueue(this);
                 } else {
-                    handleError(call, e);
+                    handleFailure(call, e);
                 }
             }
 
@@ -58,7 +61,7 @@ public class Emitter<T> {
                         .build();
                 int responseCode = responseWrapper.code();
                 if (!responseWrapper.isSuccessful()) {
-                    handleError(call, new Exception("Response is not successful! responseCode: " + responseCode));
+                    handleFailure(call, new Exception("Response is not successful! responseCode: " + responseCode));
                 } else {
                     if (callback != null) {
                         try {
@@ -107,6 +110,7 @@ public class Emitter<T> {
             public void run() {
                 if (callback != null) {
                     callback.onSuccess(t);
+                    callback.onAfter();
                 }
             }
         });
@@ -118,7 +122,7 @@ public class Emitter<T> {
      * @param call
      * @param e
      */
-    private void handleError(final Call call, final Exception e) {
+    private void handleFailure(final Call call, final Exception e) {
         if (callback == null || (call != null && call.isCanceled())) {
             return;
         }
@@ -126,7 +130,8 @@ public class Emitter<T> {
             @Override
             public void run() {
                 if (callback != null) {
-                    callback.onError(e);
+                    callback.onFailure(e);
+                    callback.onAfter();
                 }
             }
         });

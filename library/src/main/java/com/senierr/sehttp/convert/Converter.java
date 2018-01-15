@@ -3,9 +3,7 @@ package com.senierr.sehttp.convert;
 import okhttp3.Response;
 
 /**
- * 转换器
- *
- * 作用是将Response转换成callback所需内容
+ * 内容转换器
  *
  * @author zhouchunjie
  * @date 2017/3/29
@@ -13,5 +11,14 @@ import okhttp3.Response;
 
 public interface Converter<T> {
 
+    /**
+     * 内容转换
+     *
+     * 注：异步线程
+     *
+     * @param response 请求返回
+     * @return
+     * @throws Exception
+     */
     T convert(Response response) throws Exception;
 }
