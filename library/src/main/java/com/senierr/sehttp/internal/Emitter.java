@@ -66,10 +66,10 @@ public class Emitter<T> {
                     if (callback != null) {
                         try {
                             T t = callback.convert(responseWrapper);
-                            handleSuccess(t);
+                            handleSuccess(call, t);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            handleSuccess(null);
+                            handleSuccess(call, null);
                         }
                     }
                 }
@@ -101,14 +101,14 @@ public class Emitter<T> {
      *
      * @param t
      */
-    private void handleSuccess(final T t) {
-        if (callback == null) {
+    private void handleSuccess(final Call call, final T t) {
+        if (!checkIfNeedCallBack(call)) {
             return;
         }
         SeHttp.getInstance().getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
-                if (callback != null) {
+                if (checkIfNeedCallBack(call)) {
                     callback.onSuccess(t);
                     callback.onAfter();
                 }
@@ -123,17 +123,27 @@ public class Emitter<T> {
      * @param e
      */
     private void handleFailure(final Call call, final Exception e) {
-        if (callback == null || (call != null && call.isCanceled())) {
+        if (!checkIfNeedCallBack(call)) {
             return;
         }
         SeHttp.getInstance().getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
-                if (callback != null) {
+                if (checkIfNeedCallBack(call)) {
                     callback.onFailure(e);
                     callback.onAfter();
                 }
             }
         });
+    }
+
+    /**
+     * 检查是否需要回调
+     *
+     * @param call
+     * @return
+     */
+    private boolean checkIfNeedCallBack(Call call) {
+        return callback != null && call != null && !call.isCanceled();
     }
 }
