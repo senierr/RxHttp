@@ -7,8 +7,7 @@
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
-> 专注于网络请求的高效框架，底层基于`okhttp3`；
-> 此框架不参与任何数据持久化，`Cache`及`Cookie`管理，请参考DiskLruCache工具：[SeCache](https://github.com/senierr/SeCache)
+> 此框架专注于高效、精简的网络请求，底层基于`okhttp3`，不参与任何数据持久化：`缓存`及`Cookie`管理。
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -19,7 +18,7 @@
 * 自定义失败重连次数
 * 链式调用
 * 根据Tag取消请求
-* 可多种扩展Callback
+* 多种可扩展Callback
 
 ## 基本用法
 
@@ -38,8 +37,7 @@ compile 'com.github.senierr:SeHttp:<release_version>'
 `SeHttp`底层基于`okhttp3`，所以默认依赖：
 
 ```java
-compile 'com.squareup.okhttp3:okhttp:3.8.1'
-compile 'com.squareup.okio:okio:1.13.0'
+api 'com.squareup.okhttp3:okhttp:3.9.1'
 ```
 
 #### 3. 添加权限
@@ -124,6 +122,15 @@ SeHttp.get(Urls.URL_DOWNLOAD)
 
 ```java
 /**
+ * 请求发起前
+ *
+ * 注：执行线程为请求发起线程，并不一定是UI线程
+ *
+ * @param requestBuilder 请求构造器
+ */
+public void onBefore(RequestBuilder requestBuilder) {}
+
+/**
  * 上传进度回调
  *
  * @param totalSize 上传文件总大小
@@ -149,12 +156,16 @@ public void onDownloadProgress(long totalSize, long currentSize, int progress) {
 public abstract void onSuccess(T t);
 
 /**
- * 请求异常回调
+ * 请求失败回调
  *
- * @param isCanceled 是否取消
- * @param e 捕获的异常
+ * @param e 失败异常
  */
 public void onFailure(Exception e) {}
+
+/**
+ * 请求发起后
+ */
+public void onAfter() {}
 ```
 
 ## 取消请求
