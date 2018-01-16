@@ -1,7 +1,10 @@
 package com.senierr.sehttp.internal;
 
+import android.util.Log;
+
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.util.LogUtil;
 
 import java.io.IOException;
 
@@ -68,7 +71,7 @@ public class Emitter<T> {
                             T t = callback.convert(responseWrapper);
                             handleSuccess(call, t);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            LogUtil.logE(Log.getStackTraceString(e));
                             handleSuccess(call, null);
                         }
                     }

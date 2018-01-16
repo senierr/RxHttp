@@ -8,6 +8,7 @@ import com.senierr.sehttp.interceptor.LogLevel;
 import com.senierr.sehttp.entity.SSLParams;
 import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.LogUtil;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -258,6 +259,7 @@ public class SeHttp {
     public SeHttp debug(String tag, LogLevel logLevel) {
         HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
         okHttpClientBuilder.addInterceptor(logInterceptor);
+        LogUtil.openDebug(tag);
         return this;
     }
 

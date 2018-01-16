@@ -1,5 +1,9 @@
 package com.senierr.sehttp.entity;
 
+import android.util.Log;
+
+import com.senierr.sehttp.util.LogUtil;
+
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -123,7 +127,7 @@ public class SSLParams {
 
             return sslParams;
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.logE(Log.getStackTraceString(e));
         }
         return null;
     }
@@ -137,7 +141,7 @@ public class SSLParams {
             kmf.init(clientKeyStore, password.toCharArray());
             return kmf.getKeyManagers();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.logE(Log.getStackTraceString(e));
         }
         return null;
     }
@@ -159,7 +163,7 @@ public class SSLParams {
             tmf.init(keyStore);
             return tmf.getTrustManagers();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.logE(Log.getStackTraceString(e));
         }
         return null;
     }
