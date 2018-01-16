@@ -31,7 +31,7 @@ maven { url 'https://jitpack.io' }
 #### 2. 添加依赖
 
 ```java
-compile 'com.github.senierr:SeHttp:<release_version>'
+implementation 'com.github.senierr:SeHttp:<release_version>'
 ```
 
 `SeHttp`底层基于`okhttp3`，所以默认依赖：
