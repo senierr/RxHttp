@@ -1,10 +1,12 @@
 package com.senierr.sehttp.callback;
 
-import com.senierr.sehttp.convert.StringConverter;
-
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
+import okio.BufferedSource;
 
 /**
  * 字符串类型回调
@@ -25,6 +27,20 @@ public abstract class StringCallback extends BaseCallback<String> {
 
     @Override
     public String convert(Response response) throws Exception {
-        return new StringConverter(charset).convert(response);
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            throw new IOException("ResponseBody is null");
+        }
+
+        if (charset != null) {
+            BufferedSource source = responseBody.source();
+            try {
+                return source.readString(charset);
+            } finally {
+                Util.closeQuietly(source);
+            }
+        } else {
+            return responseBody.string();
+        }
     }
 }

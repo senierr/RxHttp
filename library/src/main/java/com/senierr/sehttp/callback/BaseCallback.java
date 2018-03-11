@@ -1,7 +1,8 @@
 package com.senierr.sehttp.callback;
 
-import com.senierr.sehttp.convert.Converter;
 import com.senierr.sehttp.internal.RequestBuilder;
+
+import okhttp3.Response;
 
 /**
  * 请求回调基类
@@ -10,7 +11,7 @@ import com.senierr.sehttp.internal.RequestBuilder;
  * @date 2017/3/28
  */
 
-public abstract class BaseCallback<T> implements Converter<T> {
+public abstract class BaseCallback<T> {
 
     /**
      * 请求发起前
@@ -38,6 +39,17 @@ public abstract class BaseCallback<T> implements Converter<T> {
      * @param progress 进度0~100
      */
     public void onDownloadProgress(long totalSize, long currentSize, int progress) {}
+
+    /**
+     * 内容转换
+     *
+     * 注：异步线程
+     *
+     * @param response 请求返回
+     * @return
+     * @throws Exception
+     */
+    public abstract T convert(Response response) throws Exception;
 
     /**
      * 请求成功回调

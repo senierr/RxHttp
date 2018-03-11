@@ -16,7 +16,6 @@ import java.io.File;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -106,12 +105,6 @@ public class MainActivity extends AppCompatActivity {
         SeHttp.get(URL_DOWNLOAD)
                 .tag(this)
                 .execute(new FileCallback(new File(fileDir), "WeChatSetup.exe") {
-                    @Override
-                    public boolean onDiff(Response response, File destFile) {
-                        // 判断destFile是否是需要下载的文件，默认返回false
-                        return super.onDiff(response, destFile);
-                    }
-
                     @Override
                     public void onDownloadProgress(long totalSize, long currentSize, int progress) {
                         tvText.setText("totalSize: " + totalSize + "\n" +

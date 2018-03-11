@@ -1,10 +1,14 @@
 package com.senierr.sehttp.callback;
 
-import com.senierr.sehttp.convert.FileConverter;
-
 import java.io.File;
+import java.io.IOException;
 
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 /**
  * 文件下载回调
@@ -23,38 +27,46 @@ public abstract class FileCallback extends BaseCallback<File> {
         this.destName = destName;
     }
 
-    /**
-     * 判断是否是同一文件
-     *
-     * 注：异步线程
-     *
-     * @return true: 相同文件
-     *         false: 不是相同文件
-     */
-    public boolean onDiff(Response response, File destFile) {
-        return false;
-    }
-
     @Override
     public File convert(Response response) throws Exception {
-        return new FileConverter(this).convert(response);
-    }
+        // 判断路径是否存在
+        if (!destDir.exists()) {
+            boolean result = destDir.mkdirs();
+            if (!result) {
+                throw new Exception(destDir.getPath() + " create failed!");
+            }
+        }
 
-    public File getDestDir() {
-        return destDir;
-    }
+        File destFile = new File(destDir, destName);
+        // 判断文件是否存在
+        if (destFile.exists()) {
+            boolean result = destFile.delete();
+            if (!result) {
+                throw new Exception(destFile.getPath() + " delete failed!");
+            }
+        }
 
-    public FileCallback setDestDir(File destDir) {
-        this.destDir = destDir;
-        return this;
-    }
+        BufferedSource bufferedSource = null;
+        BufferedSink bufferedSink = null;
+        try {
+            ResponseBody responseBody = response.body();
+            if (responseBody == null) {
+                throw new IOException("ResponseBody is null");
+            }
 
-    public String getDestName() {
-        return destName;
-    }
+            bufferedSource = Okio.buffer(Okio.source(responseBody.byteStream()));
+            bufferedSink = Okio.buffer(Okio.sink(destFile));
 
-    public FileCallback setDestName(String destName) {
-        this.destName = destName;
-        return this;
+            byte[] bytes = new byte[1024];
+            int len;
+            while ((len = bufferedSource.read(bytes)) != -1) {
+                bufferedSink.write(bytes, 0, len);
+            }
+            bufferedSink.flush();
+            return destFile;
+        } finally {
+            Util.closeQuietly(bufferedSource);
+            Util.closeQuietly(bufferedSink);
+        }
     }
 }

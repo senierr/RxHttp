@@ -62,18 +62,14 @@ public class Emitter<T> {
                 final Response responseWrapper = response.newBuilder()
                         .body(new ResponseBodyWrapper(response.body(), callback))
                         .build();
-                int responseCode = responseWrapper.code();
-                if (!responseWrapper.isSuccessful()) {
-                    handleFailure(call, new Exception("Response is not successful! responseCode: " + responseCode));
-                } else {
-                    if (callback != null) {
-                        try {
-                            T t = callback.convert(responseWrapper);
-                            handleSuccess(call, t);
-                        } catch (Exception e) {
-                            LogUtil.logE(Log.getStackTraceString(e));
-                            handleSuccess(call, null);
-                        }
+                if (callback != null) {
+                    try {
+                        T t = callback.convert(responseWrapper);
+                        handleSuccess(call, t);
+                    } catch (Exception e) {
+                        // 解析异常，打印异常日志
+                        LogUtil.logE(Log.getStackTraceString(e));
+                        handleSuccess(call, null);
                     }
                 }
                 responseWrapper.close();
