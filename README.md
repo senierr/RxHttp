@@ -7,7 +7,7 @@
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
-> 此框架专注于高效、精简的网络请求，底层基于`okhttp3`，不参与任何数据持久化：`缓存`及`Cookie`管理。
+> 此框架专注于高效、精简的网络请求，底层基于`okhttp3`，不参与任何数据持久化。
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -37,7 +37,7 @@ implementation 'com.github.senierr:SeHttp:<release_version>'
 `SeHttp`底层基于`okhttp3`，所以默认依赖：
 
 ```java
-api 'com.squareup.okhttp3:okhttp:3.9.1'
+implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 ```
 
 #### 3. 添加权限
@@ -107,18 +107,13 @@ SeHttp.post(urlStr)
 ```java
 SeHttp.get(Urls.URL_DOWNLOAD)
         .execute(new FileCallback(...) {
-            @Override
-            public boolean onDiff(Response response, File destFile) {
-                // 判断destFile是否是需要下载的文件，默认返回false
-                return super.onDiff(response, destFile);
-            }
-            ......
+            ...
         });
 ```
 
 ## 请求回调
 
-#### 注：取消(cancel)掉请求后，此请求不会走任何回调；
+#### 注：取消(cancel)掉请求后，此请求不会继续走任何回调；
 
 ```java
 /**
