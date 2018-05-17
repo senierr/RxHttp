@@ -5,19 +5,42 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/btn_request"
+        android:id="@+id/btn_get"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="普通请求" />
+        android:text="Get"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btn_post"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Post"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btn_https"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Https"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/btn_upload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Upload"
+        android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_download"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="下载" />
+        android:text="Download"
+        android:textAllCaps="false" />
 
     <TextView
-        android:id="@+id/tv_text"
+        android:id="@+id/tv_msg"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

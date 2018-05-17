@@ -2,6 +2,8 @@ package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.callback.OnDownloadListener;
+import com.senierr.sehttp.callback.OnUploadListener;
 import com.senierr.sehttp.entity.FileMap;
 import com.senierr.sehttp.entity.HttpHeaders;
 import com.senierr.sehttp.entity.HttpUrlParams;
@@ -26,20 +28,24 @@ import okio.ByteString;
 
 public class RequestBuilder {
 
+    private SeHttp seHttp;
     // 请求方法
     private String method;
     // 请求
     private String url;
-    // 标签
-    private Object tag;
     // url参数
     private LinkedHashMap<String, String> httpUrlParams;
     // 请求头
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
     private RequestBodyWrapper requestBodyWrapper;
+    // 上传进度
+    private OnUploadListener onUploadListener;
+    // 下载进度
+    private OnDownloadListener onDownloadListener;
 
-    public RequestBuilder(String method, String url) {
+    public RequestBuilder(SeHttp seHttp, String method, String url) {
+        this.seHttp = seHttp;
         this.method = method;
         this.url = url;
         requestBodyWrapper = new RequestBodyWrapper();
@@ -52,17 +58,14 @@ public class RequestBuilder {
      */
     public Request build(BaseCallback callback) {
         Request.Builder builder = new Request.Builder();
-        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, SeHttp.getInstance().getCommonUrlParams());
-        httpHeaders = HttpUtil.appendStringMap(httpHeaders, SeHttp.getInstance().getCommonHeaders());
+        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
+        httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
 
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUrlParams.buildParams(url, httpUrlParams);
         }
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
             builder.headers(HttpHeaders.buildHeaders(httpHeaders));
-        }
-        if (tag != null) {
-            builder.tag(tag);
         }
 
         builder.method(method, requestBodyWrapper.build(callback));
@@ -87,17 +90,6 @@ public class RequestBuilder {
      */
     public Response execute() throws IOException {
         return new Emitter(this).execute();
-    }
-
-    /**
-     * 添加标签
-     *
-     * @param tag
-     * @return
-     */
-    public RequestBuilder tag(Object tag) {
-        this.tag = tag;
-        return this;
     }
 
     /**
@@ -289,6 +281,28 @@ public class RequestBuilder {
     public RequestBuilder requestBody4Byte(byte[] bytes) {
         requestBodyWrapper.setBytes(bytes);
         requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_STREAM));
+        return this;
+    }
+
+    /**
+     * 设置上传进度
+     *
+     * @param onUploadListener
+     * @return
+     */
+    public RequestBuilder setOnUploadListener(OnUploadListener onUploadListener) {
+        this.onUploadListener = onUploadListener;
+        return this;
+    }
+
+    /**
+     * 设置下载进度
+     *
+     * @param onDownloadListener
+     * @return
+     */
+    public RequestBuilder setOnDownloadListener(OnDownloadListener onDownloadListener) {
+        this.onDownloadListener = onDownloadListener;
         return this;
     }
 }
