@@ -118,7 +118,7 @@ public class SeHttp {
      * @author zhouchunjie
      * @date 2018/5/17
      */
-    public class Builder {
+    public final static class Builder {
 
         // 默认超时时间
         private static final int DEFAULT_TIMEOUT = 30 * 1000;

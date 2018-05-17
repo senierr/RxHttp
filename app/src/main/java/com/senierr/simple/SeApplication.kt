@@ -28,19 +28,5 @@ class SeApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        SeHttp.getInstance()
-                .debug("SeHttp", LogLevel.BODY)                 // 开启调试
-                .connectTimeout(10 * 1000)       // 设置超时，默认30秒
-                .readTimeout(10 * 1000)
-                .writeTimeout(10 * 1000)
-//                .addInterceptor(null)                             // 添加应用层拦截器
-//                .addNetworkInterceptor(null)                      // 添加网络层拦截器
-//                .hostnameVerifier(null)                           // 设置域名匹配规则
-//                .sslSocketFactory(SSLParams.create(CER_12306.byteInputStream()))
-//                .addCommonHeader("comHeader", "comValue")     // 添加全局头
-//                .addCommonHeaders(null)
-//                .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
-//                .addCommonUrlParams(null)
-                .retryCount(2)                               // 设置请求失败重连次数，默认不重连（0）
     }
 }

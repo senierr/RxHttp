@@ -1,18 +1,22 @@
 package com.senierr.sehttp.internal;
 
+import android.util.Log;
+
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.callback.OnDownloadListener;
 import com.senierr.sehttp.callback.OnUploadListener;
+import com.senierr.sehttp.converter.Converter;
 import com.senierr.sehttp.entity.FileMap;
 import com.senierr.sehttp.entity.HttpHeaders;
 import com.senierr.sehttp.entity.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.LogUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -38,7 +42,7 @@ public class RequestBuilder {
     // 请求头
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体
-    private RequestBodyWrapper requestBodyWrapper;
+    private RequestBodyBuilder requestBodyBuilder;
     // 上传进度
     private OnUploadListener onUploadListener;
     // 下载进度
@@ -48,38 +52,7 @@ public class RequestBuilder {
         this.seHttp = seHttp;
         this.method = method;
         this.url = url;
-        requestBodyWrapper = new RequestBodyWrapper();
-    }
-
-    /**
-     * 创建请求
-     *
-     * @return
-     */
-    public Request build(BaseCallback callback) {
-        Request.Builder builder = new Request.Builder();
-        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
-        httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
-
-        if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
-            url = HttpUrlParams.buildParams(url, httpUrlParams);
-        }
-        if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            builder.headers(HttpHeaders.buildHeaders(httpHeaders));
-        }
-
-        builder.method(method, requestBodyWrapper.build(callback));
-        builder.url(url);
-        return builder.build();
-    }
-
-    /**
-     * 执行异步请求
-     *
-     * @param callback
-     */
-    public <T> void execute(BaseCallback<T> callback) {
-        new Emitter<T>(this).execute(callback);
+        requestBodyBuilder = new RequestBodyBuilder();
     }
 
     /**
@@ -88,12 +61,41 @@ public class RequestBuilder {
      * @return
      * @throws IOException
      */
-    public Response execute() throws IOException {
-        return new Emitter(this).execute();
+    public <T> T execute(Converter<T> converter) throws IOException {
+        // 封装Request
+        Request.Builder requestBuilder = new Request.Builder();
+        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
+        httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
+        if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
+            url = HttpUrlParams.buildParams(url, httpUrlParams);
+        }
+        if (httpHeaders != null && !httpHeaders.isEmpty()) {
+            requestBuilder.headers(HttpHeaders.buildHeaders(httpHeaders));
+        }
+        requestBuilder.method(method, new RequestBodyWrapper(requestBodyBuilder.build(), onUploadListener));
+        requestBuilder.url(url);
+        // 生成Call
+        Call call = seHttp.getBuilder()
+                .getOkHttpClientBuilder()
+                .build()
+                .newCall(requestBuilder.build());
+        // 请求
+        Response response = call.execute();
+        // 封装Response
+        Response newResponse = response.newBuilder()
+                .body(new ResponseBodyWrapper(response.body(), onDownloadListener))
+                .build();
+        // 转化
+        try {
+            return converter.onConvert(newResponse);
+        } catch (Exception e) {
+            LogUtil.logW(Log.getStackTraceString(e));
+            return null;
+        }
     }
 
     /**
-     * 添加单个请求参数
+     * 添加请求参数
      *
      * @param key
      * @param value
@@ -108,18 +110,7 @@ public class RequestBuilder {
     }
 
     /**
-     * 添加多个请求参数
-     *
-     * @param params
-     * @return
-     */
-    public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
-        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, params);
-        return this;
-    }
-
-    /**
-     * 添加单个头部
+     * 添加头部
      *
      * @param key
      * @param value
@@ -134,105 +125,36 @@ public class RequestBuilder {
     }
 
     /**
-     * 添加多个头部
-     *
-     * @param headers
-     * @return
-     */
-    public RequestBuilder addHeaders(LinkedHashMap<String, String> headers) {
-        httpHeaders = HttpUtil.appendStringMap(httpHeaders, headers);
-        return this;
-    }
-
-    /**
-     * 设置请求体
-     *
-     * @param requestBody
-     * @return
-     */
-    public RequestBuilder requestBody(RequestBody requestBody) {
-        requestBodyWrapper.setRequestBody(requestBody);
-        return this;
-    }
-
-    public RequestBuilder requestBody(MediaType contentType, File file) {
-        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, file));
-        return this;
-    }
-
-    public RequestBuilder requestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
-        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
-        return this;
-    }
-
-    public RequestBuilder requestBody(MediaType contentType, byte[] content) {
-        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    public RequestBuilder requestBody(MediaType contentType, ByteString content) {
-        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    public RequestBuilder requestBody(MediaType contentType, String content) {
-        requestBodyWrapper.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    /**
-     * 添加请求体参数
+     * 添加文件参数
      *
      * @param key
      * @param file
      * @return
      */
     public RequestBuilder addRequestParam(String key, File file) {
-        FileMap fileParams = requestBodyWrapper.getFileParams();
+        FileMap fileParams = requestBodyBuilder.getFileParams();
         if (fileParams == null) {
             fileParams = new FileMap();
         }
         fileParams.add(key, file);
-        requestBodyWrapper.setFileParams(fileParams);
+        requestBodyBuilder.setFileParams(fileParams);
         return this;
     }
 
     /**
-     * 添加请求体参数
-     *
-     * @param fileParams
-     * @returns
-     */
-    public RequestBuilder addRequestFileParams(FileMap fileParams) {
-        requestBodyWrapper.setFileParams(HttpUtil.appendFileMap(requestBodyWrapper.getFileParams(), fileParams));
-        return this;
-    }
-
-    /**
-     * 添加请求体参数
+     * 添加字符串参数
      *
      * @param key
      * @param value
      * @return
      */
     public RequestBuilder addRequestParam(String key, String value) {
-        LinkedHashMap<String, String> stringParams = requestBodyWrapper.getStringParams();
+        LinkedHashMap<String, String> stringParams = requestBodyBuilder.getStringParams();
         if (stringParams == null) {
             stringParams = new LinkedHashMap<>();
         }
         stringParams.put(key, value);
-        requestBodyWrapper.setStringParams(stringParams);
-        return this;
-    }
-
-    /**
-     * 添加请求体参数
-     *
-     * @param stringParams
-     * @returns
-     */
-    public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
-        requestBodyWrapper.setStringParams(HttpUtil.appendStringMap(requestBodyWrapper.getStringParams(), stringParams));
+        requestBodyBuilder.setStringParams(stringParams);
         return this;
     }
 
@@ -242,9 +164,9 @@ public class RequestBuilder {
      * @param jsonStr
      * @return
      */
-    public RequestBuilder requestBody4JSon(String jsonStr) {
-        requestBodyWrapper.setStringContent(jsonStr);
-        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_JSON));
+    public RequestBuilder setRequestBody4JSon(String jsonStr) {
+        requestBodyBuilder.setStringContent(jsonStr);
+        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_JSON));
         return this;
     }
 
@@ -254,9 +176,9 @@ public class RequestBuilder {
      * @param textStr
      * @returne
      */
-    public RequestBuilder requestBody4Text(String textStr) {
-        requestBodyWrapper.setStringContent(textStr);
-        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_PLAIN));
+    public RequestBuilder setRequestBody4Text(String textStr) {
+        requestBodyBuilder.setStringContent(textStr);
+        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_PLAIN));
         return this;
     }
 
@@ -266,9 +188,9 @@ public class RequestBuilder {
      * @param xmlStr
      * @returne
      */
-    public RequestBuilder requestBody4Xml(String xmlStr) {
-        requestBodyWrapper.setStringContent(xmlStr);
-        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_XML));
+    public RequestBuilder setRequestBody4Xml(String xmlStr) {
+        requestBodyBuilder.setStringContent(xmlStr);
+        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_XML));
         return this;
     }
 
@@ -278,9 +200,45 @@ public class RequestBuilder {
      * @param bytes
      * @return
      */
-    public RequestBuilder requestBody4Byte(byte[] bytes) {
-        requestBodyWrapper.setBytes(bytes);
-        requestBodyWrapper.setMediaType(MediaType.parse(RequestBodyWrapper.MEDIA_TYPE_STREAM));
+    public RequestBuilder setRequestBody4Byte(byte[] bytes) {
+        requestBodyBuilder.setBytes(bytes);
+        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_STREAM));
+        return this;
+    }
+
+    /**
+     * 设置请求体
+     *
+     * @param requestBody
+     * @return
+     */
+    public RequestBuilder setRequestBody(RequestBody requestBody) {
+        requestBodyBuilder.setRequestBody(requestBody);
+        return this;
+    }
+
+    public RequestBuilder setRequestBody(MediaType contentType, File file) {
+        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, file));
+        return this;
+    }
+
+    public RequestBuilder setRequestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
+        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
+        return this;
+    }
+
+    public RequestBuilder setRequestBody(MediaType contentType, byte[] content) {
+        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
+        return this;
+    }
+
+    public RequestBuilder setRequestBody(MediaType contentType, ByteString content) {
+        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
+        return this;
+    }
+
+    public RequestBuilder setRequestBody(MediaType contentType, String content) {
+        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 

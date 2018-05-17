@@ -1,4 +1,4 @@
-package com.senierr.sehttp.callback;
+package com.senierr.sehttp.converter;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,24 +11,28 @@ import okio.BufferedSource;
 import okio.Okio;
 
 /**
- * 文件下载回调
+ * File转换器
  *
  * @author zhouchunjie
- * @date 2017/3/27
+ * @date 2018/5/17
  */
-
-public abstract class FileCallback extends BaseCallback<File> {
+public class FileConverter implements Converter<File> {
 
     private File destDir;
     private String destName;
 
-    public FileCallback(File destDir, String destName) {
+    public FileConverter(File destFile) {
+        this.destDir = destFile.getParentFile();
+        this.destName = destFile.getName();
+    }
+
+    public FileConverter(File destDir, String destName) {
         this.destDir = destDir;
         this.destName = destName;
     }
 
     @Override
-    public File convert(Response response) throws Exception {
+    public File onConvert(Response response) throws Exception {
         // 判断路径是否存在
         if (!destDir.exists()) {
             boolean result = destDir.mkdirs();

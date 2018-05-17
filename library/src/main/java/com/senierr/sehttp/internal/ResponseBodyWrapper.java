@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.callback.OnDownloadListener;
 
 import java.io.IOException;
 
@@ -23,12 +23,12 @@ import okio.Source;
 public class ResponseBodyWrapper extends ResponseBody {
 
     private ResponseBody delegate;
-    private BaseCallback callback;
     private BufferedSource bufferedSource;
+    private OnDownloadListener onDownloadListener;
 
-    public ResponseBodyWrapper(ResponseBody responseBody, BaseCallback callback) {
+    public ResponseBodyWrapper(ResponseBody responseBody, OnDownloadListener onDownloadListener) {
         this.delegate = responseBody;
-        this.callback = callback;
+        this.onDownloadListener = onDownloadListener;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ResponseBodyWrapper extends ResponseBody {
         private long contentLength = 0;
         private long lastRefreshUiTime;
 
-        public CountingSource(Source delegate) {
+        private CountingSource(Source delegate) {
             super(delegate);
         }
 
@@ -70,21 +70,14 @@ public class ResponseBodyWrapper extends ResponseBody {
 
             long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || totalBytesRead == contentLength) {
-                if (callback != null) {
-                    SeHttp.getInstance().getMainScheduler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (callback != null) {
-                                int progress;
-                                if (contentLength <= 0) {
-                                    progress = 100;
-                                } else {
-                                    progress = (int) (totalBytesRead * 100 / contentLength);
-                                }
-                                callback.onDownloadProgress(contentLength, totalBytesRead, progress);
-                            }
-                        }
-                    });
+                if (onDownloadListener != null) {
+                    int progress;
+                    if (contentLength <= 0) {
+                        progress = 100;
+                    } else {
+                        progress = (int) (totalBytesRead * 100 / contentLength);
+                    }
+                    onDownloadListener.onProgress(progress, totalBytesRead, contentLength);
                 }
                 lastRefreshUiTime = System.currentTimeMillis();
             }
