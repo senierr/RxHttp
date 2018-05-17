@@ -61,8 +61,13 @@ public class RequestBuilder {
      * @return
      * @throws IOException
      */
-    public <T> T execute(Converter<T> converter) throws IOException {
-        // 封装Request
+    public <T> T executeWith(Converter<T> converter) throws IOException {
+        // 封装RequestBody
+        RequestBody requestBody = requestBodyBuilder.build();
+        if (requestBody != null) {
+            requestBody = new RequestBodyWrapper(requestBody, onUploadListener);
+        }
+        // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
         httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
         httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
@@ -72,16 +77,17 @@ public class RequestBuilder {
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
             requestBuilder.headers(HttpHeaders.buildHeaders(httpHeaders));
         }
-        requestBuilder.method(method, new RequestBodyWrapper(requestBodyBuilder.build(), onUploadListener));
+        requestBuilder.method(method, requestBody);
         requestBuilder.url(url);
+        Request request = requestBuilder.build();
         // 生成Call
         Call call = seHttp.getBuilder()
                 .getOkHttpClientBuilder()
                 .build()
-                .newCall(requestBuilder.build());
+                .newCall(request);
         // 请求
         Response response = call.execute();
-        // 封装Response
+        // 封装ResponseBody
         Response newResponse = response.newBuilder()
                 .body(new ResponseBodyWrapper(response.body(), onDownloadListener))
                 .build();
