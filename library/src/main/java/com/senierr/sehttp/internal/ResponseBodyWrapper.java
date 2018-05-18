@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.OnDownloadListener;
+import com.senierr.sehttp.listener.OnDownloadListener;
 
 import java.io.IOException;
 

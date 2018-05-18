@@ -1,6 +1,5 @@
 package com.senierr.sehttp.internal;
 
-import com.senierr.sehttp.entity.FileMap;
 import com.senierr.sehttp.util.HttpUtil;
 
 import java.io.File;
@@ -27,12 +26,10 @@ public class RequestBodyBuilder {
 
     private RequestBody requestBody;
     private MediaType mediaType;
-    private FileMap fileParams;
+    private LinkedHashMap<String, File> fileParams;
     private LinkedHashMap<String, String> stringParams;
     private String stringContent;
     private byte[] bytes;
-
-    private boolean isMultipart = false;
 
     /**
      * 创建请求体
@@ -51,10 +48,13 @@ public class RequestBodyBuilder {
             return requestBody;
         } else if (fileParams != null && !fileParams.isEmpty()) {
             MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-            for (int i = 0; i < fileParams.size(); i++) {
-                File file = fileParams.fileAt(i);
-                RequestBody fileBody = RequestBody.create(HttpUtil.guessMimeType(file.getPath()), file);
-                multipartBodybuilder.addFormDataPart(fileParams.keyAt(i), file.getName(), fileBody);
+            if (fileParams != null && !fileParams.isEmpty()) {
+                for (String key: fileParams.keySet()) {
+                    File value = fileParams.get(key);
+
+                    RequestBody fileBody = RequestBody.create(HttpUtil.guessMimeType(value.getPath()), value);
+                    multipartBodybuilder.addFormDataPart(key, value.getName(), fileBody);
+                }
             }
             if (stringParams != null && !stringParams.isEmpty()) {
                 for (String key: stringParams.keySet()) {
@@ -64,21 +64,12 @@ public class RequestBodyBuilder {
             }
             return multipartBodybuilder.build();
         } else if (stringParams != null && !stringParams.isEmpty()) {
-            if (isMultipart) {
-                MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-                for (String key: stringParams.keySet()) {
-                    String value = stringParams.get(key);
-                    multipartBodybuilder.addFormDataPart(key, value);
-                }
-                return multipartBodybuilder.build();
-            } else {
-                FormBody.Builder bodyBuilder = new FormBody.Builder();
-                for (String key : stringParams.keySet()) {
-                    String value = stringParams.get(key);
-                    bodyBuilder.add(key, value);
-                }
-                return bodyBuilder.build();
+            FormBody.Builder bodyBuilder = new FormBody.Builder();
+            for (String key : stringParams.keySet()) {
+                String value = stringParams.get(key);
+                bodyBuilder.add(key, value);
             }
+            return bodyBuilder.build();
         } else if (stringContent != null && mediaType != null) {
             return RequestBody.create(mediaType, stringContent);
         } else if (bytes != null && mediaType != null) {
@@ -104,11 +95,11 @@ public class RequestBodyBuilder {
         this.mediaType = mediaType;
     }
 
-    public FileMap getFileParams() {
+    public LinkedHashMap<String, File> getFileParams() {
         return fileParams;
     }
 
-    public void setFileParams(FileMap fileParams) {
+    public void setFileParams(LinkedHashMap<String, File> fileParams) {
         this.fileParams = fileParams;
     }
 
@@ -134,13 +125,5 @@ public class RequestBodyBuilder {
 
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
-    }
-
-    public boolean isMultipart() {
-        return isMultipart;
-    }
-
-    public void setMultipart(boolean multipart) {
-        isMultipart = multipart;
     }
 }

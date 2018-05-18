@@ -1,11 +1,11 @@
 package com.senierr.sehttp.util;
 
-import com.senierr.sehttp.entity.FileMap;
-
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
+import okhttp3.Headers;
 import okhttp3.MediaType;
 
 /**
@@ -14,6 +14,54 @@ import okhttp3.MediaType;
  */
 
 public class HttpUtil {
+
+    /**
+     * 创建请求头部
+     *
+     * @param headerParams
+     * @return
+     */
+    public static Headers buildHeaders(Map<String, String> headerParams){
+        Headers headers = null;
+        if (headerParams != null) {
+            Headers.Builder builder = new Headers.Builder();
+            for (String key: headerParams.keySet()) {
+                builder.add(key, headerParams.get(key));
+            }
+            headers = builder.build();
+        }
+        return headers;
+    }
+
+    /**
+     * 创建URL参数
+     *
+     * @param urlParams
+     * @return
+     */
+    public static String buildUrlParams(String url, Map<String, String> urlParams){
+        if (urlParams != null && !urlParams.isEmpty()) {
+            StringBuilder strParams = new StringBuilder();
+            if (url.contains("?")) {
+                strParams.append("&");
+            } else {
+                strParams.append("?");
+            }
+
+            for (String key: urlParams.keySet()) {
+                strParams.append("&").append(key).append("=").append(urlParams.get(key));
+            }
+
+            strParams.deleteCharAt(1);
+            if (url.indexOf("?") == url.length() - 1) {
+                strParams.deleteCharAt(0);
+            }
+
+            strParams.insert(0, url);
+            url = strParams.toString();
+        }
+        return url;
+    }
 
     /**
      * map拼接
@@ -35,23 +83,7 @@ public class HttpUtil {
         return oldMap;
     }
 
-    /**
-     * map拼接
-     *
-     * @param oldMap
-     * @param newMap
-     * @return
-     */
-    public static FileMap appendFileMap(FileMap oldMap, FileMap newMap) {
-        if (newMap == null || newMap.isEmpty()) {
-            return oldMap;
-        }
-        if (oldMap == null) {
-            oldMap = new FileMap();
-        }
-        oldMap.addAll(newMap);
-        return oldMap;
-    }
+
 
     /**
      * 根据文件名，判断类型

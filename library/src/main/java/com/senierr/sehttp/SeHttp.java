@@ -1,10 +1,8 @@
 package com.senierr.sehttp;
 
-import com.senierr.sehttp.entity.SSLParams;
-import com.senierr.sehttp.interceptor.HttpLogInterceptor;
-import com.senierr.sehttp.interceptor.LogLevel;
 import com.senierr.sehttp.internal.RequestBuilder;
-import com.senierr.sehttp.util.LogUtil;
+import com.senierr.sehttp.util.HttpLogInterceptor;
+import com.senierr.sehttp.util.SSLParam;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -219,10 +217,9 @@ public class SeHttp {
          * @param logLevel
          * @return
          */
-        public Builder setDebug(String tag, LogLevel logLevel) {
+        public Builder setDebug(String tag, HttpLogInterceptor.LogLevel logLevel) {
             HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
-            LogUtil.openDebug(tag);
             return this;
         }
 
@@ -243,7 +240,7 @@ public class SeHttp {
          * @param sslParams
          * @return
          */
-        public Builder setSSLSocketFactory(SSLParams sslParams) {
+        public Builder setSSLSocketFactory(SSLParam sslParams) {
             if (sslParams != null) {
                 okHttpClientBuilder.sslSocketFactory(sslParams.getsSLSocketFactory(), sslParams.getTrustManager());
             }

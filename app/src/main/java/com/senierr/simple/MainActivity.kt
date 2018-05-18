@@ -10,12 +10,13 @@ import com.senierr.permission.PermissionManager
 import com.senierr.sehttp.SeHttp
 import com.senierr.sehttp.converter.FileConverter
 import com.senierr.sehttp.converter.StringConverter
-import com.senierr.sehttp.interceptor.LogLevel
+import com.senierr.sehttp.util.HttpLogInterceptor
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
@@ -47,13 +48,17 @@ class MainActivity : AppCompatActivity() {
                         initView()
                         // 初始化SeHttp
                         seHttp = SeHttp.Builder()
-                                .setDebug(logTag, LogLevel.BODY)
+                                .setDebug(logTag, HttpLogInterceptor.LogLevel.BODY)
                                 .setConnectTimeout(10 * 1000)
                                 .setReadTimeout(10 * 1000)
                                 .setWriteTimeout(10 * 1000)
                                 .addCommonHeader("com_header", "com_header_value")
                                 .addCommonUrlParam("com_url_param", "com_url_param_value")
                                 .build()
+                        // RxJava
+                        RxJavaPlugins.setErrorHandler({
+                            Log.w(logTag, "Error: ${Log.getStackTraceString(it)}")
+                        })
                     }
                 })
     }
@@ -71,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             return@fromCallable seHttp.get("http://www.baidu.com")
                     .addHeader("header", "header_value")
                     .addUrlParam("url_param", "url_param_value")
-                    .executeWith(StringConverter())
+                    .execute(StringConverter())
         }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -107,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                     .setOnDownloadListener { progress, _, _ ->
                         it.onNext(progress)
                     }
-                    .executeWith(FileConverter(destFile))
+                    .execute(FileConverter(destFile))
             it.onComplete()
         }
                 .subscribeOn(Schedulers.io())

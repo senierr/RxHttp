@@ -1,16 +1,10 @@
 package com.senierr.sehttp.internal;
 
-import android.util.Log;
-
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.OnDownloadListener;
-import com.senierr.sehttp.callback.OnUploadListener;
+import com.senierr.sehttp.listener.OnDownloadListener;
+import com.senierr.sehttp.listener.OnUploadListener;
 import com.senierr.sehttp.converter.Converter;
-import com.senierr.sehttp.entity.FileMap;
-import com.senierr.sehttp.entity.HttpHeaders;
-import com.senierr.sehttp.entity.HttpUrlParams;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.LogUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,12 +50,12 @@ public class RequestBuilder {
     }
 
     /**
-     * 执行同步请求
+     * 请求
      *
      * @return
      * @throws IOException
      */
-    public <T> T executeWith(Converter<T> converter) throws IOException {
+    public Response execute() throws IOException {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
@@ -72,10 +66,10 @@ public class RequestBuilder {
         httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
         httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
-            url = HttpUrlParams.buildParams(url, httpUrlParams);
+            url = HttpUtil.buildUrlParams(url, httpUrlParams);
         }
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            requestBuilder.headers(HttpHeaders.buildHeaders(httpHeaders));
+            requestBuilder.headers(HttpUtil.buildHeaders(httpHeaders));
         }
         requestBuilder.method(method, requestBody);
         requestBuilder.url(url);
@@ -85,16 +79,22 @@ public class RequestBuilder {
         // 请求
         Response response = call.execute();
         // 封装ResponseBody
-        Response newResponse = response.newBuilder()
+        return response.newBuilder()
                 .body(new ResponseBodyWrapper(response.body(), onDownloadListener))
                 .build();
-        // 转化
-        try {
-            return converter.onConvert(newResponse);
-        } catch (Exception e) {
-            LogUtil.logW(Log.getStackTraceString(e));
-            return null;
-        }
+    }
+
+    /**
+     * 带转换器请求
+     *
+     * @return
+     * @throws Exception
+     */
+    public <T> T execute(Converter<T> converter) throws Exception {
+        Response response = execute();
+        T result = converter.onConvert(response);
+        response.close();
+        return result;
     }
 
     /**
@@ -135,11 +135,11 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addRequestParam(String key, File file) {
-        FileMap fileParams = requestBodyBuilder.getFileParams();
+        LinkedHashMap<String, File> fileParams = requestBodyBuilder.getFileParams();
         if (fileParams == null) {
-            fileParams = new FileMap();
+            fileParams = new LinkedHashMap<>();
         }
-        fileParams.add(key, file);
+        fileParams.put(key, file);
         requestBodyBuilder.setFileParams(fileParams);
         return this;
     }

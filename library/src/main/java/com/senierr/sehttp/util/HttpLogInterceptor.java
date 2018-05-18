@@ -1,4 +1,4 @@
-package com.senierr.sehttp.interceptor;
+package com.senierr.sehttp.util;
 
 import android.util.Log;
 
@@ -43,49 +43,55 @@ public class HttpLogInterceptor implements Interceptor {
             return chain.proceed(request);
         }
 
-        boolean logBody = (logLevel == LogLevel.BODY);
-        boolean logHeaders = (logBody || logLevel == LogLevel.HEADERS);
+        boolean logBasic = logLevel == LogLevel.BASIC
+                || logLevel == LogLevel.HEADERS
+                || logLevel == LogLevel.BODY;
+        boolean logHeaders = logLevel == LogLevel.HEADERS
+                || logLevel == LogLevel.BODY;
+        boolean logBody = logLevel == LogLevel.BODY;
 
+        log(" ----------------------> 开始请求 <----------------------");
         Request copyRequest = request.newBuilder().build();
         RequestBody requestBody = copyRequest.body();
         boolean hasRequestBody = requestBody != null;
 
-        log(" ----------------------> 开始请求 <----------------------");
-        Connection connection = chain.connection();
-        String requestStartMessage = "\u007C " + copyRequest.method()
-                + " " + copyRequest.url()
-                + " " + (connection != null ? connection.protocol() : "");
-        log(requestStartMessage);
-
+        // 打印基础信息
+        if (logBasic) {
+            Connection connection = chain.connection();
+            String requestStartMessage = "\u007C " + copyRequest.method()
+                    + " " + copyRequest.url()
+                    + " " + (connection != null ? connection.protocol() : "");
+            log(requestStartMessage);
+        }
+        // 打印Header信息
         if (logHeaders) {
             log("\u007C Headers:");
             Headers headers = copyRequest.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 log("\u007C     " + headers.name(i) + ": " + headers.value(i));
             }
+        }
+        // 打印Body信息
+        if (logBody && hasRequestBody) {
+            log("\u007C Body:");
+            if (isPlaintext(requestBody.contentType())) {
+                Buffer buffer = new Buffer();
+                requestBody.writeTo(buffer);
 
-            if (logBody && hasRequestBody) {
-                log("\u007C Body:");
-                if (isPlaintext(requestBody.contentType())) {
-                    Buffer buffer = new Buffer();
-                    requestBody.writeTo(buffer);
-
-                    Charset charset = UTF8;
-                    MediaType contentType = requestBody.contentType();
-                    if (contentType != null) {
-                        charset = contentType.charset(UTF8);
-                    }
-                    if (charset != null) {
-                        log("\u007C     " + buffer.readString(charset));
-                    }
-                } else {
-                    log("\u007C     Body maybe [file part] , too large too print , ignored!");
+                Charset charset = UTF8;
+                MediaType contentType = requestBody.contentType();
+                if (contentType != null) {
+                    charset = contentType.charset(UTF8);
                 }
+                if (charset != null) {
+                    log("\u007C     " + buffer.readString(charset));
+                }
+            } else {
+                log("\u007C     Body maybe [file part] , too large too print , ignored!");
             }
         }
 
         log(" ----------------------> 结束请求 <----------------------");
-
         long startNs = System.nanoTime();
         Response response;
         try {
@@ -100,30 +106,33 @@ public class HttpLogInterceptor implements Interceptor {
         Response.Builder builder = response.newBuilder();
         Response cloneResponse = builder.build();
 
-        log("\u007C " + cloneResponse.code()
-                + " " + cloneResponse.message()
-                + " " + cloneResponse.request().url()
-                + " (" + tookMs + "ms)");
-
+        // 打印基础信息
+        if (logBasic) {
+            log("\u007C " + cloneResponse.code()
+                    + " " + cloneResponse.message()
+                    + " " + cloneResponse.request().url()
+                    + " (" + tookMs + "ms)");
+        }
+        // 打印Header信息
         if (logHeaders) {
             log("\u007C Headers:");
             Headers headers = cloneResponse.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 log("\u007C     " + headers.name(i) + ": " + headers.value(i));
             }
-
-            if (logBody && HttpHeaders.hasBody(cloneResponse)) {
-                log("\u007C Body:");
-                ResponseBody responseBody = cloneResponse.body();
-                if (responseBody != null && isPlaintext(responseBody.contentType())) {
-                    String body = responseBody.string();
-                    log("\u007C     " + body);
-                    log(" ----------------------> 结束响应 <----------------------");
-                    responseBody = ResponseBody.create(responseBody.contentType(), body);
-                    return response.newBuilder().body(responseBody).build();
-                } else {
-                    log("\u007C     body: maybe [file part] , too large too print , ignored!");
-                }
+        }
+        // 打印Body信息
+        if (logBody && HttpHeaders.hasBody(cloneResponse)) {
+            log("\u007C Body:");
+            ResponseBody responseBody = cloneResponse.body();
+            if (responseBody != null && isPlaintext(responseBody.contentType())) {
+                String body = responseBody.string();
+                log("\u007C     " + body);
+                log(" ----------------------> 结束响应 <----------------------");
+                responseBody = ResponseBody.create(responseBody.contentType(), body);
+                return response.newBuilder().body(responseBody).build();
+            } else {
+                log("\u007C     body: maybe [file part] , too large too print , ignored!");
             }
         }
         log(" ----------------------> 结束响应 <----------------------");
@@ -161,5 +170,9 @@ public class HttpLogInterceptor implements Interceptor {
      */
     private void log(String message) {
         Log.println(Log.DEBUG, tag, message);
+    }
+
+    public enum LogLevel {
+        NONE, BASIC, HEADERS, BODY
     }
 }

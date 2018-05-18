@@ -1,8 +1,4 @@
-package com.senierr.sehttp.entity;
-
-import android.util.Log;
-
-import com.senierr.sehttp.util.LogUtil;
+package com.senierr.sehttp.util;
 
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -22,21 +18,24 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.internal.Util;
 
 /**
- * HTTPS参数
+ * SSL认证
  *
  * @author zhouchunjie
  * @date 2017/8/25
  */
 
-public class SSLParams {
+public class SSLParam {
+
     private SSLSocketFactory sSLSocketFactory;
     private X509TrustManager trustManager;
+
+    private SSLParam() {}
 
     public SSLSocketFactory getsSLSocketFactory() {
         return sSLSocketFactory;
     }
 
-    public SSLParams setsSLSocketFactory(SSLSocketFactory sSLSocketFactory) {
+    public SSLParam setsSLSocketFactory(SSLSocketFactory sSLSocketFactory) {
         this.sSLSocketFactory = sSLSocketFactory;
         return this;
     }
@@ -45,7 +44,7 @@ public class SSLParams {
         return trustManager;
     }
 
-    public SSLParams setTrustManager(X509TrustManager trustManager) {
+    public SSLParam setTrustManager(X509TrustManager trustManager) {
         this.trustManager = trustManager;
         return this;
     }
@@ -55,7 +54,7 @@ public class SSLParams {
      *
      * @return
      */
-    public static SSLParams create() {
+    public static SSLParam create() {
         return getSslSocketFactoryBase(null, null, null);
     }
 
@@ -65,7 +64,7 @@ public class SSLParams {
      * @param trustManager
      * @return
      */
-    public static SSLParams create(X509TrustManager trustManager) {
+    public static SSLParam create(X509TrustManager trustManager) {
         return getSslSocketFactoryBase(trustManager, null, null);
     }
 
@@ -75,7 +74,7 @@ public class SSLParams {
      * @param certificates
      * @return
      */
-    public static SSLParams create(InputStream... certificates) {
+    public static SSLParam create(InputStream... certificates) {
         return getSslSocketFactoryBase(null, null, null, certificates);
     }
 
@@ -87,7 +86,7 @@ public class SSLParams {
      * @param certificates
      * @return
      */
-    public static SSLParams create(InputStream bksFile, String password, InputStream... certificates) {
+    public static SSLParam create(InputStream bksFile, String password, InputStream... certificates) {
         return getSslSocketFactoryBase(null, bksFile, password, certificates);
     }
 
@@ -99,11 +98,11 @@ public class SSLParams {
      * @param trustManager
      * @return
      */
-    public static SSLParams create(InputStream bksFile, String password, X509TrustManager trustManager) {
+    public static SSLParam create(InputStream bksFile, String password, X509TrustManager trustManager) {
         return getSslSocketFactoryBase(trustManager, bksFile, password);
     }
 
-    private static SSLParams getSslSocketFactoryBase(X509TrustManager trustManager, InputStream bksFile, String password, InputStream... certificates) {
+    private static SSLParam getSslSocketFactoryBase(X509TrustManager trustManager, InputStream bksFile, String password, InputStream... certificates) {
         try {
             KeyManager[] keyManagers = createKeyManager(bksFile, password);
             TrustManager[] trustManagers = createTrustManager(certificates);
@@ -121,13 +120,13 @@ public class SSLParams {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagers, new TrustManager[]{manager}, null);
 
-            SSLParams sslParams = new SSLParams();
+            SSLParam sslParams = new SSLParam();
             sslParams.setsSLSocketFactory(sslContext.getSocketFactory());
             sslParams.setTrustManager(manager);
 
             return sslParams;
         } catch (Exception e) {
-            LogUtil.logE(Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }
@@ -141,7 +140,7 @@ public class SSLParams {
             kmf.init(clientKeyStore, password.toCharArray());
             return kmf.getKeyManagers();
         } catch (Exception e) {
-            LogUtil.logE(Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }
@@ -163,7 +162,7 @@ public class SSLParams {
             tmf.init(keyStore);
             return tmf.getTrustManagers();
         } catch (Exception e) {
-            LogUtil.logE(Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return null;
     }
