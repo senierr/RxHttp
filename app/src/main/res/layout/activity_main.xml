@@ -8,39 +8,34 @@
         android:id="@+id/btn_get"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get"
+        android:text="@string/get"
         android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_post"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Post"
+        android:text="@string/post"
         android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_https"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Https"
+        android:text="@string/https"
         android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_upload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload"
+        android:text="@string/upload"
         android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_download"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Download"
+        android:text="@string/download"
         android:textAllCaps="false" />
-
-    <TextView
-        android:id="@+id/tv_msg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </LinearLayout>

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">SeHttp</string>
+
+    <string name="get">Get</string>
+    <string name="post">Post</string>
+    <string name="https">Https</string>
+    <string name="upload">Upload</string>
+    <string name="download">Download</string>
+    <string name="cancel">Cancel</string>
 </resources>

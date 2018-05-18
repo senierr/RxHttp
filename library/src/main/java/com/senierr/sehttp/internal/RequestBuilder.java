@@ -81,10 +81,7 @@ public class RequestBuilder {
         requestBuilder.url(url);
         Request request = requestBuilder.build();
         // 生成Call
-        Call call = seHttp.getBuilder()
-                .getOkHttpClientBuilder()
-                .build()
-                .newCall(request);
+        Call call = seHttp.getBuilder().getOkHttpClient().newCall(request);
         // 请求
         Response response = call.execute();
         // 封装ResponseBody

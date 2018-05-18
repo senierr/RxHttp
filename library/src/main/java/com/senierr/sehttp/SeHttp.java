@@ -127,8 +127,10 @@ public class SeHttp {
         private LinkedHashMap<String, String> commonUrlParams;
         // 公共请求头
         private LinkedHashMap<String, String> commonHeaders;
-        // 网络请求对象
+        // 网络请求构造器
         private OkHttpClient.Builder okHttpClientBuilder;
+        // 网络请求器
+        private OkHttpClient okHttpClient;
 
         public Builder() {
             okHttpClientBuilder = new OkHttpClient.Builder();
@@ -281,20 +283,43 @@ public class SeHttp {
             return this;
         }
 
+        /**
+         * 获取公共参数
+         *
+         * @return
+         */
         public LinkedHashMap<String, String> getCommonUrlParams() {
             return commonUrlParams;
         }
 
+        /**
+         * 获取公共头
+         *
+         * @return
+         */
         public LinkedHashMap<String, String> getCommonHeaders() {
             return commonHeaders;
         }
 
-        public OkHttpClient.Builder getOkHttpClientBuilder() {
-            return okHttpClientBuilder;
+        /**
+         * 获取网络请求器
+         *
+         * @return
+         */
+        public OkHttpClient getOkHttpClient() {
+            if (okHttpClient == null) {
+                okHttpClient = okHttpClientBuilder.build();
+            }
+            return okHttpClient;
         }
 
-        public void setOkHttpClientBuilder(OkHttpClient.Builder okHttpClientBuilder) {
-            this.okHttpClientBuilder = okHttpClientBuilder;
+        /**
+         * 设置网络请求器
+         *
+         * @param okHttpClient
+         */
+        public void setOkHttpClient(OkHttpClient okHttpClient) {
+            this.okHttpClient = okHttpClient;
         }
     }
 }
