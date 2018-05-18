@@ -12,17 +12,17 @@
         android:textAllCaps="false" />
 
     <Button
-        android:id="@+id/btn_post"
+        android:id="@+id/btn_post_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/post"
+        android:text="@string/post_form"
         android:textAllCaps="false" />
 
     <Button
-        android:id="@+id/btn_https"
+        android:id="@+id/btn_post_json"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/https"
+        android:text="@string/post_json"
         android:textAllCaps="false" />
 
     <Button

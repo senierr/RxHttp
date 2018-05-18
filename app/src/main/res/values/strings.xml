@@ -2,8 +2,8 @@
     <string name="app_name">SeHttp</string>
 
     <string name="get">Get</string>
-    <string name="post">Post</string>
-    <string name="https">Https</string>
+    <string name="post_form">Post form</string>
+    <string name="post_json">Post json</string>
     <string name="upload">Upload</string>
     <string name="download">Download</string>
     <string name="cancel">Cancel</string>

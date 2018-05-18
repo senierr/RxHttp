@@ -1,7 +1,6 @@
 package com.senierr.simple
 
 import android.Manifest
-import android.app.Activity
 import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
@@ -22,7 +21,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import okio.Buffer
 import java.io.File
 
 /**
@@ -38,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private var compositeDisposable: CompositeDisposable = CompositeDisposable()
     private var downloadDisposable: Disposable? = null
+    private var uploadDisposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                                 .setWriteTimeout(10 * 1000)
                                 .addCommonHeader("com_header", "com_header_value")
                                 .addCommonUrlParam("com_url_param", "com_url_param_value")
-                                .setSSLSocketFactory(SSLParam.create(Buffer().writeUtf8(CER_12306).inputStream()))
+                                .setSSLSocketFactory(SSLParam.create())
                                 .build()
                         // RxJava
                         RxJavaPlugins.setErrorHandler({
@@ -77,8 +76,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         btn_get.setOnClickListener { get() }
-        btn_post.setOnClickListener { post() }
-        btn_https.setOnClickListener { https() }
+        btn_post_form.setOnClickListener { postForm() }
+        btn_post_json.setOnClickListener { postJSon() }
         btn_upload.setOnClickListener { upload() }
         btn_download.setOnClickListener { download() }
     }
@@ -86,8 +85,7 @@ class MainActivity : AppCompatActivity() {
     private fun get() {
         Single.fromCallable {
             return@fromCallable seHttp.get(URL_GET)
-                    .addHeader("header", "header_value")
-                    .addUrlParam("url_param", "url_param_value")
+                    .addUrlParam("ip", "112.64.217.29")
                     .execute(StringConverter())
         }
                 .subscribeOn(Schedulers.io())
@@ -100,9 +98,9 @@ class MainActivity : AppCompatActivity() {
                 .bindToLifecycle(this)
     }
 
-    private fun post() {
+    private fun postForm() {
         Single.fromCallable {
-            return@fromCallable seHttp.post(URL_POST)
+            return@fromCallable seHttp.post(URL_POST_FORM)
                     .addHeader("header", "header_value")
                     .addUrlParam("url_param", "url_param_value")
                     .addRequestParam("param", "value")
@@ -118,12 +116,12 @@ class MainActivity : AppCompatActivity() {
                 .bindToLifecycle(this)
     }
 
-    private fun https() {
+    private fun postJSon() {
         Single.fromCallable {
-            return@fromCallable seHttp.post(URL_HTTPS)
+            return@fromCallable seHttp.post(URL_POST_JSON)
                     .addHeader("header", "header_value")
                     .addUrlParam("url_param", "url_param_value")
-                    .addRequestParam("param", "value")
+                    .setRequestBody4JSon("{'name':'test'}")
                     .execute(StringConverter())
         }
                 .subscribeOn(Schedulers.io())
@@ -137,7 +135,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun upload() {
+        if (uploadDisposable != null) {
+            uploadDisposable?.dispose()
+            uploadDisposable = null
+            return
+        }
 
+        Observable.create<Int> {
+            val destFile = File(Environment.getExternalStorageDirectory(), "Desert.jpg")
+            seHttp.post(URL_UPLOAD)
+                    .addRequestParam("file", destFile)
+                    .setOnUploadListener { progress, _, _ ->
+                        it.onNext(progress)
+                    }
+                    .execute(FileConverter(destFile))
+            it.onComplete()
+        }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    Log.e(logTag, "--doOnSubscribe: ${Thread.currentThread().name}")
+                    btn_upload.setText(R.string.cancel)
+                }
+                .doFinally {
+                    Log.e(logTag, "--doFinally: ${Thread.currentThread().name}")
+                    uploadDisposable = null
+                    btn_upload.setText(R.string.upload)
+                }
+                .subscribe(object : Observer<Int> {
+                    override fun onSubscribe(d: Disposable) {
+                        Log.e(logTag, "--onSubscribe: ${Thread.currentThread().name}")
+                        uploadDisposable = d
+                    }
+
+                    override fun onNext(t: Int) {
+                        Log.e(logTag, "--onNext: $t")
+                    }
+
+                    override fun onComplete() {
+                        Log.e(logTag, "--onComplete")
+                    }
+
+                    override fun onError(e: Throwable) {
+                        Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
+                    }
+                })
     }
 
     private fun download() {
