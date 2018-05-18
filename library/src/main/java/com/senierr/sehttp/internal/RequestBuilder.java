@@ -63,8 +63,8 @@ public class RequestBuilder {
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = HttpUtil.appendStringMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
-        httpHeaders = HttpUtil.appendStringMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
+        httpUrlParams = HttpUtil.appendMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
+        httpHeaders = HttpUtil.appendMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUtil.buildUrlParams(url, httpUrlParams);
         }
@@ -113,6 +113,17 @@ public class RequestBuilder {
     }
 
     /**
+     * 添加多个请求参数
+     *
+     * @param params
+     * @return
+     */
+    public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
+        httpUrlParams = HttpUtil.appendMap(httpUrlParams, params);
+        return this;
+    }
+
+    /**
      * 添加头部
      *
      * @param key
@@ -124,6 +135,17 @@ public class RequestBuilder {
             httpHeaders = new LinkedHashMap<>();
         }
         httpHeaders.put(key, value);
+        return this;
+    }
+
+    /**
+     * 添加多个头部
+     *
+     * @param headers
+     * @return
+     */
+    public RequestBuilder addHeaders(LinkedHashMap<String, String> headers) {
+        httpHeaders = HttpUtil.appendMap(httpHeaders, headers);
         return this;
     }
 
@@ -145,6 +167,17 @@ public class RequestBuilder {
     }
 
     /**
+     * 添加多个文件参数
+     *
+     * @param fileParams
+     * @returns
+     */
+    public RequestBuilder addRequestFileParams(LinkedHashMap<String, File> fileParams) {
+        requestBodyBuilder.setFileParams(HttpUtil.appendMap(requestBodyBuilder.getFileParams(), fileParams));
+        return this;
+    }
+
+    /**
      * 添加字符串参数
      *
      * @param key
@@ -158,6 +191,17 @@ public class RequestBuilder {
         }
         stringParams.put(key, value);
         requestBodyBuilder.setStringParams(stringParams);
+        return this;
+    }
+
+    /**
+     * 添加多个字符串参数
+     *
+     * @param stringParams
+     * @returns
+     */
+    public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
+        requestBodyBuilder.setStringParams(HttpUtil.appendMap(requestBodyBuilder.getStringParams(), stringParams));
         return this;
     }
 

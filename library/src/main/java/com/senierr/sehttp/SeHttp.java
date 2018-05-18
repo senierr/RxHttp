@@ -2,6 +2,7 @@ package com.senierr.sehttp;
 
 import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpLogInterceptor;
+import com.senierr.sehttp.util.HttpUtil;
 import com.senierr.sehttp.util.SSLParam;
 
 import java.util.LinkedHashMap;
@@ -196,6 +197,17 @@ public class SeHttp {
         }
 
         /**
+         * 添加多个公共请求参数
+         *
+         * @param params
+         * @return
+         */
+        public Builder addCommonUrlParams(LinkedHashMap<String, String> params) {
+            commonUrlParams = HttpUtil.appendMap(commonUrlParams, params);
+            return this;
+        }
+
+        /**
          * 添加单个公共头部
          *
          * @param key
@@ -207,6 +219,17 @@ public class SeHttp {
                 commonHeaders = new LinkedHashMap<>();
             }
             commonHeaders.put(key, value);
+            return this;
+        }
+
+        /**
+         * 添加多个公共头部
+         *
+         * @param headers
+         * @return
+         */
+        public Builder addCommonHeaders(LinkedHashMap<String, String> headers) {
+            commonHeaders = HttpUtil.appendMap(commonUrlParams, headers);
             return this;
         }
 

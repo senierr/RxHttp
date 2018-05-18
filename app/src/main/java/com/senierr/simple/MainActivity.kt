@@ -99,11 +99,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun postForm() {
+        val urlParams = LinkedHashMap<String, String>()
+        urlParams["custom_url_param_1"] = "custom_url_param_value_1"
+        urlParams["custom_url_param_2"] = "custom_url_param_value_2"
+
+        val headers = LinkedHashMap<String, String>()
+        headers["custom_header_1"] = "custom_header_value_1"
+        headers["custom_header_2"] = "custom_header_value_2"
+
+        val params = LinkedHashMap<String, String>()
+        params["custom_params_1"] = "custom_params_value_1"
+        params["custom_params_2"] = "custom_params_value_2"
+
         Single.fromCallable {
             return@fromCallable seHttp.post(URL_POST_FORM)
                     .addHeader("header", "header_value")
+                    .addHeaders(headers)
                     .addUrlParam("url_param", "url_param_value")
+                    .addUrlParams(urlParams)
                     .addRequestParam("param", "value")
+                    .addRequestStringParams(params)
                     .execute(StringConverter())
         }
                 .subscribeOn(Schedulers.io())

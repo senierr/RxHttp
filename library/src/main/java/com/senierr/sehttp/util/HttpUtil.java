@@ -70,7 +70,7 @@ public class HttpUtil {
      * @param newMap
      * @return
      */
-    public static LinkedHashMap<String, String> appendStringMap(LinkedHashMap<String, String> oldMap, LinkedHashMap<String, String> newMap) {
+    public static <T> LinkedHashMap<String, T> appendMap(LinkedHashMap<String, T> oldMap, LinkedHashMap<String, T> newMap) {
         if (newMap == null || newMap.isEmpty()) {
             return oldMap;
         }
@@ -82,8 +82,6 @@ public class HttpUtil {
         }
         return oldMap;
     }
-
-
 
     /**
      * 根据文件名，判断类型
