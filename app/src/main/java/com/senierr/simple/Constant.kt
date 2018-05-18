@@ -7,6 +7,10 @@ package com.senierr.simple
  * @date 2018/5/18
  */
 
+const val URL_GET = "https//www.baidu.com"
+const val URL_POST = "https//www.baidu.com"
+const val URL_HTTPS = "https://kyfw.12306.cn/otn"
+const val URL_UPLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe"
 const val URL_DOWNLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe"
 
 const val CER_12306 = "-----BEGIN CERTIFICATE-----\n" +
