@@ -15,10 +15,22 @@
 * 文件下载、上传
 * 301、302重定向
 * 多种HTTPS验证
-* 自定义失败重连次数
 * 链式调用
-* 根据Tag取消请求
-* 多种可扩展Callback
+* 多种可扩展Converter
+
+## 前言
+1. 为什么取消单例模式？
+假设这么一种场景：有两个业务模块，需要设置不同的的SSL加密方式和公共参数。
+旧版（1.X.X）由于是单例模式，只可以设置一种加密模式和公共参数，无法为各请求模块独立设置公共参数。
+新版（2.X.X）的SeHttp将单例模式权限上浮至使用者，使其更灵活适应不同的业务模块。例如，你可以给注册和登录模块设置各自的请求器(RegisterHttp: SeHttp和LoginHttp: SeHttp)并配置不同的参数。
+
+2. 为什么取消异步回调？
+SeHttp更注重单一职责、高内聚低耦合原则，将其他功能交给专业的去处理，专注于网络请求。例如：线程切换于管理交给RxJava。
+
+
+3. 进度监听的重构
+完整网络请求的流程是这样：封装参数->请求->解析->返回结果。在我的设想中，进度监听应该是通用的模块，作用于每一个独立的请求，而不仅仅局限于文件上传下载。它更关注的是过程，而不是结果。
+因而，SeHttp将进度监听与返回结果分离，使其更注重于自身的领域，降低耦合度。
 
 ## 基本用法
 
@@ -52,124 +64,38 @@ implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 ### 全局配置（非必须）
 
 ```java
-SeHttp.getInstance()
-        .debug("SeHttp", LogLevel.BODY)               // 开启调试
-        .connectTimeout(SeHttp.DEFAULT_TIMEOUT)       // 设置超时，默认30秒
-        .readTimeout(SeHttp.DEFAULT_TIMEOUT)
-        .writeTimeout(SeHttp.DEFAULT_TIMEOUT)
-        .addInterceptor()                             // 添加应用层拦截器
-        .addNetworkInterceptor()                      // 添加网络层拦截器
-        .hostnameVerifier()                           // 设置域名匹配规则
-        .cookieJar()                                  // 设置自定义cookie管理
-        .sslSocketFactory()                           // 设置SSL认证
-        .addCommonHeader("comHeader", "comValue")     // 添加全局头
-        .addCommonUrlParam("comKey", "comValue")      // 添加全局参数
-        .retryCount(3);                               // 设置失败重连次数，默认不重连（0次）
+SeHttp seHttp = SeHttp.Builder()
+        .setDebug("SeHttp", LogLevel.BODY)               // 开启调试
+        .setConnectTimeout(30 * 1000)       			 // 设置超时，默认30秒
+        .setReadTimeout(30 * 1000)
+        .setWriteTimeout(30 * 1000)
+        .addInterceptor(...)                             // 添加应用层拦截器
+        .addNetworkInterceptor(...)                      // 添加网络层拦截器
+        .setHostnameVerifier(...)                        // 设置域名匹配规则
+        .setCookieJar(...)                               // 设置自定义cookie管理
+        .setSSLSocketFactory(...)                        // 设置SSL认证
+        .addCommonHeader("key", "value")     			 // 添加全局头
+        .addCommonUrlParam("key", "value")      		 // 添加全局参数
+        .build();
 ```
 
-### GET请求
+### API
 
 ```java
-SeHttp.get(urlStr)
-        .addUrlParam("key", "value")                  // 添加单个URL参数
-        .addHeader("header", "value")                 // 添加单个请求头
-        .execute(new StringCallback() {               // 异步请求
-            ...
-        });
-```
-
-### POST请求
-
-```java
-SeHttp.post(urlStr)
-        .requestBody4Text()                           // 设置文本
-        .requestBody4JSon(jsonObject.toString())      // 设置JSON
-        .requestBody4Xml()                            // 设置XML
-        .requestBody4Byte()                           // 设置字节流
-        .addRequestParam("key", "param")              // 添加表单键值对
-        .execute(new StringCallback() {               // 异步请求
-            ...
-        });
-```
-
-### 文件上传
-
-```java
-SeHttp.post(urlStr)
-        .addRequestParam("key", new File())           // 添加文件
-        .execute(new FileCallback(...) {               // 异步请求
-            ...
-        });
-```
-
-### 文件下载
-
-```java
-SeHttp.get(Urls.URL_DOWNLOAD)
-        .execute(new FileCallback(...) {
-            ...
-        });
-```
-
-## 请求回调
-
-#### 注：取消(cancel)掉请求后，此请求不会继续走任何回调；
-
-```java
-/**
- * 请求发起前
- *
- * 注：执行线程为请求发起线程，并不一定是UI线程
- *
- * @param requestBuilder 请求构造器
- */
-public void onBefore(RequestBuilder requestBuilder) {}
-
-/**
- * 上传进度回调
- *
- * @param totalSize 上传文件总大小
- * @param currentSize 当前已上传大小
- * @param progress 进度0~100
- */
-public void onUploadProgress(long totalSize, long currentSize, int progress) {}
-
-/**
- * 下载进度回调
- *
- * @param totalSize 下载文件总大小
- * @param currentSize 当前已下载大小
- * @param progress 进度0~100
- */
-public void onDownloadProgress(long totalSize, long currentSize, int progress) {}
-
-/**
- * 请求成功回调
- *
- * @param t 泛型
- */
-public abstract void onSuccess(T t);
-
-/**
- * 请求失败回调
- *
- * @param e 失败异常
- */
-public void onFailure(Exception e) {}
-
-/**
- * 请求发起后
- */
-public void onAfter() {}
-```
-
-## 取消请求
-
-```java
-// 取消对应tag请求
-SeHttp.getInstance().cancelTag(tag);
-// 取消所有请求
-SeHttp.getInstance().cancelAll();
+seHttp.get(urlStr)									  // 请求方法：get、post、head、delete、put、options
+        .addUrlParam("key", "value")                  // 添加URL参数
+        .addHeader("header", "value")                 // 添加请求头
+		.requestBody4Text(...)                        // 设置文本请求
+        .requestBody4JSon(...)      				  // 设置JSON请求
+        .requestBody4Xml(...)                         // 设置XML请求
+        .requestBody4Byte(...)                        // 设置字节流请求
+        .addRequestParam("key", "param")              // 添加请求体参数，默认表单
+		.addRequestParam("key", new File())           // 添加文件
+		.setRequestBody(...)						  // 设置自定义请求体
+		.setOnUploadListener(...)					  // 设置上传进度
+		.setOnDownloadListener(...)					  // 设置下载进度
+		.execute()									  // 执行请求，返回Response
+        .execute(StringConverter());				  // 执行请求，返回转换结果
 ```
 
 ## 混淆
