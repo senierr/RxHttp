@@ -41,6 +41,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 初始化SeHttp
+        seHttp = SeHttp.Builder()
+                .setDebug(logTag, HttpLogInterceptor.LogLevel.BODY)
+                .setConnectTimeout(10 * 1000)
+                .setReadTimeout(10 * 1000)
+                .setWriteTimeout(10 * 1000)
+                .addCommonHeader("com_header", "com_header_value")
+                .addCommonHeader("language", "English")
+                .addCommonUrlParam("com_url_param", "com_url_param_value")
+                .setSSLSocketFactory(SSLParam.create())
+                .build()
+        // RxJava
+        RxJavaPlugins.setErrorHandler({
+            Log.w(logTag, "Error: ${Log.getStackTraceString(it)}")
+        })
         // 检查权限
         PermissionManager.with(this)
                 .permissions(
@@ -51,20 +67,6 @@ class MainActivity : AppCompatActivity() {
                     override fun onAllGranted() {
                         // 初始化界面
                         initView()
-                        // 初始化SeHttp
-                        seHttp = SeHttp.Builder()
-                                .setDebug(logTag, HttpLogInterceptor.LogLevel.BODY)
-                                .setConnectTimeout(10 * 1000)
-                                .setReadTimeout(10 * 1000)
-                                .setWriteTimeout(10 * 1000)
-                                .addCommonHeader("com_header", "com_header_value")
-                                .addCommonUrlParam("com_url_param", "com_url_param_value")
-                                .setSSLSocketFactory(SSLParam.create())
-                                .build()
-                        // RxJava
-                        RxJavaPlugins.setErrorHandler({
-                            Log.w(logTag, "Error: ${Log.getStackTraceString(it)}")
-                        })
                     }
                 })
     }
@@ -86,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         Single.fromCallable {
             return@fromCallable seHttp.get(URL_GET)
                     .addUrlParam("ip", "112.64.217.29")
+                    .addHeader("language", "Chinese")
                     .execute(StringConverter())
         }
                 .subscribeOn(Schedulers.io())

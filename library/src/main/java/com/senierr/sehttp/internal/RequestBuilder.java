@@ -63,8 +63,8 @@ public class RequestBuilder {
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = HttpUtil.appendMap(httpUrlParams, seHttp.getBuilder().getCommonUrlParams());
-        httpHeaders = HttpUtil.appendMap(httpHeaders, seHttp.getBuilder().getCommonHeaders());
+        httpUrlParams = HttpUtil.appendMap(seHttp.getBuilder().getCommonUrlParams(), httpUrlParams);
+        httpHeaders = HttpUtil.appendMap(seHttp.getBuilder().getCommonHeaders(), httpHeaders);
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUtil.buildUrlParams(url, httpUrlParams);
         }
