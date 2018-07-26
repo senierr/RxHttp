@@ -1,5 +1,8 @@
 package com.senierr.sehttp;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpLogInterceptor;
 import com.senierr.sehttp.util.HttpUtil;
@@ -23,8 +26,6 @@ import okhttp3.OkHttpClient;
 
 public class SeHttp {
 
-    // 默认刷新时间
-    public static final int REFRESH_MIN_INTERVAL = 100;
     // 构造器
     private Builder builder;
 
@@ -103,12 +104,13 @@ public class SeHttp {
         return new RequestBuilder(this, method, urlStr);
     }
 
+    /**
+     * 获取构造器
+     *
+     * @return
+     */
     public Builder getBuilder() {
         return builder;
-    }
-
-    public void setBuilder(Builder builder) {
-        this.builder = builder;
     }
 
     /**
@@ -121,11 +123,19 @@ public class SeHttp {
 
         // 默认超时时间
         private static final int DEFAULT_TIMEOUT = 30 * 1000;
+        // 默认刷新时间
+        private static final int REFRESH_MIN_INTERVAL = 100;
 
         // 公共请求参数
         private LinkedHashMap<String, String> commonUrlParams;
         // 公共请求头
         private LinkedHashMap<String, String> commonHeaders;
+        // 超时重试次数
+        private int retryCount;
+        // 主线程调度器
+        private Handler mainScheduler;
+        // 异步刷新间隔
+        private int refreshInterval = REFRESH_MIN_INTERVAL;
         // 网络请求构造器
         private OkHttpClient.Builder okHttpClientBuilder;
         // 网络请求器
@@ -137,6 +147,8 @@ public class SeHttp {
             okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.retryOnConnectionFailure(true);
+
+            mainScheduler = new Handler(Looper.getMainLooper());
         }
 
         /**
@@ -340,6 +352,60 @@ public class SeHttp {
          */
         public void setOkHttpClient(OkHttpClient okHttpClient) {
             this.okHttpClient = okHttpClient;
+        }
+
+        /**
+         * 获取请求重试次数
+         *
+         * @return
+         */
+        public int getRetryCount() {
+            return retryCount;
+        }
+
+        /**
+         * 设置请求重试次数
+         *
+         * @param retryCount
+         */
+        public void setRetryCount(int retryCount) {
+            this.retryCount = retryCount;
+        }
+
+        /**
+         * 获取主线程调度器
+         *
+         * @return
+         */
+        public Handler getMainScheduler() {
+            return mainScheduler;
+        }
+
+        /**
+         * 设置主线程调度器
+         *
+         * @param mainScheduler
+         */
+        public void setMainScheduler(Handler mainScheduler) {
+            this.mainScheduler = mainScheduler;
+        }
+
+        /**
+         * 获取刷新间隔时间(ms)
+         *
+         * @return
+         */
+        public int getRefreshInterval() {
+            return refreshInterval;
+        }
+
+        /**
+         * 设置刷新间隔时间(ms)
+         *
+         * @param refreshInterval
+         */
+        public void setRefreshInterval(int refreshInterval) {
+            this.refreshInterval = refreshInterval;
         }
     }
 }

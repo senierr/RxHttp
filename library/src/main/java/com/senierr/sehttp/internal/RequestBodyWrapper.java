@@ -22,10 +22,12 @@ import okio.Sink;
 
 public class RequestBodyWrapper extends RequestBody {
 
+    private SeHttp seHttp;
     private RequestBody delegate;
     private OnUploadListener onUploadListener;
 
-    public RequestBodyWrapper(RequestBody requestBody, OnUploadListener onUploadListener) {
+    public RequestBodyWrapper(SeHttp seHttp, RequestBody requestBody, OnUploadListener onUploadListener) {
+        this.seHttp = seHttp;
         this.delegate = requestBody;
         this.onUploadListener = onUploadListener;
     }
@@ -66,15 +68,21 @@ public class RequestBodyWrapper extends RequestBody {
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
+            if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || bytesWritten == contentLength) {
                 if (onUploadListener != null) {
-                    int progress;
-                    if (contentLength <= 0) {
-                        progress = 100;
-                    } else {
-                        progress = (int) (bytesWritten * 100 / contentLength);
-                    }
-                    onUploadListener.onProgress(progress, bytesWritten, contentLength);
+                    seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (onUploadListener == null) return;
+                            int progress;
+                            if (contentLength <= 0) {
+                                progress = 100;
+                            } else {
+                                progress = (int) (bytesWritten * 100 / contentLength);
+                            }
+                            onUploadListener.onProgress(progress, bytesWritten, contentLength);
+                        }
+                    });
                 }
                 lastRefreshUiTime = System.currentTimeMillis();
             }

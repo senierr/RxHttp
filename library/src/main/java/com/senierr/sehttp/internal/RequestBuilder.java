@@ -31,6 +31,8 @@ public class RequestBuilder {
     private String method;
     // 请求
     private String url;
+    // 标签
+    private Object tag;
     // url参数
     private LinkedHashMap<String, String> httpUrlParams;
     // 请求头
@@ -59,7 +61,7 @@ public class RequestBuilder {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
-            requestBody = new RequestBodyWrapper(requestBody, onUploadListener);
+            requestBody = new RequestBodyWrapper(seHttp, requestBody, onUploadListener);
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
@@ -71,6 +73,9 @@ public class RequestBuilder {
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
             requestBuilder.headers(HttpUtil.buildHeaders(httpHeaders));
         }
+        if (tag != null) {
+            requestBuilder.tag(tag);
+        }
         requestBuilder.method(method, requestBody);
         requestBuilder.url(url);
         Request request = requestBuilder.build();
@@ -80,7 +85,7 @@ public class RequestBuilder {
         Response response = call.execute();
         // 封装ResponseBody
         return response.newBuilder()
-                .body(new ResponseBodyWrapper(response.body(), onDownloadListener))
+                .body(new ResponseBodyWrapper(seHttp, response.body(), onDownloadListener))
                 .build();
     }
 
@@ -95,6 +100,17 @@ public class RequestBuilder {
         T result = converter.onConvert(response);
         response.close();
         return result;
+    }
+
+    /**
+     * 添加标签
+     *
+     * @param tag
+     * @return
+     */
+    public RequestBuilder tag(Object tag) {
+        this.tag = tag;
+        return this;
     }
 
     /**

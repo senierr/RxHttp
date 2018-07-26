@@ -22,11 +22,13 @@ import okio.Source;
 
 public class ResponseBodyWrapper extends ResponseBody {
 
+    private SeHttp seHttp;
     private ResponseBody delegate;
     private BufferedSource bufferedSource;
     private OnDownloadListener onDownloadListener;
 
-    public ResponseBodyWrapper(ResponseBody responseBody, OnDownloadListener onDownloadListener) {
+    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, OnDownloadListener onDownloadListener) {
+        this.seHttp = seHttp;
         this.delegate = responseBody;
         this.onDownloadListener = onDownloadListener;
     }
@@ -69,15 +71,21 @@ public class ResponseBodyWrapper extends ResponseBody {
             totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= SeHttp.REFRESH_MIN_INTERVAL || totalBytesRead == contentLength) {
+            if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || totalBytesRead == contentLength) {
                 if (onDownloadListener != null) {
-                    int progress;
-                    if (contentLength <= 0) {
-                        progress = 100;
-                    } else {
-                        progress = (int) (totalBytesRead * 100 / contentLength);
-                    }
-                    onDownloadListener.onProgress(progress, totalBytesRead, contentLength);
+                    seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (onDownloadListener == null) return;
+                            int progress;
+                            if (contentLength <= 0) {
+                                progress = 100;
+                            } else {
+                                progress = (int) (totalBytesRead * 100 / contentLength);
+                            }
+                            onDownloadListener.onProgress(progress, totalBytesRead, contentLength);
+                        }
+                    });
                 }
                 lastRefreshUiTime = System.currentTimeMillis();
             }
