@@ -381,8 +381,9 @@ public class SeHttp {
          *
          * @param okHttpClient
          */
-        public void setOkHttpClient(OkHttpClient okHttpClient) {
+        public Builder setOkHttpClient(OkHttpClient okHttpClient) {
             this.okHttpClient = okHttpClient;
+            return this;
         }
 
         /**
@@ -399,8 +400,9 @@ public class SeHttp {
          *
          * @param retryCount
          */
-        public void setRetryCount(int retryCount) {
+        public Builder setRetryCount(int retryCount) {
             this.retryCount = retryCount;
+            return this;
         }
 
         /**
@@ -417,8 +419,9 @@ public class SeHttp {
          *
          * @param mainScheduler
          */
-        public void setMainScheduler(Handler mainScheduler) {
+        public Builder setMainScheduler(Handler mainScheduler) {
             this.mainScheduler = mainScheduler;
+            return this;
         }
 
         /**
@@ -435,8 +438,9 @@ public class SeHttp {
          *
          * @param refreshInterval
          */
-        public void setRefreshInterval(int refreshInterval) {
+        public Builder setRefreshInterval(int refreshInterval) {
             this.refreshInterval = refreshInterval;
+            return this;
         }
     }
 }

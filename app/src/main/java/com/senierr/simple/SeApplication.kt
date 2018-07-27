@@ -40,6 +40,8 @@ class SeApplication : Application() {
                 .addCommonHeader("language", "English")
                 .addCommonUrlParam("com_url_param", "com_url_param_value")
                 .setSSLSocketFactory(SSLParam.create())
+                .setRefreshInterval(200)
+                .setRetryCount(3)
                 .build()
     }
 
