@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
      * 上传请求
      */
     private fun upload() {
-        val destFile = File(Environment.getExternalStorageDirectory(), "Desert.jpg")
+        val destFile = File(Environment.getExternalStorageDirectory(), "111.png")
         seHttp.post(URL_UPLOAD)
                 .tag(this)
                 .addRequestParam("file", destFile)
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun download() {
         val destFile = File(Environment.getExternalStorageDirectory(), "WeChat.exe")
-        seHttp.post(URL_DOWNLOAD)
+        seHttp.get(URL_DOWNLOAD)
                 .tag(this)
                 .execute(object : FileCallback(destFile) {
                     override fun onDownload(progress: Int, currentSize: Long, totalSize: Long) {
