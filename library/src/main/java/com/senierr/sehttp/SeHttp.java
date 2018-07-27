@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
+import okhttp3.Call;
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -102,6 +103,36 @@ public class SeHttp {
      */
     public RequestBuilder method(String method, String urlStr) {
         return new RequestBuilder(this, method, urlStr);
+    }
+
+    /**
+     * 根据tag取消请求
+     *
+     * @param tag
+     */
+    public void cancelTag(Object tag) {
+        for (Call call : builder.getOkHttpClient().dispatcher().queuedCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+        for (Call call : builder.getOkHttpClient().dispatcher().runningCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+    }
+
+    /**
+     * 取消所有请求
+     */
+    public void cancelAll() {
+        for (Call call : builder.getOkHttpClient().dispatcher().queuedCalls()) {
+            call.cancel();
+        }
+        for (Call call : builder.getOkHttpClient().dispatcher().runningCalls()) {
+            call.cancel();
+        }
     }
 
     /**

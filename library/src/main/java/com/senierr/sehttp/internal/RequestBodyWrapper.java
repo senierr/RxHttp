@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.listener.OnUploadListener;
+import com.senierr.sehttp.callback.BaseCallback;
 
 import java.io.IOException;
 
@@ -24,12 +24,12 @@ public class RequestBodyWrapper extends RequestBody {
 
     private SeHttp seHttp;
     private RequestBody delegate;
-    private OnUploadListener onUploadListener;
+    private BaseCallback callback;
 
-    public RequestBodyWrapper(SeHttp seHttp, RequestBody requestBody, OnUploadListener onUploadListener) {
+    public RequestBodyWrapper(SeHttp seHttp, RequestBody requestBody, BaseCallback callback) {
         this.seHttp = seHttp;
         this.delegate = requestBody;
-        this.onUploadListener = onUploadListener;
+        this.callback = callback;
     }
 
     @Override
@@ -69,18 +69,18 @@ public class RequestBodyWrapper extends RequestBody {
 
             long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || bytesWritten == contentLength) {
-                if (onUploadListener != null) {
+                if (callback != null) {
                     seHttp.getBuilder().getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
-                            if (onUploadListener == null) return;
+                            if (callback == null) return;
                             int progress;
                             if (contentLength <= 0) {
                                 progress = 100;
                             } else {
                                 progress = (int) (bytesWritten * 100 / contentLength);
                             }
-                            onUploadListener.onProgress(progress, bytesWritten, contentLength);
+                            callback.onUpload(progress, bytesWritten, contentLength);
                         }
                     });
                 }

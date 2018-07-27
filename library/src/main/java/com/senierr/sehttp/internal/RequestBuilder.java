@@ -1,16 +1,13 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.listener.OnDownloadListener;
-import com.senierr.sehttp.listener.OnUploadListener;
-import com.senierr.sehttp.converter.Converter;
+import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.util.HttpUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -37,12 +34,8 @@ public class RequestBuilder {
     private LinkedHashMap<String, String> httpUrlParams;
     // 请求头
     private LinkedHashMap<String, String> httpHeaders;
-    // 请求体
+    // 请求体构造器
     private RequestBodyBuilder requestBodyBuilder;
-    // 上传进度
-    private OnUploadListener onUploadListener;
-    // 下载进度
-    private OnDownloadListener onDownloadListener;
 
     public RequestBuilder(SeHttp seHttp, String method, String url) {
         this.seHttp = seHttp;
@@ -52,16 +45,15 @@ public class RequestBuilder {
     }
 
     /**
-     * 请求
+     * 创建请求
      *
      * @return
-     * @throws IOException
      */
-    public Response execute() throws IOException {
+    public Request build(BaseCallback callback) {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
-            requestBody = new RequestBodyWrapper(seHttp, requestBody, onUploadListener);
+            requestBody = new RequestBodyWrapper(seHttp, requestBody, callback);
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
@@ -78,28 +70,26 @@ public class RequestBuilder {
         }
         requestBuilder.method(method, requestBody);
         requestBuilder.url(url);
-        Request request = requestBuilder.build();
-        // 生成Call
-        Call call = seHttp.getBuilder().getOkHttpClient().newCall(request);
-        // 请求
-        Response response = call.execute();
-        // 封装ResponseBody
-        return response.newBuilder()
-                .body(new ResponseBodyWrapper(seHttp, response.body(), onDownloadListener))
-                .build();
+        return requestBuilder.build();
     }
 
     /**
-     * 带转换器请求
+     * 执行异步请求
+     *
+     * @param callback
+     */
+    public <T> void execute(BaseCallback<T> callback) {
+        new Emitter<T>(seHttp, build(callback)).execute(callback);
+    }
+
+    /**
+     * 执行同步请求
      *
      * @return
-     * @throws Exception
+     * @throws IOException
      */
-    public <T> T execute(Converter<T> converter) throws Exception {
-        Response response = execute();
-        T result = converter.onConvert(response);
-        response.close();
-        return result;
+    public Response execute() throws IOException {
+        return new Emitter(seHttp, build(null)).execute();
     }
 
     /**
@@ -302,28 +292,6 @@ public class RequestBuilder {
 
     public RequestBuilder setRequestBody(MediaType contentType, String content) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    /**
-     * 设置上传进度
-     *
-     * @param onUploadListener
-     * @return
-     */
-    public RequestBuilder setOnUploadListener(OnUploadListener onUploadListener) {
-        this.onUploadListener = onUploadListener;
-        return this;
-    }
-
-    /**
-     * 设置下载进度
-     *
-     * @param onDownloadListener
-     * @return
-     */
-    public RequestBuilder setOnDownloadListener(OnDownloadListener onDownloadListener) {
-        this.onDownloadListener = onDownloadListener;
         return this;
     }
 }

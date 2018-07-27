@@ -1,4 +1,4 @@
-package com.senierr.sehttp.converter;
+package com.senierr.sehttp.callback;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -9,24 +9,35 @@ import okhttp3.internal.Util;
 import okio.BufferedSource;
 
 /**
- * String转换器
+ * JSON类型回调
  *
  * @author zhouchunjie
- * @date 2018/5/17
+ * @date 2017/3/27
  */
-public class StringConverter implements Converter<String> {
+
+public abstract class JsonCallback<T> extends BaseCallback<T> {
 
     private Charset charset;
 
-    public StringConverter() {
-    }
+    public JsonCallback() {}
 
-    public StringConverter(Charset charset) {
+    public JsonCallback(Charset charset) {
         this.charset = charset;
     }
 
+    /**
+     * JSON解析
+     *
+     * 注：异步线程
+     *
+     * @param responseStr 待解析字符串
+     * @return 解析结果
+     * @throws Exception 解析失败异常
+     */
+    public abstract T parseJson(String responseStr) throws Exception;
+
     @Override
-    public String onConvert(Response response) throws Exception {
+    public T convert(Response response) throws Exception {
         ResponseBody responseBody = response.body();
         if (responseBody == null) {
             throw new IOException("ResponseBody is null");
@@ -35,12 +46,12 @@ public class StringConverter implements Converter<String> {
         if (charset != null) {
             BufferedSource source = responseBody.source();
             try {
-                return source.readString(charset);
+                return parseJson(source.readString(charset));
             } finally {
                 Util.closeQuietly(source);
             }
         } else {
-            return responseBody.string();
+            return parseJson(responseBody.string());
         }
     }
 }

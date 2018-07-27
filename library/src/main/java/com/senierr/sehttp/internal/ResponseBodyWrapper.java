@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.listener.OnDownloadListener;
+import com.senierr.sehttp.callback.BaseCallback;
 
 import java.io.IOException;
 
@@ -25,12 +25,12 @@ public class ResponseBodyWrapper extends ResponseBody {
     private SeHttp seHttp;
     private ResponseBody delegate;
     private BufferedSource bufferedSource;
-    private OnDownloadListener onDownloadListener;
+    private BaseCallback callback;
 
-    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, OnDownloadListener onDownloadListener) {
+    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, BaseCallback callback) {
         this.seHttp = seHttp;
         this.delegate = responseBody;
-        this.onDownloadListener = onDownloadListener;
+        this.callback = callback;
     }
 
     @Override
@@ -72,18 +72,18 @@ public class ResponseBodyWrapper extends ResponseBody {
 
             long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || totalBytesRead == contentLength) {
-                if (onDownloadListener != null) {
+                if (callback != null) {
                     seHttp.getBuilder().getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
-                            if (onDownloadListener == null) return;
+                            if (callback == null) return;
                             int progress;
                             if (contentLength <= 0) {
                                 progress = 100;
                             } else {
                                 progress = (int) (totalBytesRead * 100 / contentLength);
                             }
-                            onDownloadListener.onProgress(progress, totalBytesRead, contentLength);
+                            callback.onDownload(progress, totalBytesRead, contentLength);
                         }
                     });
                 }

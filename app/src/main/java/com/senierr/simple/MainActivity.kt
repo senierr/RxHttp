@@ -7,56 +7,24 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.senierr.permission.CheckCallback
 import com.senierr.permission.PermissionManager
-import com.senierr.sehttp.SeHttp
-import com.senierr.sehttp.converter.FileConverter
-import com.senierr.sehttp.converter.StringConverter
-import com.senierr.sehttp.util.HttpLogInterceptor
-import com.senierr.sehttp.util.SSLParam
-import io.reactivex.Observable
-import io.reactivex.Observer
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
+import com.senierr.sehttp.callback.FileCallback
+import com.senierr.sehttp.callback.StringCallback
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
+import java.lang.Exception
 
 /**
- *
  * @author zhouchunjie
  * @date 2018/5/17
  */
 class MainActivity : AppCompatActivity() {
 
     private val logTag = MainActivity::class.java.name
-
-    private lateinit var seHttp: SeHttp
-
-    private var compositeDisposable: CompositeDisposable = CompositeDisposable()
-    private var downloadDisposable: Disposable? = null
-    private var uploadDisposable: Disposable? = null
+    private val seHttp = SeApplication.instance.getHttp()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // 初始化SeHttp
-        seHttp = SeHttp.Builder()
-                .setDebug(logTag, HttpLogInterceptor.LogLevel.BODY)
-                .setConnectTimeout(10 * 1000)
-                .setReadTimeout(10 * 1000)
-                .setWriteTimeout(10 * 1000)
-                .addCommonHeader("com_header", "com_header_value")
-                .addCommonHeader("language", "English")
-                .addCommonUrlParam("com_url_param", "com_url_param_value")
-                .setSSLSocketFactory(SSLParam.create())
-                .build()
-        // RxJava
-        RxJavaPlugins.setErrorHandler({
-            Log.w(logTag, "Error: ${Log.getStackTraceString(it)}")
-        })
         // 检查权限
         PermissionManager.with(this)
                 .permissions(
@@ -73,9 +41,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        compositeDisposable.clear()
+        seHttp.cancelTag(this)
     }
 
+    /**
+     * 初始化界面
+     */
     private fun initView() {
         btn_get.setOnClickListener { get() }
         btn_post_form.setOnClickListener { postForm() }
@@ -84,23 +55,28 @@ class MainActivity : AppCompatActivity() {
         btn_download.setOnClickListener { download() }
     }
 
+    /**
+     * GET请求
+     */
     private fun get() {
-        Single.fromCallable {
-            return@fromCallable seHttp.get(URL_GET)
-                    .addUrlParam("ip", "112.64.217.29")
-                    .addHeader("language", "Chinese")
-                    .execute(StringConverter())
-        }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    Log.e(logTag, "--success: $it")
-                }, {
-                    Log.e(logTag, "--onError: ${Log.getStackTraceString(it)}")
+        seHttp.get(URL_GET)
+                .tag(this)
+                .addUrlParam("ip", "112.64.217.29")
+                .addHeader("language", "Chinese")
+                .execute(object : StringCallback() {
+                    override fun onSuccess(t: String?) {
+                        Log.e(logTag, "--success: $t")
+                    }
+
+                    override fun onFailure(e: Exception?) {
+                        Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
+                    }
                 })
-                .bindToLifecycle(this)
     }
 
+    /**
+     * POST表单请求
+     */
     private fun postForm() {
         val urlParams = LinkedHashMap<String, String>()
         urlParams["custom_url_param_1"] = "custom_url_param_value_1"
@@ -114,140 +90,87 @@ class MainActivity : AppCompatActivity() {
         params["custom_params_1"] = "custom_params_value_1"
         params["custom_params_2"] = "custom_params_value_2"
 
-        Single.fromCallable {
-            return@fromCallable seHttp.post(URL_POST_FORM)
-                    .addHeader("header", "header_value")
-                    .addHeaders(headers)
-                    .addUrlParam("url_param", "url_param_value")
-                    .addUrlParams(urlParams)
-                    .addRequestParam("param", "value")
-                    .addRequestStringParams(params)
-                    .execute(StringConverter())
-        }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    Log.e(logTag, "--success: $it")
-                }, {
-                    Log.e(logTag, "--onError: ${Log.getStackTraceString(it)}")
+        seHttp.post(URL_POST_FORM)
+                .tag(this)
+                .addHeader("header", "header_value")
+                .addHeaders(headers)
+                .addUrlParam("url_param", "url_param_value")
+                .addUrlParams(urlParams)
+                .addRequestParam("param", "value")
+                .addRequestStringParams(params)
+                .execute(object : StringCallback() {
+                    override fun onSuccess(t: String?) {
+                        Log.e(logTag, "--success: $t")
+                    }
+
+                    override fun onFailure(e: Exception?) {
+                        Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
+                    }
                 })
-                .bindToLifecycle(this)
     }
 
+    /**
+     * POST JSON请求
+     */
     private fun postJSon() {
-        Single.fromCallable {
-            return@fromCallable seHttp.post(URL_POST_JSON)
-                    .addHeader("header", "header_value")
-                    .addUrlParam("url_param", "url_param_value")
-                    .setRequestBody4JSon("{'name':'test'}")
-                    .execute(StringConverter())
-        }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    Log.e(logTag, "--success: $it")
-                }, {
-                    Log.e(logTag, "--onError: ${Log.getStackTraceString(it)}")
+        seHttp.post(URL_POST_FORM)
+                .tag(this)
+                .addHeader("header", "header_value")
+                .addUrlParam("url_param", "url_param_value")
+                .setRequestBody4JSon("{'name':'test'}")
+                .execute(object : StringCallback() {
+                    override fun onSuccess(t: String?) {
+                        Log.e(logTag, "--success: $t")
+                    }
+
+                    override fun onFailure(e: Exception?) {
+                        Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
+                    }
                 })
-                .bindToLifecycle(this)
     }
 
+    /**
+     * 上传请求
+     */
     private fun upload() {
-        if (uploadDisposable != null) {
-            uploadDisposable?.dispose()
-            uploadDisposable = null
-            return
-        }
-
-        Observable.create<Int> {
-            val destFile = File(Environment.getExternalStorageDirectory(), "Desert.jpg")
-            seHttp.post(URL_UPLOAD)
-                    .addRequestParam("file", destFile)
-                    .setOnUploadListener { progress, _, _ ->
-                        it.onNext(progress)
-                    }
-                    .execute(FileConverter(destFile))
-            it.onComplete()
-        }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    Log.e(logTag, "--doOnSubscribe: ${Thread.currentThread().name}")
-                    btn_upload.setText(R.string.cancel)
-                }
-                .doFinally {
-                    Log.e(logTag, "--doFinally: ${Thread.currentThread().name}")
-                    uploadDisposable = null
-                    btn_upload.setText(R.string.upload)
-                }
-                .subscribe(object : Observer<Int> {
-                    override fun onSubscribe(d: Disposable) {
-                        Log.e(logTag, "--onSubscribe: ${Thread.currentThread().name}")
-                        uploadDisposable = d
+        val destFile = File(Environment.getExternalStorageDirectory(), "Desert.jpg")
+        seHttp.post(URL_UPLOAD)
+                .tag(this)
+                .addRequestParam("file", destFile)
+                .execute(object : StringCallback() {
+                    override fun onUpload(progress: Int, currentSize: Long, totalSize: Long) {
+                        Log.e(logTag, "--onUpload: $progress")
                     }
 
-                    override fun onNext(t: Int) {
-                        Log.e(logTag, "--onNext: $t")
+                    override fun onSuccess(t: String?) {
+                        Log.e(logTag, "--success: $t")
                     }
 
-                    override fun onComplete() {
-                        Log.e(logTag, "--onComplete")
-                    }
-
-                    override fun onError(e: Throwable) {
+                    override fun onFailure(e: Exception?) {
                         Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
                     }
                 })
     }
 
+    /**
+     * 下载请求
+     */
     private fun download() {
-        if (downloadDisposable != null) {
-            downloadDisposable?.dispose()
-            downloadDisposable = null
-            return
-        }
-
-        Observable.create<Int> {
-            val destFile = File(Environment.getExternalStorageDirectory(), "WeChat.exe")
-            seHttp.get(URL_DOWNLOAD)
-                    .setOnDownloadListener { progress, _, _ ->
-                        it.onNext(progress)
-                    }
-                    .execute(FileConverter(destFile))
-            it.onComplete()
-        }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    Log.e(logTag, "--doOnSubscribe: ${Thread.currentThread().name}")
-                    btn_download.setText(R.string.cancel)
-                }
-                .doFinally {
-                    Log.e(logTag, "--doFinally: ${Thread.currentThread().name}")
-                    downloadDisposable = null
-                    btn_download.setText(R.string.download)
-                }
-                .subscribe(object : Observer<Int> {
-                    override fun onSubscribe(d: Disposable) {
-                        Log.e(logTag, "--onSubscribe: ${Thread.currentThread().name}")
-                        downloadDisposable = d
+        val destFile = File(Environment.getExternalStorageDirectory(), "WeChat.exe")
+        seHttp.post(URL_DOWNLOAD)
+                .tag(this)
+                .execute(object : FileCallback(destFile) {
+                    override fun onDownload(progress: Int, currentSize: Long, totalSize: Long) {
+                        Log.e(logTag, "--onDownload: $progress")
                     }
 
-                    override fun onNext(t: Int) {
-                        Log.e(logTag, "--onNext: $t")
+                    override fun onSuccess(t: File?) {
+                        Log.e(logTag, "--onSuccess: ${t?.path}")
                     }
 
-                    override fun onComplete() {
-                        Log.e(logTag, "--onComplete")
-                    }
-
-                    override fun onError(e: Throwable) {
+                    override fun onFailure(e: Exception?) {
                         Log.e(logTag, "--onError: ${Log.getStackTraceString(e)}")
                     }
                 })
-    }
-
-    private fun Disposable.bindToLifecycle(activity: MainActivity) {
-        activity.compositeDisposable.add(this)
     }
 }
