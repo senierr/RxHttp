@@ -57,8 +57,8 @@ public class RequestBuilder {
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = HttpUtil.appendMap(seHttp.getBuilder().getCommonUrlParams(), httpUrlParams);
-        httpHeaders = HttpUtil.appendMap(seHttp.getBuilder().getCommonHeaders(), httpHeaders);
+        httpUrlParams = HttpUtil.mergeMap(seHttp.getBuilder().getCommonUrlParams(), httpUrlParams);
+        httpHeaders = HttpUtil.mergeMap(seHttp.getBuilder().getCommonHeaders(), httpHeaders);
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUtil.buildUrlParams(url, httpUrlParams);
         }
@@ -125,7 +125,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
-        httpUrlParams = HttpUtil.appendMap(httpUrlParams, params);
+        httpUrlParams = HttpUtil.mergeMap(httpUrlParams, params);
         return this;
     }
 
@@ -151,7 +151,7 @@ public class RequestBuilder {
      * @return
      */
     public RequestBuilder addHeaders(LinkedHashMap<String, String> headers) {
-        httpHeaders = HttpUtil.appendMap(httpHeaders, headers);
+        httpHeaders = HttpUtil.mergeMap(httpHeaders, headers);
         return this;
     }
 
@@ -179,7 +179,7 @@ public class RequestBuilder {
      * @returns
      */
     public RequestBuilder addRequestFileParams(LinkedHashMap<String, File> fileParams) {
-        requestBodyBuilder.setFileParams(HttpUtil.appendMap(requestBodyBuilder.getFileParams(), fileParams));
+        requestBodyBuilder.setFileParams(HttpUtil.mergeMap(requestBodyBuilder.getFileParams(), fileParams));
         return this;
     }
 
@@ -207,7 +207,7 @@ public class RequestBuilder {
      * @returns
      */
     public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
-        requestBodyBuilder.setStringParams(HttpUtil.appendMap(requestBodyBuilder.getStringParams(), stringParams));
+        requestBodyBuilder.setStringParams(HttpUtil.mergeMap(requestBodyBuilder.getStringParams(), stringParams));
         return this;
     }
 

@@ -246,7 +246,7 @@ public class SeHttp {
          * @return
          */
         public Builder addCommonUrlParams(LinkedHashMap<String, String> params) {
-            commonUrlParams = HttpUtil.appendMap(commonUrlParams, params);
+            commonUrlParams = HttpUtil.mergeMap(commonUrlParams, params);
             return this;
         }
 
@@ -272,7 +272,7 @@ public class SeHttp {
          * @return
          */
         public Builder addCommonHeaders(LinkedHashMap<String, String> headers) {
-            commonHeaders = HttpUtil.appendMap(commonUrlParams, headers);
+            commonHeaders = HttpUtil.mergeMap(commonUrlParams, headers);
             return this;
         }
 

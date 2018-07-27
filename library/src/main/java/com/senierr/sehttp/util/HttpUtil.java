@@ -64,23 +64,25 @@ public class HttpUtil {
     }
 
     /**
-     * map拼接
+     * 合并并生成新Map
      *
      * @param oldMap
      * @param newMap
      * @return
      */
-    public static <T> LinkedHashMap<String, T> appendMap(LinkedHashMap<String, T> oldMap, LinkedHashMap<String, T> newMap) {
-        if (newMap == null || newMap.isEmpty()) {
-            return oldMap;
+    public static <T> LinkedHashMap<String, T> mergeMap(LinkedHashMap<String, T> oldMap, LinkedHashMap<String, T> newMap) {
+        LinkedHashMap<String, T> mergeMap = new LinkedHashMap<>();
+        if (oldMap != null) {
+            for (String key: oldMap.keySet()) {
+                mergeMap.put(key, oldMap.get(key));
+            }
         }
-        if (oldMap == null) {
-            oldMap = new LinkedHashMap<>();
+        if (newMap != null) {
+            for (String key: newMap.keySet()) {
+                mergeMap.put(key, newMap.get(key));
+            }
         }
-        for (String key: newMap.keySet()) {
-            oldMap.put(key, newMap.get(key));
-        }
-        return oldMap;
+        return mergeMap;
     }
 
     /**
