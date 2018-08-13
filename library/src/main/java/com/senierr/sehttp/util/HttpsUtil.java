@@ -1,5 +1,7 @@
 package com.senierr.sehttp.util;
 
+import com.senierr.sehttp.https.SSLFactory;
+
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -10,7 +12,6 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -18,91 +19,15 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.internal.Util;
 
 /**
- * SSL认证
+ * SSL工具类
  *
  * @author zhouchunjie
- * @date 2017/8/25
+ * @date 2017/3/27
  */
 
-public class SSLParam {
+public class HttpsUtil {
 
-    private SSLSocketFactory sSLSocketFactory;
-    private X509TrustManager trustManager;
-
-    private SSLParam() {}
-
-    public SSLSocketFactory getsSLSocketFactory() {
-        return sSLSocketFactory;
-    }
-
-    public SSLParam setsSLSocketFactory(SSLSocketFactory sSLSocketFactory) {
-        this.sSLSocketFactory = sSLSocketFactory;
-        return this;
-    }
-
-    public X509TrustManager getTrustManager() {
-        return trustManager;
-    }
-
-    public SSLParam setTrustManager(X509TrustManager trustManager) {
-        this.trustManager = trustManager;
-        return this;
-    }
-
-    /**
-     * 默认信任所有证书
-     *
-     * @return
-     */
-    public static SSLParam create() {
-        return getSslSocketFactoryBase(null, null, null);
-    }
-
-    /**
-     * 单向认证
-     *
-     * @param trustManager
-     * @return
-     */
-    public static SSLParam create(X509TrustManager trustManager) {
-        return getSslSocketFactoryBase(trustManager, null, null);
-    }
-
-    /**
-     * 单向认证
-     *
-     * @param certificates
-     * @return
-     */
-    public static SSLParam create(InputStream... certificates) {
-        return getSslSocketFactoryBase(null, null, null, certificates);
-    }
-
-    /**
-     * 双向认证
-     *
-     * @param bksFile
-     * @param password
-     * @param certificates
-     * @return
-     */
-    public static SSLParam create(InputStream bksFile, String password, InputStream... certificates) {
-        return getSslSocketFactoryBase(null, bksFile, password, certificates);
-    }
-
-    /**
-     * 双向认证
-     *
-     * @param bksFile
-     * @param password
-     * @param trustManager
-     * @return
-     */
-    public static SSLParam create(InputStream bksFile, String password, X509TrustManager trustManager) {
-        return getSslSocketFactoryBase(trustManager, bksFile, password);
-    }
-
-    private static SSLParam getSslSocketFactoryBase(X509TrustManager trustManager, InputStream bksFile, String password, InputStream... certificates) {
+    public static SSLFactory getSslSocketFactoryBase(X509TrustManager trustManager, InputStream bksFile, String password, InputStream... certificates) {
         try {
             KeyManager[] keyManagers = createKeyManager(bksFile, password);
             TrustManager[] trustManagers = createTrustManager(certificates);
@@ -120,7 +45,7 @@ public class SSLParam {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagers, new TrustManager[]{manager}, null);
 
-            SSLParam sslParams = new SSLParam();
+            SSLFactory sslParams = new SSLFactory();
             sslParams.setsSLSocketFactory(sslContext.getSocketFactory());
             sslParams.setTrustManager(manager);
 
@@ -179,7 +104,7 @@ public class SSLParam {
     /**
      * 默认信任所有证书
      */
-    public static X509TrustManager UnSafeTrustManager = new X509TrustManager() {
+    private static X509TrustManager UnSafeTrustManager = new X509TrustManager() {
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         }

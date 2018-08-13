@@ -6,7 +6,7 @@ import android.os.Looper;
 import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpLogInterceptor;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.util.SSLParam;
+import com.senierr.sehttp.https.SSLFactory;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -303,12 +303,12 @@ public class SeHttp {
         /**
          * 自定义SSL验证方式
          *
-         * @param sslParams
+         * @param sslFactory
          * @return
          */
-        public Builder setSSLSocketFactory(SSLParam sslParams) {
-            if (sslParams != null) {
-                okHttpClientBuilder.sslSocketFactory(sslParams.getsSLSocketFactory(), sslParams.getTrustManager());
+        public Builder setSSLSocketFactory(SSLFactory sslFactory) {
+            if (sslFactory != null) {
+                okHttpClientBuilder.sslSocketFactory(sslFactory.getsSLSocketFactory(), sslFactory.getTrustManager());
             }
             return this;
         }

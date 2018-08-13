@@ -9,6 +9,8 @@ import okhttp3.Headers;
 import okhttp3.MediaType;
 
 /**
+ * http工具类
+ *
  * @author zhouchunjie
  * @date 2017/3/28
  */
