@@ -19,7 +19,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 /**
- * SeHttp入口
+ * SeHttp
  *
  * @author zhouchunjie
  * @date 2017/3/27
@@ -36,9 +36,6 @@ public class SeHttp {
 
     /**
      * get请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder get(String urlStr) {
         return method("GET", urlStr);
@@ -46,9 +43,6 @@ public class SeHttp {
 
     /**
      * post请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder post(String urlStr) {
         return method("POST", urlStr);
@@ -56,9 +50,6 @@ public class SeHttp {
 
     /**
      * head请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder head(String urlStr) {
         return method("HEAD", urlStr);
@@ -66,9 +57,6 @@ public class SeHttp {
 
     /**
      * delete请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder delete(String urlStr) {
         return method("DELETE", urlStr);
@@ -76,9 +64,6 @@ public class SeHttp {
 
     /**
      * put请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder put(String urlStr) {
         return method("PUT", urlStr);
@@ -86,9 +71,6 @@ public class SeHttp {
 
     /**
      * options请求
-     *
-     * @param urlStr
-     * @return
      */
     public RequestBuilder options(String urlStr) {
         return method("OPTIONS", urlStr);
@@ -96,10 +78,6 @@ public class SeHttp {
 
     /**
      * 自定义请求方法
-     *
-     * @param method
-     * @param urlStr
-     * @return
      */
     public RequestBuilder method(String method, String urlStr) {
         return new RequestBuilder(this, method, urlStr);
@@ -178,7 +156,6 @@ public class SeHttp {
             okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.retryOnConnectionFailure(true);
-
             mainScheduler = new Handler(Looper.getMainLooper());
         }
 
@@ -362,6 +339,15 @@ public class SeHttp {
          */
         public LinkedHashMap<String, String> getCommonHeaders() {
             return commonHeaders;
+        }
+
+        /**
+         * 获取OkHttpClientBuilder
+         *
+         * @return
+         */
+        public OkHttpClient.Builder getOkHttpClientBuilder() {
+            return okHttpClientBuilder;
         }
 
         /**
