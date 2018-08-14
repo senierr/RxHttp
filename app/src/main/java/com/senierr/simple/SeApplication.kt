@@ -3,6 +3,7 @@ package com.senierr.simple
 import android.app.Application
 import com.senierr.sehttp.SeHttp
 import com.senierr.sehttp.https.SSLFactory
+import com.senierr.sehttp.https.UnSafeHostnameVerifier
 import com.senierr.sehttp.util.HttpLogInterceptor
 
 /**
@@ -39,7 +40,8 @@ class SeApplication : Application() {
                 .addCommonHeader("com_header", "com_header_value")
                 .addCommonHeader("language", "English")
                 .addCommonUrlParam("com_url_param", "com_url_param_value")
-                .setSSLSocketFactory(SSLFactory.create())
+                .setSSLFactory(SSLFactory())
+                .setHostnameVerifier(UnSafeHostnameVerifier())
                 .setRefreshInterval(200)
                 .setRetryCount(3)
                 .build()

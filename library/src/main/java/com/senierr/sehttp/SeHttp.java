@@ -306,7 +306,7 @@ public class SeHttp {
          * @param sslFactory
          * @return
          */
-        public Builder setSSLSocketFactory(SSLFactory sslFactory) {
+        public Builder setSSLFactory(SSLFactory sslFactory) {
             if (sslFactory != null) {
                 okHttpClientBuilder.sslSocketFactory(sslFactory.getsSLSocketFactory(), sslFactory.getTrustManager());
             }
