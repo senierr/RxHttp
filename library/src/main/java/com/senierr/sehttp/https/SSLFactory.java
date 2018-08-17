@@ -106,8 +106,8 @@ public class SSLFactory {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagers, new TrustManager[]{manager}, null);
 
-            sSLSocketFactory = sslContext.getSocketFactory();
-            trustManager = manager;
+            this.sSLSocketFactory = sslContext.getSocketFactory();
+            this.trustManager = manager;
         } catch (Exception e) {
             e.printStackTrace();
         }
