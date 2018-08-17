@@ -42,15 +42,23 @@ public abstract class JsonCallback<T> extends BaseCallback<T> {
             throw new IOException("ResponseBody is null");
         }
 
+        String responseStr;
         if (charset != null) {
             BufferedSource source = responseBody.source();
             try {
-                return parseJson(source.readString(charset));
+                responseStr = source.readString(charset);
             } finally {
                 Util.closeQuietly(source);
             }
         } else {
-            return parseJson(responseBody.string());
+            responseStr = responseBody.string();
+        }
+
+        try {
+            return parseJson(responseStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
