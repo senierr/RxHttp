@@ -15,7 +15,6 @@ import okhttp3.Response;
  * @author zhouchunjie
  * @date 2017/3/29
  */
-
 public class Emitter<T> {
 
     private SeHttp seHttp;
@@ -44,7 +43,7 @@ public class Emitter<T> {
 
             @Override
             public void onFailure(Call call, final IOException e) {
-                if (!call.isCanceled() && currentRetryCount < seHttp.getBuilder().getRetryCount()) {
+                if (!call.isCanceled() && currentRetryCount < seHttp.getRetryCount()) {
                     currentRetryCount++;
                     getNewCall().enqueue(this);
                 } else {
@@ -76,7 +75,7 @@ public class Emitter<T> {
      * @return
      */
     private Call getNewCall() {
-        return seHttp.getBuilder().getOkHttpClient().newCall(request);
+        return seHttp.getOkHttpClient().newCall(request);
     }
 
     /**
@@ -88,7 +87,7 @@ public class Emitter<T> {
         if (!checkIfNeedCallBack(callback, call)) {
             return;
         }
-        seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+        seHttp.getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
                 if (checkIfNeedCallBack(callback, call)) {
@@ -108,7 +107,7 @@ public class Emitter<T> {
         if (!checkIfNeedCallBack(callback, call)) {
             return;
         }
-        seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+        seHttp.getMainScheduler().post(new Runnable() {
             @Override
             public void run() {
                 if (checkIfNeedCallBack(callback, call)) {

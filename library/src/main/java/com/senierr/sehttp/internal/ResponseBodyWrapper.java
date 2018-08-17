@@ -19,7 +19,6 @@ import okio.Source;
  * @author zhouchunjie
  * @date 2017/9/9
  */
-
 public class ResponseBodyWrapper extends ResponseBody {
 
     private SeHttp seHttp;
@@ -71,9 +70,9 @@ public class ResponseBodyWrapper extends ResponseBody {
             totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || totalBytesRead == contentLength) {
+            if (curTime - lastRefreshUiTime >= seHttp.getRefreshInterval() || totalBytesRead == contentLength) {
                 if (callback != null) {
-                    seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+                    seHttp.getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
                             if (callback == null) return;

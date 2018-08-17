@@ -3,10 +3,11 @@ package com.senierr.sehttp;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.senierr.sehttp.cookie.ClearableCookieJar;
+import com.senierr.sehttp.https.SSLFactory;
 import com.senierr.sehttp.internal.RequestBuilder;
 import com.senierr.sehttp.util.HttpLogInterceptor;
 import com.senierr.sehttp.util.HttpUtil;
-import com.senierr.sehttp.https.SSLFactory;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -24,89 +25,139 @@ import okhttp3.OkHttpClient;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-
 public class SeHttp {
 
-    // 构造器
-    private Builder builder;
+    // 默认超时时间
+    public static final int DEFAULT_TIMEOUT = 30 * 1000;
+    // 默认刷新时间
+    public static final int REFRESH_MIN_INTERVAL = 100;
+
+    // 公共请求参数
+    private LinkedHashMap<String, String> commonUrlParams;
+    // 公共请求头
+    private LinkedHashMap<String, String> commonHeaders;
+    // 超时重试次数
+    private int retryCount;
+    // 主线程调度器
+    private Handler mainScheduler;
+    // 异步刷新间隔
+    private int refreshInterval;
+    // 网络请求构造器
+    private OkHttpClient.Builder okHttpClientBuilder;
+    // 网络请求器
+    private OkHttpClient okHttpClient;
 
     private SeHttp(Builder builder) {
-        this.builder = builder;
+        this.commonUrlParams = builder.commonUrlParams;
+        this.commonHeaders = builder.commonHeaders;
+        this.retryCount = builder.retryCount;
+        this.mainScheduler = builder.mainScheduler;
+        this.refreshInterval = builder.refreshInterval;
+        this.okHttpClientBuilder = builder.okHttpClientBuilder;
     }
 
+    /** get请求 */
     public RequestBuilder get(String urlStr) {
         return method("GET", urlStr);
     }
 
+    /** post请求 */
     public RequestBuilder post(String urlStr) {
         return method("POST", urlStr);
     }
 
+    /** head请求 */
     public RequestBuilder head(String urlStr) {
         return method("HEAD", urlStr);
     }
 
+    /** delete请求 */
     public RequestBuilder delete(String urlStr) {
         return method("DELETE", urlStr);
     }
 
+    /** put请求 */
     public RequestBuilder put(String urlStr) {
         return method("PUT", urlStr);
     }
 
+    /** options请求 */
     public RequestBuilder options(String urlStr) {
         return method("OPTIONS", urlStr);
     }
 
+    /** 自定义请求 */
     public RequestBuilder method(String method, String urlStr) {
         return new RequestBuilder(this, method, urlStr);
     }
 
+    /** 取消请求 */
     public void cancelTag(Object tag) {
-        for (Call call : builder.getOkHttpClient().dispatcher().queuedCalls()) {
+        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
             if (tag.equals(call.request().tag())) {
                 call.cancel();
             }
         }
-        for (Call call : builder.getOkHttpClient().dispatcher().runningCalls()) {
+        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
             if (tag.equals(call.request().tag())) {
                 call.cancel();
             }
         }
     }
 
+    /** 取消所有请求 */
     public void cancelAll() {
-        for (Call call : builder.getOkHttpClient().dispatcher().queuedCalls()) {
+        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
             call.cancel();
         }
-        for (Call call : builder.getOkHttpClient().dispatcher().runningCalls()) {
+        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
             call.cancel();
         }
     }
 
-    public Builder getBuilder() {
-        return builder;
+    public LinkedHashMap<String, String> getCommonUrlParams() {
+        return commonUrlParams;
+    }
+
+    public LinkedHashMap<String, String> getCommonHeaders() {
+        return commonHeaders;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public Handler getMainScheduler() {
+        return mainScheduler;
+    }
+
+    public int getRefreshInterval() {
+        return refreshInterval;
+    }
+
+    public ClearableCookieJar getCookieJar() {
+        CookieJar cookieJar = getOkHttpClient().cookieJar();
+        return (ClearableCookieJar) cookieJar;
+    }
+
+    public OkHttpClient.Builder getOkHttpClientBuilder() {
+        return okHttpClientBuilder;
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        if (okHttpClient == null) {
+            okHttpClient = okHttpClientBuilder.build();
+        }
+        return okHttpClient;
     }
 
     public final static class Builder {
-        // 默认超时时间
-        private static final int DEFAULT_TIMEOUT = 30 * 1000;
-        // 默认刷新时间
-        private static final int REFRESH_MIN_INTERVAL = 100;
-        // 公共请求参数
         private LinkedHashMap<String, String> commonUrlParams;
-        // 公共请求头
         private LinkedHashMap<String, String> commonHeaders;
-        // 超时重试次数
         private int retryCount;
-        // 主线程调度器
         private Handler mainScheduler;
-        // 异步刷新间隔
-        private int refreshInterval = REFRESH_MIN_INTERVAL;
-        // 网络请求构造器
+        private int refreshInterval;
         private OkHttpClient.Builder okHttpClientBuilder;
-        // 网络请求器
-        private OkHttpClient okHttpClient;
 
         public Builder() {
             okHttpClientBuilder = new OkHttpClient.Builder();
@@ -115,27 +166,14 @@ public class SeHttp {
             okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.retryOnConnectionFailure(true);
             mainScheduler = new Handler(Looper.getMainLooper());
+            refreshInterval = REFRESH_MIN_INTERVAL;
         }
 
         public SeHttp build() {
             return new SeHttp(this);
         }
 
-        public Builder setConnectTimeout(long connectTimeout) {
-            okHttpClientBuilder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS);
-            return this;
-        }
-
-        public Builder setReadTimeout(long readTimeout) {
-            okHttpClientBuilder.readTimeout(readTimeout, TimeUnit.MILLISECONDS);
-            return this;
-        }
-
-        public Builder setWriteTimeout(long writeTimeout) {
-            okHttpClientBuilder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS);
-            return this;
-        }
-
+        /** 自定义配置 **/
         public Builder addCommonUrlParam(String key, String value) {
             if (commonUrlParams == null) {
                 commonUrlParams = new LinkedHashMap<>();
@@ -162,31 +200,53 @@ public class SeHttp {
             return this;
         }
 
-        public Builder setDebug(String tag, HttpLogInterceptor.LogLevel logLevel) {
+        public Builder retryCount(int retryCount) {
+            this.retryCount = retryCount;
+            return this;
+        }
+
+        public Builder refreshInterval(int refreshInterval) {
+            this.refreshInterval = refreshInterval;
+            return this;
+        }
+
+        /** okHttpClientBuilder配置 **/
+        public Builder debug(String tag, HttpLogInterceptor.LogLevel logLevel) {
             HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
             return this;
         }
 
-        public Builder setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        public Builder connectTimeout(long connectTimeout) {
+            okHttpClientBuilder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS);
+            return this;
+        }
+
+        public Builder readTimeout(long readTimeout) {
+            okHttpClientBuilder.readTimeout(readTimeout, TimeUnit.MILLISECONDS);
+            return this;
+        }
+
+        public Builder writeTimeout(long writeTimeout) {
+            okHttpClientBuilder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS);
+            return this;
+        }
+
+        public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
             okHttpClientBuilder.hostnameVerifier(hostnameVerifier);
             return this;
         }
 
-        public Builder setSSLFactory(SSLFactory sslFactory) {
+        public Builder sslFactory(SSLFactory sslFactory) {
             if (sslFactory != null) {
                 okHttpClientBuilder.sslSocketFactory(sslFactory.getsSLSocketFactory(), sslFactory.getTrustManager());
             }
             return this;
         }
 
-        public Builder setCookieJar(CookieJar cookieJar) {
+        public Builder cookieJar(ClearableCookieJar cookieJar) {
             okHttpClientBuilder.cookieJar(cookieJar);
             return this;
-        }
-
-        public CookieJar getCookieJar() {
-            return getOkHttpClient().cookieJar();
         }
 
         public Builder addInterceptor(Interceptor interceptor) {
@@ -196,57 +256,6 @@ public class SeHttp {
 
         public Builder addNetworkInterceptor(Interceptor interceptor) {
             okHttpClientBuilder.addNetworkInterceptor(interceptor);
-            return this;
-        }
-
-        public LinkedHashMap<String, String> getCommonUrlParams() {
-            return commonUrlParams;
-        }
-
-        public LinkedHashMap<String, String> getCommonHeaders() {
-            return commonHeaders;
-        }
-
-        public OkHttpClient.Builder getOkHttpClientBuilder() {
-            return okHttpClientBuilder;
-        }
-
-        public OkHttpClient getOkHttpClient() {
-            if (okHttpClient == null) {
-                okHttpClient = okHttpClientBuilder.build();
-            }
-            return okHttpClient;
-        }
-
-        public Builder setOkHttpClient(OkHttpClient okHttpClient) {
-            this.okHttpClient = okHttpClient;
-            return this;
-        }
-
-        public int getRetryCount() {
-            return retryCount;
-        }
-
-        public Builder setRetryCount(int retryCount) {
-            this.retryCount = retryCount;
-            return this;
-        }
-
-        public Handler getMainScheduler() {
-            return mainScheduler;
-        }
-
-        public Builder setMainScheduler(Handler mainScheduler) {
-            this.mainScheduler = mainScheduler;
-            return this;
-        }
-
-        public int getRefreshInterval() {
-            return refreshInterval;
-        }
-
-        public Builder setRefreshInterval(int refreshInterval) {
-            this.refreshInterval = refreshInterval;
             return this;
         }
     }

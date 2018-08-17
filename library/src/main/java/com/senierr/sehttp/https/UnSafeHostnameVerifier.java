@@ -9,7 +9,6 @@ import javax.net.ssl.SSLSession;
  * @author zhouchunjie
  * @date 2017/8/25
  */
-
 public class UnSafeHostnameVerifier implements HostnameVerifier {
 
     @Override

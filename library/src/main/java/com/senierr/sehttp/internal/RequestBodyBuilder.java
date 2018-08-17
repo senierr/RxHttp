@@ -16,7 +16,6 @@ import okhttp3.RequestBody;
  * @author zhouchunjie
  * @date 2018/05/17
  */
-
 public class RequestBodyBuilder {
 
     public static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";

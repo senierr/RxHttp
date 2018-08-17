@@ -34,18 +34,18 @@ class SeApplication : Application() {
      */
     private fun initHttp() {
         seHttp = SeHttp.Builder()
-                .setDebug("SeHttp", HttpLogInterceptor.LogLevel.BODY)
-                .setConnectTimeout(10 * 1000)
-                .setReadTimeout(10 * 1000)
-                .setWriteTimeout(10 * 1000)
+                .debug("SeHttp", HttpLogInterceptor.LogLevel.BODY)
+                .connectTimeout(10 * 1000)
+                .readTimeout(10 * 1000)
+                .writeTimeout(10 * 1000)
                 .addCommonHeader("com_header", "com_header_value")
                 .addCommonHeader("language", "English")
                 .addCommonUrlParam("com_url_param", "com_url_param_value")
-                .setSSLFactory(SSLFactory())
-                .setHostnameVerifier(UnSafeHostnameVerifier())
-                .setCookieJar(SPCookieJar(this))
-                .setRefreshInterval(200)
-                .setRetryCount(3)
+                .sslFactory(SSLFactory())
+                .hostnameVerifier(UnSafeHostnameVerifier())
+                .cookieJar(SPCookieJar(this))
+                .refreshInterval(200)
+                .retryCount(3)
                 .build()
     }
 

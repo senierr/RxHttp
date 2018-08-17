@@ -19,7 +19,6 @@ import okio.Sink;
  * @author zhouchunjie
  * @date 2018/05/17
  */
-
 public class RequestBodyWrapper extends RequestBody {
 
     private SeHttp seHttp;
@@ -68,9 +67,9 @@ public class RequestBodyWrapper extends RequestBody {
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= seHttp.getBuilder().getRefreshInterval() || bytesWritten == contentLength) {
+            if (curTime - lastRefreshUiTime >= seHttp.getRefreshInterval() || bytesWritten == contentLength) {
                 if (callback != null) {
-                    seHttp.getBuilder().getMainScheduler().post(new Runnable() {
+                    seHttp.getMainScheduler().post(new Runnable() {
                         @Override
                         public void run() {
                             if (callback == null) return;

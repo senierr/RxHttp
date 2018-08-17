@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
                     override fun onAllGranted() {
                         // 初始化界面
                         initView()
+
+                        for (cookie in seHttp.cookieJar.allCookie) {
+                            Log.e(logTag, "--cookie: $cookie")
+                        }
                     }
                 })
     }

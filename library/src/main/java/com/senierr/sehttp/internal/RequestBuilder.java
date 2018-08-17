@@ -20,7 +20,6 @@ import okio.ByteString;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-
 public class RequestBuilder {
 
     private SeHttp seHttp;
@@ -57,8 +56,8 @@ public class RequestBuilder {
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = HttpUtil.mergeMap(seHttp.getBuilder().getCommonUrlParams(), httpUrlParams);
-        httpHeaders = HttpUtil.mergeMap(seHttp.getBuilder().getCommonHeaders(), httpHeaders);
+        httpUrlParams = HttpUtil.mergeMap(seHttp.getCommonUrlParams(), httpUrlParams);
+        httpHeaders = HttpUtil.mergeMap(seHttp.getCommonHeaders(), httpHeaders);
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
             url = HttpUtil.buildUrlParams(url, httpUrlParams);
         }

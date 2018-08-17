@@ -23,7 +23,6 @@ import okio.Buffer;
  * @author zhouchunjie
  * @date 2017/9/8
  */
-
 public class HttpLogInterceptor implements Interceptor {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");

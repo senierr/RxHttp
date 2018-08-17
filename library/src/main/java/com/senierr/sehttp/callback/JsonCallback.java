@@ -14,7 +14,6 @@ import okio.BufferedSource;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-
 public abstract class JsonCallback<T> extends BaseCallback<T> {
 
     private Charset charset;
