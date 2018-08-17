@@ -54,11 +54,6 @@ public abstract class JsonCallback<T> extends BaseCallback<T> {
             responseStr = responseBody.string();
         }
 
-        try {
-            return parseJson(responseStr);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return parseJson(responseStr);
     }
 }
