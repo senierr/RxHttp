@@ -19,9 +19,11 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String URL_GET = "www.baidu.com";
-    private static final String URL_POST = "";
-    private static final String URL_UPLOAD = "";
+    private static final String HOST = "https://project.mzlion.com/easy-okhttp/api";
+
+    private static final String URL_GET = HOST + "/ip-info";
+    private static final String URL_POST = HOST + "/post/simple";
+    private static final String URL_UPLOAD = HOST + "/post/form";
     private static final String URL_DOWNLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
     private SeHttp seHttp = SessionApplication.getApplication().getHttp();
@@ -30,21 +32,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
-        // Cookie Api
-//        HttpUrl httpUrl = HttpUrl.parse(URL_GET);
-//        Cookie cookie = new Cookie.Builder().build();
-//        List<Cookie> cookies = new ArrayList<>();
-//
-//        ClearableCookieJar cookieJar = seHttp.getCookieJar();
-//
-//        cookieJar.saveCookie(httpUrl, cookie);
-//        cookieJar.saveCookies(httpUrl, cookies);
-//        cookieJar.getAllCookie();
-//        cookieJar.getCookies(httpUrl);
-//        cookieJar.removeCookie(httpUrl, cookie);
-//        cookieJar.removeCookies(httpUrl);
-//        cookieJar.removeAllCookie();
+    @Override
+    protected void onDestroy() {
+        seHttp.cancelTag(this);
+        super.onDestroy();
     }
 
     public void onBtnClick(View view) {
@@ -88,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
     private void get() {
         seHttp.get(URL_GET)
                 .tag(this)
-                .addUrlParam("param_key", "param_value")
-                .addHeader("header_key", "header_value")
+                .addUrlParam("ip", "112.64.217.29")
+                .addHeader("language", "China")
                 .execute(new JsonCallback<String>() {
                     @Override
                     public String parseJson(String responseStr) {
@@ -113,13 +106,8 @@ public class MainActivity extends AppCompatActivity {
     private void post() {
         seHttp.post(URL_POST)
                 .tag(this)
-//                .addRequestParam("", "")
-//                .addRequestParam("", File)
-//                .setRequestBody4JSon(...)
-//                .setRequestBody4Text(...)
-//                .setRequestBody4Byte(...)
-//                .setRequestBody4Xml(...)
-//                .setRequestBody(...)
+                .addRequestParam("name", "hello")
+                .addRequestParam("age", "18")
                 .execute(new StringCallback() {
                     @Override
                     public void onSuccess(String s) {
@@ -135,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
     /** 上传文件 */
     private void upload() {
-        File destFile = new File(Environment.getExternalStorageDirectory(), "WeChat.exe");
+        File destFile = new File(Environment.getExternalStorageDirectory(), "111.png");
         seHttp.post(URL_UPLOAD)
                 .tag(this)
                 .addRequestParam("file", destFile)
