@@ -2,6 +2,7 @@ package com.senierr.simple
 
 import android.app.Application
 import com.senierr.sehttp.SeHttp
+import com.senierr.sehttp.cookie.SPCookieJar
 import com.senierr.sehttp.https.SSLFactory
 import com.senierr.sehttp.https.UnSafeHostnameVerifier
 import com.senierr.sehttp.util.HttpLogInterceptor
@@ -42,6 +43,7 @@ class SeApplication : Application() {
                 .addCommonUrlParam("com_url_param", "com_url_param_value")
                 .setSSLFactory(SSLFactory())
                 .setHostnameVerifier(UnSafeHostnameVerifier())
+                .setCookieJar(SPCookieJar(this))
                 .setRefreshInterval(200)
                 .setRetryCount(3)
                 .build()

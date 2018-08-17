@@ -18,7 +18,6 @@ import okhttp3.internal.Util;
  * @author zhouchunjie
  * @date 2018/8/14
  */
-
 public class SerializableCookie implements Serializable {
 
     private static final String TAG = SerializableCookie.class.getSimpleName();
@@ -27,20 +26,22 @@ public class SerializableCookie implements Serializable {
 
     private transient Cookie cookie;
 
+    public SerializableCookie(Cookie cookie) {
+        this.cookie = cookie;
+    }
+
     /**
      * Cookie转字符串
      *
-     * @param cookie
      * @return
      */
-    public String encode(Cookie cookie) {
-        this.cookie = cookie;
+    public static String encode(Cookie cookie) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;
 
         try {
             objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(this);
+            objectOutputStream.writeObject(new SerializableCookie(cookie));
         } catch (IOException e) {
             Log.d(TAG, "IOException in encodeCookie", e);
             return null;
@@ -56,7 +57,7 @@ public class SerializableCookie implements Serializable {
      * @param encodedCookie
      * @return
      */
-    public Cookie decode(String encodedCookie) {
+    public static Cookie decode(String encodedCookie) {
         byte[] bytes = hexStringToByteArray(encodedCookie);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 bytes);
@@ -65,7 +66,7 @@ public class SerializableCookie implements Serializable {
         ObjectInputStream objectInputStream = null;
         try {
             objectInputStream = new ObjectInputStream(byteArrayInputStream);
-            cookie = ((SerializableCookie) objectInputStream.readObject()).cookie;
+            cookie = ((SerializableCookie) objectInputStream.readObject()).getCookie();
         } catch (IOException e) {
             Log.d(TAG, "IOException in decodeCookie", e);
         } catch (ClassNotFoundException e) {
@@ -140,5 +141,24 @@ public class SerializableCookie implements Serializable {
         if (in.readBoolean())
             builder.hostOnlyDomain(domain);
         cookie = builder.build();
+    }
+
+    public Cookie getCookie() {
+        return cookie;
+    }
+
+    public void setCookie(Cookie cookie) {
+        this.cookie = cookie;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SerializableCookie
+                && cookie.equals(((SerializableCookie) obj).getCookie());
+    }
+
+    @Override
+    public int hashCode() {
+        return cookie.hashCode();
     }
 }
