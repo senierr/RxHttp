@@ -8,27 +8,23 @@
         android:id="@+id/btn_get"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onBtnClick"
         android:text="@string/get"
         android:textAllCaps="false" />
 
     <Button
-        android:id="@+id/btn_post_form"
+        android:id="@+id/btn_post"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onBtnClick"
         android:text="@string/post_form"
-        android:textAllCaps="false" />
-
-    <Button
-        android:id="@+id/btn_post_json"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/post_json"
         android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_upload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onBtnClick"
         android:text="@string/upload"
         android:textAllCaps="false" />
 
@@ -36,6 +32,7 @@
         android:id="@+id/btn_download"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onBtnClick"
         android:text="@string/download"
         android:textAllCaps="false" />
 </LinearLayout>

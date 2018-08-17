@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 
 import okhttp3.Call;
-import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
@@ -42,8 +41,6 @@ public class SeHttp {
     private Handler mainScheduler;
     // 异步刷新间隔
     private int refreshInterval;
-    // 网络请求构造器
-    private OkHttpClient.Builder okHttpClientBuilder;
     // 网络请求器
     private OkHttpClient okHttpClient;
 
@@ -53,7 +50,7 @@ public class SeHttp {
         this.retryCount = builder.retryCount;
         this.mainScheduler = builder.mainScheduler;
         this.refreshInterval = builder.refreshInterval;
-        this.okHttpClientBuilder = builder.okHttpClientBuilder;
+        okHttpClient = builder.okHttpClientBuilder.build();
     }
 
     /** get请求 */
@@ -136,18 +133,10 @@ public class SeHttp {
     }
 
     public ClearableCookieJar getCookieJar() {
-        CookieJar cookieJar = getOkHttpClient().cookieJar();
-        return (ClearableCookieJar) cookieJar;
-    }
-
-    public OkHttpClient.Builder getOkHttpClientBuilder() {
-        return okHttpClientBuilder;
+        return (ClearableCookieJar) getOkHttpClient().cookieJar();
     }
 
     public OkHttpClient getOkHttpClient() {
-        if (okHttpClient == null) {
-            okHttpClient = okHttpClientBuilder.build();
-        }
         return okHttpClient;
     }
 
