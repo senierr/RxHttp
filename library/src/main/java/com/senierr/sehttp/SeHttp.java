@@ -5,7 +5,7 @@ import android.os.Looper;
 
 import com.senierr.sehttp.cookie.ClearableCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
-import com.senierr.sehttp.internal.RequestBuilder;
+import com.senierr.sehttp.internal.RequestFactory;
 import com.senierr.sehttp.util.HttpLogInterceptor;
 import com.senierr.sehttp.util.HttpUtil;
 
@@ -54,38 +54,38 @@ public class SeHttp {
     }
 
     /** get请求 */
-    public RequestBuilder get(String urlStr) {
+    public RequestFactory get(String urlStr) {
         return method("GET", urlStr);
     }
 
     /** post请求 */
-    public RequestBuilder post(String urlStr) {
+    public RequestFactory post(String urlStr) {
         return method("POST", urlStr);
     }
 
     /** head请求 */
-    public RequestBuilder head(String urlStr) {
+    public RequestFactory head(String urlStr) {
         return method("HEAD", urlStr);
     }
 
     /** delete请求 */
-    public RequestBuilder delete(String urlStr) {
+    public RequestFactory delete(String urlStr) {
         return method("DELETE", urlStr);
     }
 
     /** put请求 */
-    public RequestBuilder put(String urlStr) {
+    public RequestFactory put(String urlStr) {
         return method("PUT", urlStr);
     }
 
     /** options请求 */
-    public RequestBuilder options(String urlStr) {
+    public RequestFactory options(String urlStr) {
         return method("OPTIONS", urlStr);
     }
 
     /** 自定义请求 */
-    public RequestBuilder method(String method, String urlStr) {
-        return new RequestBuilder(this, method, urlStr);
+    public RequestFactory method(String method, String urlStr) {
+        return new RequestFactory(this, method, urlStr);
     }
 
     /** 取消请求 */

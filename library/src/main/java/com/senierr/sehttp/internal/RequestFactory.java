@@ -20,7 +20,7 @@ import okio.ByteString;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public class RequestBuilder {
+public class RequestFactory {
 
     private SeHttp seHttp;
     // 请求方法
@@ -36,7 +36,7 @@ public class RequestBuilder {
     // 请求体构造器
     private RequestBodyBuilder requestBodyBuilder;
 
-    public RequestBuilder(SeHttp seHttp, String method, String url) {
+    public RequestFactory(SeHttp seHttp, String method, String url) {
         this.seHttp = seHttp;
         this.method = method;
         this.url = url;
@@ -97,7 +97,7 @@ public class RequestBuilder {
      * @param tag
      * @return
      */
-    public RequestBuilder tag(Object tag) {
+    public RequestFactory tag(Object tag) {
         this.tag = tag;
         return this;
     }
@@ -109,7 +109,7 @@ public class RequestBuilder {
      * @param value
      * @return
      */
-    public RequestBuilder addUrlParam(String key, String value) {
+    public RequestFactory addUrlParam(String key, String value) {
         if (httpUrlParams == null) {
             httpUrlParams = new LinkedHashMap<>();
         }
@@ -123,7 +123,7 @@ public class RequestBuilder {
      * @param params
      * @return
      */
-    public RequestBuilder addUrlParams(LinkedHashMap<String, String> params) {
+    public RequestFactory addUrlParams(LinkedHashMap<String, String> params) {
         httpUrlParams = HttpUtil.mergeMap(httpUrlParams, params);
         return this;
     }
@@ -135,7 +135,7 @@ public class RequestBuilder {
      * @param value
      * @return
      */
-    public RequestBuilder addHeader(String key, String value) {
+    public RequestFactory addHeader(String key, String value) {
         if (httpHeaders == null) {
             httpHeaders = new LinkedHashMap<>();
         }
@@ -149,7 +149,7 @@ public class RequestBuilder {
      * @param headers
      * @return
      */
-    public RequestBuilder addHeaders(LinkedHashMap<String, String> headers) {
+    public RequestFactory addHeaders(LinkedHashMap<String, String> headers) {
         httpHeaders = HttpUtil.mergeMap(httpHeaders, headers);
         return this;
     }
@@ -161,7 +161,7 @@ public class RequestBuilder {
      * @param file
      * @return
      */
-    public RequestBuilder addRequestParam(String key, File file) {
+    public RequestFactory addRequestParam(String key, File file) {
         LinkedHashMap<String, File> fileParams = requestBodyBuilder.getFileParams();
         if (fileParams == null) {
             fileParams = new LinkedHashMap<>();
@@ -177,7 +177,7 @@ public class RequestBuilder {
      * @param fileParams
      * @returns
      */
-    public RequestBuilder addRequestFileParams(LinkedHashMap<String, File> fileParams) {
+    public RequestFactory addRequestFileParams(LinkedHashMap<String, File> fileParams) {
         requestBodyBuilder.setFileParams(HttpUtil.mergeMap(requestBodyBuilder.getFileParams(), fileParams));
         return this;
     }
@@ -189,7 +189,7 @@ public class RequestBuilder {
      * @param value
      * @return
      */
-    public RequestBuilder addRequestParam(String key, String value) {
+    public RequestFactory addRequestParam(String key, String value) {
         LinkedHashMap<String, String> stringParams = requestBodyBuilder.getStringParams();
         if (stringParams == null) {
             stringParams = new LinkedHashMap<>();
@@ -205,7 +205,7 @@ public class RequestBuilder {
      * @param stringParams
      * @returns
      */
-    public RequestBuilder addRequestStringParams(LinkedHashMap<String, String> stringParams) {
+    public RequestFactory addRequestStringParams(LinkedHashMap<String, String> stringParams) {
         requestBodyBuilder.setStringParams(HttpUtil.mergeMap(requestBodyBuilder.getStringParams(), stringParams));
         return this;
     }
@@ -216,7 +216,7 @@ public class RequestBuilder {
      * @param jsonStr
      * @return
      */
-    public RequestBuilder setRequestBody4JSon(String jsonStr) {
+    public RequestFactory setRequestBody4JSon(String jsonStr) {
         requestBodyBuilder.setStringContent(jsonStr);
         requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_JSON));
         return this;
@@ -228,7 +228,7 @@ public class RequestBuilder {
      * @param textStr
      * @returne
      */
-    public RequestBuilder setRequestBody4Text(String textStr) {
+    public RequestFactory setRequestBody4Text(String textStr) {
         requestBodyBuilder.setStringContent(textStr);
         requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_PLAIN));
         return this;
@@ -240,7 +240,7 @@ public class RequestBuilder {
      * @param xmlStr
      * @returne
      */
-    public RequestBuilder setRequestBody4Xml(String xmlStr) {
+    public RequestFactory setRequestBody4Xml(String xmlStr) {
         requestBodyBuilder.setStringContent(xmlStr);
         requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_XML));
         return this;
@@ -252,7 +252,7 @@ public class RequestBuilder {
      * @param bytes
      * @return
      */
-    public RequestBuilder setRequestBody4Byte(byte[] bytes) {
+    public RequestFactory setRequestBody4Byte(byte[] bytes) {
         requestBodyBuilder.setBytes(bytes);
         requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_STREAM));
         return this;
@@ -264,32 +264,32 @@ public class RequestBuilder {
      * @param requestBody
      * @return
      */
-    public RequestBuilder setRequestBody(RequestBody requestBody) {
+    public RequestFactory setRequestBody(RequestBody requestBody) {
         requestBodyBuilder.setRequestBody(requestBody);
         return this;
     }
 
-    public RequestBuilder setRequestBody(MediaType contentType, File file) {
+    public RequestFactory setRequestBody(MediaType contentType, File file) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, file));
         return this;
     }
 
-    public RequestBuilder setRequestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
+    public RequestFactory setRequestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
         return this;
     }
 
-    public RequestBuilder setRequestBody(MediaType contentType, byte[] content) {
+    public RequestFactory setRequestBody(MediaType contentType, byte[] content) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 
-    public RequestBuilder setRequestBody(MediaType contentType, ByteString content) {
+    public RequestFactory setRequestBody(MediaType contentType, ByteString content) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
 
-    public RequestBuilder setRequestBody(MediaType contentType, String content) {
+    public RequestFactory setRequestBody(MediaType contentType, String content) {
         requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
         return this;
     }
