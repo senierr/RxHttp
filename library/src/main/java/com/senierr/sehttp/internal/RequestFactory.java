@@ -80,7 +80,7 @@ public final class RequestFactory {
      */
     public <T> void execute(BaseCallback<T> callback) {
         ProxyCall.newProxyCall(seHttp,
-                seHttp.getOkHttpClient().newCall(buildRequest(callback)),
+                RealCall.newRealCall(seHttp, buildRequest(callback), false),
                 callback)
                 .enqueue(null);
     }
@@ -93,7 +93,7 @@ public final class RequestFactory {
      */
     public Response execute() throws IOException {
         return ProxyCall.newProxyCall(seHttp,
-                seHttp.getOkHttpClient().newCall(buildRequest(null)),
+                RealCall.newRealCall(seHttp, buildRequest(null), false),
                 null)
                 .execute();
     }

@@ -2,6 +2,7 @@ package com.senierr.sehttp;
 
 import com.senierr.sehttp.cookie.ClearableCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
+import com.senierr.sehttp.internal.Dispatcher;
 import com.senierr.sehttp.internal.RequestFactory;
 import com.senierr.sehttp.util.HttpLogInterceptor;
 import com.senierr.sehttp.util.Utils;
@@ -34,6 +35,10 @@ public final class SeHttp {
     private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
     private int retryCount;
+    // 线程调度器
+    private Dispatcher dispatcher;
+    // Cookie管理器
+    private ClearableCookieJar cookieJar;
     // 网络请求器
     private OkHttpClient okHttpClient;
 
@@ -41,6 +46,8 @@ public final class SeHttp {
         this.commonUrlParams = builder.commonUrlParams;
         this.commonHeaders = builder.commonHeaders;
         this.retryCount = builder.retryCount;
+        this.dispatcher = builder.dispatcher;
+        this.cookieJar = builder.cookieJar;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -115,8 +122,12 @@ public final class SeHttp {
         return retryCount;
     }
 
+    public Dispatcher getDispatcher() {
+        return dispatcher;
+    }
+
     public ClearableCookieJar getCookieJar() {
-        return (ClearableCookieJar) getOkHttpClient().cookieJar();
+        return cookieJar;
     }
 
     public OkHttpClient getOkHttpClient() {
@@ -127,6 +138,8 @@ public final class SeHttp {
         private LinkedHashMap<String, String> commonUrlParams;
         private LinkedHashMap<String, String> commonHeaders;
         private int retryCount;
+        private Dispatcher dispatcher;
+        private ClearableCookieJar cookieJar;
         private OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -135,6 +148,7 @@ public final class SeHttp {
             okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.retryOnConnectionFailure(true);
+            dispatcher = new Dispatcher();
         }
 
         public SeHttp build() {
@@ -173,6 +187,11 @@ public final class SeHttp {
             return this;
         }
 
+        public Builder dispatcher(Dispatcher dispatcher) {
+            this.dispatcher = dispatcher;
+            return this;
+        }
+
         /** okHttpClientBuilder配置 **/
         public Builder debug(String tag, HttpLogInterceptor.LogLevel logLevel) {
             HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
@@ -208,6 +227,7 @@ public final class SeHttp {
         }
 
         public Builder cookieJar(ClearableCookieJar cookieJar) {
+            this.cookieJar = cookieJar;
             okHttpClientBuilder.cookieJar(cookieJar);
             return this;
         }
