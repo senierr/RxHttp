@@ -2,7 +2,7 @@ package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
-import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import okio.ByteString;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public class RequestFactory {
+public final class RequestFactory {
 
     private SeHttp seHttp;
     // 请求方法
@@ -56,13 +56,13 @@ public class RequestFactory {
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = HttpUtil.mergeMap(seHttp.getCommonUrlParams(), httpUrlParams);
-        httpHeaders = HttpUtil.mergeMap(seHttp.getCommonHeaders(), httpHeaders);
+        httpUrlParams = Utils.mergeMap(seHttp.getCommonUrlParams(), httpUrlParams);
+        httpHeaders = Utils.mergeMap(seHttp.getCommonHeaders(), httpHeaders);
         if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
-            url = HttpUtil.buildUrlParams(url, httpUrlParams);
+            url = Utils.buildUrlParams(url, httpUrlParams);
         }
         if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            requestBuilder.headers(HttpUtil.buildHeaders(httpHeaders));
+            requestBuilder.headers(Utils.buildHeaders(httpHeaders));
         }
         if (tag != null) {
             requestBuilder.tag(tag);
@@ -78,7 +78,7 @@ public class RequestFactory {
      * @param callback
      */
     public <T> void execute(BaseCallback<T> callback) {
-        new Emitter<T>(seHttp, build(callback)).execute(callback);
+        new Dispatcher<T>(seHttp, build(callback)).execute(callback);
     }
 
     /**
@@ -88,7 +88,7 @@ public class RequestFactory {
      * @throws IOException
      */
     public Response execute() throws IOException {
-        return new Emitter(seHttp, build(null)).execute();
+        return new Dispatcher(seHttp, build(null)).execute();
     }
 
     /**
@@ -124,7 +124,7 @@ public class RequestFactory {
      * @return
      */
     public RequestFactory addUrlParams(LinkedHashMap<String, String> params) {
-        httpUrlParams = HttpUtil.mergeMap(httpUrlParams, params);
+        httpUrlParams = Utils.mergeMap(httpUrlParams, params);
         return this;
     }
 
@@ -150,7 +150,7 @@ public class RequestFactory {
      * @return
      */
     public RequestFactory addHeaders(LinkedHashMap<String, String> headers) {
-        httpHeaders = HttpUtil.mergeMap(httpHeaders, headers);
+        httpHeaders = Utils.mergeMap(httpHeaders, headers);
         return this;
     }
 
@@ -178,7 +178,7 @@ public class RequestFactory {
      * @returns
      */
     public RequestFactory addRequestFileParams(LinkedHashMap<String, File> fileParams) {
-        requestBodyBuilder.setFileParams(HttpUtil.mergeMap(requestBodyBuilder.getFileParams(), fileParams));
+        requestBodyBuilder.setFileParams(Utils.mergeMap(requestBodyBuilder.getFileParams(), fileParams));
         return this;
     }
 
@@ -206,7 +206,7 @@ public class RequestFactory {
      * @returns
      */
     public RequestFactory addRequestStringParams(LinkedHashMap<String, String> stringParams) {
-        requestBodyBuilder.setStringParams(HttpUtil.mergeMap(requestBodyBuilder.getStringParams(), stringParams));
+        requestBodyBuilder.setStringParams(Utils.mergeMap(requestBodyBuilder.getStringParams(), stringParams));
         return this;
     }
 

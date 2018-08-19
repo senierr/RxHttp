@@ -23,7 +23,7 @@ import okhttp3.internal.Util;
  * @author zhouchunjie
  * @date 2017/8/25
  */
-public class SSLFactory {
+public final class SSLFactory {
 
     private SSLSocketFactory sSLSocketFactory;
     private X509TrustManager trustManager;

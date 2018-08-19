@@ -15,12 +15,12 @@ import okhttp3.Response;
  * @author zhouchunjie
  * @date 2017/3/29
  */
-public class Emitter<T> {
+public final class Dispatcher<T> {
 
     private SeHttp seHttp;
     private Request request;
 
-    public Emitter(SeHttp seHttp, Request request) {
+    public Dispatcher(SeHttp seHttp, Request request) {
         this.seHttp = seHttp;
         this.request = request;
     }

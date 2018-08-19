@@ -16,7 +16,7 @@ import okhttp3.HttpUrl;
  * @author zhouchunjie
  * @date 2018/8/14
  */
-public class SPCookieJar extends ClearableCookieJar {
+public final class SPCookieJar extends ClearableCookieJar {
 
     private static final String COOKIE_PREFS = "cookie_store";
     private static final String COOKIE_PREFIX = "cookie_";

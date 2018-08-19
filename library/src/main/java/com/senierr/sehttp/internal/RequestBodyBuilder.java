@@ -1,6 +1,6 @@
 package com.senierr.sehttp.internal;
 
-import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.Utils;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -16,7 +16,7 @@ import okhttp3.RequestBody;
  * @author zhouchunjie
  * @date 2018/05/17
  */
-public class RequestBodyBuilder {
+public final class RequestBodyBuilder {
 
     public static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";
     public static final String MEDIA_TYPE_XML = "text/xml; charset=utf-8";
@@ -51,7 +51,7 @@ public class RequestBodyBuilder {
                 for (String key: fileParams.keySet()) {
                     File value = fileParams.get(key);
 
-                    RequestBody fileBody = RequestBody.create(HttpUtil.guessMimeType(value.getPath()), value);
+                    RequestBody fileBody = RequestBody.create(Utils.guessMimeType(value.getPath()), value);
                     multipartBodybuilder.addFormDataPart(key, value.getName(), fileBody);
                 }
             }

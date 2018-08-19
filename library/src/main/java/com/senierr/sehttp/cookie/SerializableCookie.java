@@ -18,7 +18,7 @@ import okhttp3.internal.Util;
  * @author zhouchunjie
  * @date 2018/8/14
  */
-public class SerializableCookie implements Serializable {
+public final class SerializableCookie implements Serializable {
 
     private static final String TAG = SerializableCookie.class.getSimpleName();
     private static final long serialVersionUID = -8594045714036645534L;

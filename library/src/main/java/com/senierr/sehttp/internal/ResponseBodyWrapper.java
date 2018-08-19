@@ -19,7 +19,7 @@ import okio.Source;
  * @author zhouchunjie
  * @date 2017/9/9
  */
-public class ResponseBodyWrapper extends ResponseBody {
+public final class ResponseBodyWrapper extends ResponseBody {
 
     private SeHttp seHttp;
     private ResponseBody delegate;

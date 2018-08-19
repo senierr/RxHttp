@@ -84,8 +84,8 @@ SeHttp seHttp = new SeHttp.Builder().build();
 ### 请求
 
 ```java
-// 通过实例获取请求器：get, post, put, delete, head, options, patch
-RequestFactory requestFactory = seHttp.post(URL_GET);
+// 创建请求器
+RequestFactory requestFactory = new RequestFactory(this, method, urlStr);
 // 通过请求器发起请求
 requestFactory.execute(...);
 ```

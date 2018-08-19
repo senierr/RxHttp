@@ -19,7 +19,7 @@ import okio.Sink;
  * @author zhouchunjie
  * @date 2018/05/17
  */
-public class RequestBodyWrapper extends RequestBody {
+public final class RequestBodyWrapper extends RequestBody {
 
     private SeHttp seHttp;
     private RequestBody delegate;

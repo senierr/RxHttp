@@ -3,11 +3,12 @@ package com.senierr.sehttp;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.senierr.sehttp.cache.CacheInterceptor;
 import com.senierr.sehttp.cookie.ClearableCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
 import com.senierr.sehttp.internal.RequestFactory;
 import com.senierr.sehttp.util.HttpLogInterceptor;
-import com.senierr.sehttp.util.HttpUtil;
+import com.senierr.sehttp.util.Utils;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ import okhttp3.OkHttpClient;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public class SeHttp {
+public final class SeHttp {
 
     // 默认超时时间
     public static final int DEFAULT_TIMEOUT = 30 * 1000;
@@ -172,7 +173,7 @@ public class SeHttp {
         }
 
         public Builder addCommonUrlParams(LinkedHashMap<String, String> params) {
-            commonUrlParams = HttpUtil.mergeMap(commonUrlParams, params);
+            commonUrlParams = Utils.mergeMap(commonUrlParams, params);
             return this;
         }
 
@@ -185,7 +186,7 @@ public class SeHttp {
         }
 
         public Builder addCommonHeaders(LinkedHashMap<String, String> headers) {
-            commonHeaders = HttpUtil.mergeMap(commonUrlParams, headers);
+            commonHeaders = Utils.mergeMap(commonUrlParams, headers);
             return this;
         }
 
@@ -203,6 +204,7 @@ public class SeHttp {
         public Builder debug(String tag, HttpLogInterceptor.LogLevel logLevel) {
             HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
+            okHttpClientBuilder.addInterceptor(new CacheInterceptor());
             return this;
         }
 
