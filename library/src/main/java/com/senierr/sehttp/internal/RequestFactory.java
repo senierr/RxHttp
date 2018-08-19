@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -48,11 +49,11 @@ public final class RequestFactory {
      *
      * @return
      */
-    public Request build(BaseCallback callback) {
+    private Request buildRequest(BaseCallback callback) {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
-            requestBody = new RequestBodyWrapper(seHttp, requestBody, callback);
+            requestBody = new RequestBodyWrapper(requestBody, callback);
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
@@ -78,7 +79,10 @@ public final class RequestFactory {
      * @param callback
      */
     public <T> void execute(BaseCallback<T> callback) {
-        new Dispatcher<T>(seHttp, build(callback)).execute(callback);
+        ProxyCall.newProxyCall(seHttp,
+                seHttp.getOkHttpClient().newCall(buildRequest(callback)),
+                callback)
+                .enqueue(null);
     }
 
     /**
@@ -88,7 +92,10 @@ public final class RequestFactory {
      * @throws IOException
      */
     public Response execute() throws IOException {
-        return new Dispatcher(seHttp, build(null)).execute();
+        return ProxyCall.newProxyCall(seHttp,
+                seHttp.getOkHttpClient().newCall(buildRequest(null)),
+                null)
+                .execute();
     }
 
     /**

@@ -1,9 +1,5 @@
 package com.senierr.sehttp;
 
-import android.os.Handler;
-import android.os.Looper;
-
-import com.senierr.sehttp.cache.CacheInterceptor;
 import com.senierr.sehttp.cookie.ClearableCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
 import com.senierr.sehttp.internal.RequestFactory;
@@ -38,10 +34,6 @@ public final class SeHttp {
     private LinkedHashMap<String, String> commonHeaders;
     // 超时重试次数
     private int retryCount;
-    // 主线程调度器
-    private Handler mainScheduler;
-    // 异步刷新间隔
-    private int refreshInterval;
     // 网络请求器
     private OkHttpClient okHttpClient;
 
@@ -49,8 +41,6 @@ public final class SeHttp {
         this.commonUrlParams = builder.commonUrlParams;
         this.commonHeaders = builder.commonHeaders;
         this.retryCount = builder.retryCount;
-        this.mainScheduler = builder.mainScheduler;
-        this.refreshInterval = builder.refreshInterval;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -125,14 +115,6 @@ public final class SeHttp {
         return retryCount;
     }
 
-    public Handler getMainScheduler() {
-        return mainScheduler;
-    }
-
-    public int getRefreshInterval() {
-        return refreshInterval;
-    }
-
     public ClearableCookieJar getCookieJar() {
         return (ClearableCookieJar) getOkHttpClient().cookieJar();
     }
@@ -145,8 +127,6 @@ public final class SeHttp {
         private LinkedHashMap<String, String> commonUrlParams;
         private LinkedHashMap<String, String> commonHeaders;
         private int retryCount;
-        private Handler mainScheduler;
-        private int refreshInterval;
         private OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -155,8 +135,6 @@ public final class SeHttp {
             okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.retryOnConnectionFailure(true);
-            mainScheduler = new Handler(Looper.getMainLooper());
-            refreshInterval = REFRESH_MIN_INTERVAL;
         }
 
         public SeHttp build() {
@@ -195,16 +173,10 @@ public final class SeHttp {
             return this;
         }
 
-        public Builder refreshInterval(int refreshInterval) {
-            this.refreshInterval = refreshInterval;
-            return this;
-        }
-
         /** okHttpClientBuilder配置 **/
         public Builder debug(String tag, HttpLogInterceptor.LogLevel logLevel) {
             HttpLogInterceptor logInterceptor = new HttpLogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
-            okHttpClientBuilder.addInterceptor(new CacheInterceptor());
             return this;
         }
 

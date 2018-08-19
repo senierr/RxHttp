@@ -29,7 +29,6 @@ public class SessionApplication extends Application {
                 .sslFactory(new SSLFactory())
                 .hostnameVerifier(new UnSafeHostnameVerifier())
                 .cookieJar(new SPCookieJar(this))
-                .refreshInterval(200)
                 .retryCount(3)
                 .build();
     }

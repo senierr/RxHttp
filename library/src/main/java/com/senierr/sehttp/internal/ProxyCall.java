@@ -2,50 +2,59 @@ package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.util.MainThreadExecutor;
 
 import java.io.IOException;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * 请求发射器
+ * 代理Call
  *
  * @author zhouchunjie
- * @date 2017/3/29
+ * @date 2018/8/19
  */
-public final class Dispatcher<T> {
+public class ProxyCall<T> implements Call {
 
     private SeHttp seHttp;
-    private Request request;
+    private Call realCall;
+    private BaseCallback<T> callback;
+    private MainThreadExecutor executor;
 
-    public Dispatcher(SeHttp seHttp, Request request) {
+    private ProxyCall(SeHttp seHttp, Call call, BaseCallback<T> callback) {
         this.seHttp = seHttp;
-        this.request = request;
+        this.realCall = call;
+        this.callback = callback;
+        executor = MainThreadExecutor.getInstance();
     }
 
-    /**
-     * 同步请求
-     *
-     * @return
-     */
+    public static <T> ProxyCall<T> newProxyCall(SeHttp seHttp, Call call, BaseCallback<T> callback) {
+        return new ProxyCall<>(seHttp, call, callback);
+    }
+
+    @Override
+    public Request request() {
+        return realCall.request();
+    }
+
+    @Override
     public Response execute() throws IOException {
-        return getNewCall().execute();
+        return realCall.execute();
     }
 
-    /**
-     * 异步请求
-     */
-    public void execute(final BaseCallback<T> callback) {
-        getNewCall().enqueue(new okhttp3.Callback() {
+    @Override
+    public void enqueue(Callback responseCallback) {
+        realCall.enqueue(new Callback() {
             int currentRetryCount = 0;
 
             @Override
             public void onFailure(Call call, final IOException e) {
                 if (!call.isCanceled() && currentRetryCount < seHttp.getRetryCount()) {
                     currentRetryCount++;
-                    getNewCall().enqueue(this);
+                    ProxyCall.this.clone().enqueue(this);
                 } else {
                     handleFailure(callback, call, e);
                 }
@@ -54,7 +63,7 @@ public final class Dispatcher<T> {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final Response responseWrapper = response.newBuilder()
-                        .body(new ResponseBodyWrapper(seHttp, response.body(), callback))
+                        .body(new ResponseBodyWrapper(response.body(), callback))
                         .build();
                 if (callback != null) {
                     try {
@@ -69,25 +78,32 @@ public final class Dispatcher<T> {
         });
     }
 
-    /**
-     * 创建Call对象
-     *
-     * @return
-     */
-    private Call getNewCall() {
-        return seHttp.getOkHttpClient().newCall(request);
+    @Override
+    public void cancel() {
+        realCall.cancel();
     }
 
-    /**
-     * 执行成功回调
-     *
-     * @param t
-     */
+    @Override
+    public boolean isExecuted() {
+        return realCall.isExecuted();
+    }
+
+    @Override
+    public boolean isCanceled() {
+        return realCall.isCanceled();
+    }
+
+    @Override
+    public ProxyCall<T> clone() {
+        return ProxyCall.newProxyCall(seHttp, realCall.clone(), callback);
+    }
+
+    /** 执行成功回调 */
     private void handleSuccess(final BaseCallback<T> callback, final Call call, final T t) {
         if (!checkIfNeedCallBack(callback, call)) {
             return;
         }
-        seHttp.getMainScheduler().post(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 if (checkIfNeedCallBack(callback, call)) {
@@ -97,17 +113,12 @@ public final class Dispatcher<T> {
         });
     }
 
-    /**
-     * 执行失败回调
-     *
-     * @param call
-     * @param e
-     */
+    /** 执行失败回调 */
     private void handleFailure(final BaseCallback<T> callback, final Call call, final Exception e) {
         if (!checkIfNeedCallBack(callback, call)) {
             return;
         }
-        seHttp.getMainScheduler().post(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 if (checkIfNeedCallBack(callback, call)) {
@@ -117,13 +128,7 @@ public final class Dispatcher<T> {
         });
     }
 
-    /**
-     * 检查是否执行回调
-     *
-     * @param callback
-     * @param call
-     * @return
-     */
+    /** 检查是否执行回调 */
     private static boolean checkIfNeedCallBack(final BaseCallback callback, Call call) {
         return callback != null && call != null && !call.isCanceled();
     }
