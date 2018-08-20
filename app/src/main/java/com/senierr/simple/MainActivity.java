@@ -84,24 +84,16 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .addUrlParam("ip", "112.64.217.29")
                 .addHeader("language", "China")
-                .cacheKey(URL_GET)
-                .cachePolicy(CachePolicy.REQUEST_ELSE_CACHE)
-                .cacheDuration(1000 * 10)
-                .execute(new JsonCallback<Test>() {
+                .execute(new JsonCallback<String>() {
                     @Override
-                    public Test parseJson(String responseStr) {
+                    public String parseJson(String responseStr) {
                         // 异步解析json数据
-                        return new Test("aa");
+                        return responseStr;
                     }
 
                     @Override
-                    public void onCacheSuccess(Test s) {
-                        printLog("--onCacheSuccess: " + s.name);
-                    }
-
-                    @Override
-                    public void onSuccess(Test s) {
-                        printLog("--onSuccess: " + s.name);
+                    public void onSuccess(String s) {
+                        printLog("--onSuccess: " + s);
                     }
 
                     @Override
@@ -111,29 +103,29 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    class Test {
-        String name;
-
-        public Test(String name) {
-            this.name = name;
-        }
-    }
-
     /** Post请求 */
     private void post() {
         seHttp.post(URL_POST)
                 .tag(this)
                 .addRequestParam("name", "hello")
                 .addRequestParam("age", "18")
+                .cacheKey(URL_POST)
+                .cachePolicy(CachePolicy.CACHE_THEN_REQUEST)
+                .cacheDuration(1000 * 10)
                 .execute(new StringCallback() {
                     @Override
+                    public void onCacheSuccess(String s) {
+                        printLog("--onCacheSuccess: " + s);
+                    }
+
+                    @Override
                     public void onSuccess(String s) {
-                        printLog(s);
+                        printLog("--onSuccess: " + s);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        printLog(Log.getStackTraceString(e));
+                        printLog("--onFailure: " + Log.getStackTraceString(e));
                     }
                 });
     }

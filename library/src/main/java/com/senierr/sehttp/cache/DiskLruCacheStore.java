@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import okhttp3.internal.Util;
 import okhttp3.internal.cache.DiskLruCache;
@@ -37,7 +36,7 @@ public class DiskLruCacheStore implements CacheStore {
     }
 
     @Override
-    public void put(String key, Serializable value) {
+    public <T> void put(String key, CacheEntity<T> cacheEntity) {
         DiskLruCache.Editor editor = null;
         ObjectOutputStream oos = null;
         try {
@@ -45,7 +44,7 @@ public class DiskLruCacheStore implements CacheStore {
             if (editor != null) {
                 BufferedSink sink = Okio.buffer(editor.newSink(ENTRY_METADATA));
                 oos = new ObjectOutputStream(sink.outputStream());
-                oos.writeObject(value);
+                oos.writeObject(cacheEntity);
                 oos.flush();
                 editor.commit();
             }
@@ -59,8 +58,8 @@ public class DiskLruCacheStore implements CacheStore {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T get(String key) {
-        T result = null;
+    public <T> CacheEntity<T> get(String key) {
+        CacheEntity<T> result = null;
         DiskLruCache.Snapshot snapshot = null;
         ObjectInputStream ois = null;
         try {
@@ -68,7 +67,7 @@ public class DiskLruCacheStore implements CacheStore {
             if (snapshot != null) {
                 BufferedSource source = Okio.buffer(snapshot.getSource(ENTRY_METADATA));
                 ois = new ObjectInputStream(source.inputStream());
-                result = (T) ois.readObject();
+                result = (CacheEntity<T>) ois.readObject();
                 snapshot.close();
             }
         } catch (IOException e) {

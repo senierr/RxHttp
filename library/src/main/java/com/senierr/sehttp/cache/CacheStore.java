@@ -1,7 +1,5 @@
 package com.senierr.sehttp.cache;
 
-import java.io.Serializable;
-
 /**
  * 缓存存储接口
  *
@@ -10,7 +8,7 @@ import java.io.Serializable;
  */
 public interface CacheStore {
 
-    void put(String key, Serializable value);
+    <T> void put(String key, CacheEntity<T> cacheEntity);
 
-    <T> T get(String key);
+    <T> CacheEntity<T> get(String key);
 }
