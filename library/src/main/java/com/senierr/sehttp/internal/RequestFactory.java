@@ -1,6 +1,10 @@
 package com.senierr.sehttp.internal;
 
+import android.text.TextUtils;
+
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.CacheEntity;
+import com.senierr.sehttp.cache.CachePolicy;
 import com.senierr.sehttp.callback.BaseCallback;
 import com.senierr.sehttp.util.Utils;
 
@@ -35,6 +39,12 @@ public final class RequestFactory {
     private LinkedHashMap<String, String> httpHeaders;
     // 请求体构造器
     private RequestBodyBuilder requestBodyBuilder;
+    // 缓存协议
+    private String cacheKey;
+    // 缓存协议
+    private CachePolicy cachePolicy = CachePolicy.NO_CACHE;
+    // 缓存有效时长
+    private long cacheDuration;
 
     public RequestFactory(SeHttp seHttp, String method, String url) {
         this.seHttp = seHttp;
@@ -48,7 +58,7 @@ public final class RequestFactory {
      *
      * @return
      */
-    private Request buildRequest(BaseCallback callback) {
+    public Request buildRequest(BaseCallback callback) {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
@@ -78,7 +88,23 @@ public final class RequestFactory {
      * @param callback
      */
     public <T> void execute(BaseCallback<T> callback) {
-        ProxyRealCall.newRealCall(seHttp, buildRequest(callback), false).enqueueAsync(callback);
+        // 检查缓存参数
+        if (cachePolicy != CachePolicy.NO_CACHE) {
+            if (TextUtils.isEmpty(cacheKey)) {
+                throw new IllegalArgumentException("CacheKey must be not null!");
+            }
+            if (cacheDuration <= 0) {
+                throw new IllegalArgumentException("CacheDuration must be greater than 0!");
+            }
+
+        }
+        CacheEntity<T> cacheEntity = new CacheEntity<>();
+        cacheEntity.setCacheKey(cacheKey);
+        cacheEntity.setCachePolicy(cachePolicy);
+        cacheEntity.setCacheDuration(cacheDuration);
+
+        CacheRealCall.newRealCall(seHttp, buildRequest(callback), false)
+                .enqueueAsync(callback, cacheEntity);
     }
 
     /**
@@ -88,11 +114,45 @@ public final class RequestFactory {
      * @throws IOException
      */
     public Response execute() throws IOException {
-        return ProxyRealCall.newRealCall(seHttp, buildRequest(null), false).execute();
+        return CacheRealCall.newRealCall(seHttp, buildRequest(null), false)
+                .execute();
     }
 
     /**
-     * 添加标签
+     * 设置缓存Key
+     *
+     * @param cacheKey
+     * @return
+     */
+    public RequestFactory cacheKey(String cacheKey) {
+        this.cacheKey = cacheKey;
+        return this;
+    }
+
+    /**
+     * 设置缓存协议
+     *
+     * @param cachePolicy
+     * @return
+     */
+    public RequestFactory cachePolicy(CachePolicy cachePolicy) {
+        this.cachePolicy = cachePolicy;
+        return this;
+    }
+
+    /**
+     * 设置缓存时长
+     *
+     * @param cacheDuration
+     * @return
+     */
+    public RequestFactory cacheDuration(long cacheDuration) {
+        this.cacheDuration = cacheDuration;
+        return this;
+    }
+
+    /**
+     * 设置标签
      *
      * @param tag
      * @return

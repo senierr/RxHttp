@@ -40,9 +40,16 @@ public abstract class BaseCallback<T> {
     public void onDownload(int progress, long currentSize, long totalSize) {}
 
     /**
+     * 请求缓存回调
+     *
+     * @param t 泛型数据
+     */
+    public void onCacheSuccess(T t) {}
+
+    /**
      * 请求成功回调
      *
-     * @param t 泛型
+     * @param t 泛型数据
      */
     public abstract void onSuccess(T t);
 

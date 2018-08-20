@@ -1,5 +1,6 @@
 package com.senierr.sehttp;
 
+import com.senierr.sehttp.cache.CacheStore;
 import com.senierr.sehttp.cookie.ClearableCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
 import com.senierr.sehttp.internal.Dispatcher;
@@ -39,6 +40,8 @@ public final class SeHttp {
     private Dispatcher dispatcher;
     // Cookie管理器
     private ClearableCookieJar cookieJar;
+    // 缓存存储器
+    private CacheStore cacheStore;
     // 网络请求器
     private OkHttpClient okHttpClient;
 
@@ -48,6 +51,7 @@ public final class SeHttp {
         this.retryCount = builder.retryCount;
         this.dispatcher = builder.dispatcher;
         this.cookieJar = builder.cookieJar;
+        this.cacheStore = builder.cacheStore;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -129,6 +133,10 @@ public final class SeHttp {
         return cookieJar;
     }
 
+    public CacheStore getCacheStore() {
+        return cacheStore;
+    }
+
     public OkHttpClient getOkHttpClient() {
         return okHttpClient;
     }
@@ -139,6 +147,7 @@ public final class SeHttp {
         private int retryCount;
         private Dispatcher dispatcher;
         private ClearableCookieJar cookieJar;
+        private CacheStore cacheStore;
         private OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -188,6 +197,11 @@ public final class SeHttp {
 
         public Builder dispatcher(Dispatcher dispatcher) {
             this.dispatcher = dispatcher;
+            return this;
+        }
+
+        public Builder cacheStore(CacheStore cacheStore) {
+            this.cacheStore = cacheStore;
             return this;
         }
 

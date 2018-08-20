@@ -6,7 +6,7 @@ package com.senierr.sehttp.cache;
  * @author zhouchunjie
  * @date 2018/8/18
  */
-public enum CacheMode {
+public enum CachePolicy {
     NO_CACHE,           // 不缓存
     REQUEST_ELSE_CACHE, // 优先请求网络，若失败，使用缓存
     CACHE_ELSE_REQUEST, // 优先使用缓存，若无，请求网络

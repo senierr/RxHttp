@@ -11,6 +11,7 @@ import android.view.View;
 import com.senierr.permission.CheckCallback;
 import com.senierr.permission.PermissionManager;
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.CachePolicy;
 import com.senierr.sehttp.callback.FileCallback;
 import com.senierr.sehttp.callback.JsonCallback;
 import com.senierr.sehttp.callback.StringCallback;
@@ -83,23 +84,39 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .addUrlParam("ip", "112.64.217.29")
                 .addHeader("language", "China")
-                .execute(new JsonCallback<String>() {
+                .cacheKey(URL_GET)
+                .cachePolicy(CachePolicy.REQUEST_ELSE_CACHE)
+                .cacheDuration(1000 * 10)
+                .execute(new JsonCallback<Test>() {
                     @Override
-                    public String parseJson(String responseStr) {
+                    public Test parseJson(String responseStr) {
                         // 异步解析json数据
-                        return responseStr;
+                        return new Test("aa");
                     }
 
                     @Override
-                    public void onSuccess(String s) {
-                        printLog(s);
+                    public void onCacheSuccess(Test s) {
+                        printLog("--onCacheSuccess: " + s.name);
+                    }
+
+                    @Override
+                    public void onSuccess(Test s) {
+                        printLog("--onSuccess: " + s.name);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        printLog(Log.getStackTraceString(e));
+                        printLog("--onFailure: " + Log.getStackTraceString(e));
                     }
                 });
+    }
+
+    class Test {
+        String name;
+
+        public Test(String name) {
+            this.name = name;
+        }
     }
 
     /** Post请求 */

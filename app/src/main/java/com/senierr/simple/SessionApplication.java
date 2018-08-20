@@ -3,6 +3,7 @@ package com.senierr.simple;
 import android.app.Application;
 
 import com.senierr.sehttp.SeHttp;
+import com.senierr.sehttp.cache.DiskLruCacheStore;
 import com.senierr.sehttp.cookie.SPCookieJar;
 import com.senierr.sehttp.https.SSLFactory;
 import com.senierr.sehttp.https.UnSafeHostnameVerifier;
@@ -29,7 +30,8 @@ public class SessionApplication extends Application {
                 .sslFactory(new SSLFactory())
                 .hostnameVerifier(new UnSafeHostnameVerifier())
                 .cookieJar(new SPCookieJar(this))
-                .retryCount(3)
+                .cacheStore(new DiskLruCacheStore(getExternalCacheDir(), 10 * 1024 * 1024))
+                .retryCount(2)
                 .build();
     }
 
