@@ -88,6 +88,8 @@ public final class SeHttp {
 
     /** 取消请求 */
     public void cancelTag(Object tag) {
+        if (tag == null) return;
+
         for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
             if (tag.equals(call.request().tag())) {
                 call.cancel();
@@ -98,16 +100,13 @@ public final class SeHttp {
                 call.cancel();
             }
         }
+        getDispatcher().cancelTag(tag);
     }
 
     /** 取消所有请求 */
     public void cancelAll() {
-        for (Call call : getOkHttpClient().dispatcher().queuedCalls()) {
-            call.cancel();
-        }
-        for (Call call : getOkHttpClient().dispatcher().runningCalls()) {
-            call.cancel();
-        }
+        getOkHttpClient().dispatcher().cancelAll();
+        getDispatcher().cancelAll();
     }
 
     public LinkedHashMap<String, String> getCommonUrlParams() {

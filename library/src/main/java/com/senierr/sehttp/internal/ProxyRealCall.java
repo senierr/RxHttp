@@ -24,26 +24,26 @@ import okhttp3.internal.platform.Platform;
 
 import static okhttp3.internal.platform.Platform.INFO;
 
-final class RealCall<T> implements Call {
+final class ProxyRealCall implements Call {
 
     private final SeHttp seHttp;
-    final RetryAndFollowUpInterceptor retryAndFollowUpInterceptor;
+    private final RetryAndFollowUpInterceptor retryAndFollowUpInterceptor;
     private EventListener eventListener;
-    final Request originalRequest;
-    final boolean forWebSocket;
+    private final Request originalRequest;
+    private final boolean forWebSocket;
     private boolean executed;
     /** 失败重试次数 */
     private int currentRetryCount = 0;
 
-    private RealCall(SeHttp seHttp, Request originalRequest, boolean forWebSocket) {
+    private ProxyRealCall(SeHttp seHttp, Request originalRequest, boolean forWebSocket) {
         this.seHttp = seHttp;
         this.originalRequest = originalRequest;
         this.forWebSocket = forWebSocket;
         this.retryAndFollowUpInterceptor = new RetryAndFollowUpInterceptor(seHttp.getOkHttpClient(), forWebSocket);
     }
 
-    static RealCall newRealCall(SeHttp seHttp, Request originalRequest, boolean forWebSocket) {
-        RealCall call = new RealCall(seHttp, originalRequest, forWebSocket);
+    static ProxyRealCall newRealCall(SeHttp seHttp, Request originalRequest, boolean forWebSocket) {
+        ProxyRealCall call = new ProxyRealCall(seHttp, originalRequest, forWebSocket);
         call.eventListener = seHttp.getOkHttpClient().eventListenerFactory().create(call);
         return call;
     }
@@ -79,19 +79,21 @@ final class RealCall<T> implements Call {
         retryAndFollowUpInterceptor.setCallStackTrace(callStackTrace);
     }
 
+    @Deprecated
     @Override
     public void enqueue(Callback responseCallback) {
         // replace with enqueueAsync
     }
 
-    public void enqueueAsync(BaseCallback<T> callback) {
+    /** 异步任务入栈 */
+    public <T> void enqueueAsync(BaseCallback<T> callback) {
         synchronized (this) {
             if (executed) throw new IllegalStateException("Already Executed");
             executed = true;
         }
         captureCallStackTrace();
         eventListener.callStart(this);
-        seHttp.getDispatcher().enqueue(new AsyncCall(callback));
+        seHttp.getDispatcher().enqueue(new AsyncCall<>(callback));
     }
 
     @Override
@@ -111,9 +113,9 @@ final class RealCall<T> implements Call {
 
     @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public RealCall clone() {
+    public ProxyRealCall clone() {
         // Clone时，保持失败重连次数
-        RealCall realCall = RealCall.newRealCall(seHttp, originalRequest, forWebSocket);
+        ProxyRealCall realCall = ProxyRealCall.newRealCall(seHttp, originalRequest, forWebSocket);
         realCall.setCurrentRetryCount(currentRetryCount);
         return realCall;
     }
@@ -126,8 +128,7 @@ final class RealCall<T> implements Call {
         this.currentRetryCount = currentRetryCount;
     }
 
-    /** 异步任务 */
-    final class AsyncCall extends NamedRunnable {
+    final class AsyncCall<T> extends NamedRunnable {
         private final BaseCallback<T> responseCallback;
 
         AsyncCall(BaseCallback<T> responseCallback) {
@@ -143,8 +144,8 @@ final class RealCall<T> implements Call {
             return originalRequest;
         }
 
-        RealCall get() {
-            return RealCall.this;
+        ProxyRealCall get() {
+            return ProxyRealCall.this;
         }
 
         @Override
@@ -154,31 +155,18 @@ final class RealCall<T> implements Call {
                 Response response = getResponseWithInterceptorChain();
                 if (retryAndFollowUpInterceptor.isCanceled()) {
                     signalledCallback = true;
-                    responseCallback.onFailure(RealCall.this, new IOException("Canceled"));
+                    handleFailure(responseCallback, ProxyRealCall.this, new IOException("Canceled"));
                 } else {
                     signalledCallback = true;
-//                    responseCallback.onResponse(RealCall.this, response);
-
-                    final Response responseWrapper = response.newBuilder()
-                            .body(new ResponseBodyWrapper(response.body(), responseCallback))
-                            .build();
-                    if (responseCallback != null) {
-                        try {
-                            T t = responseCallback.convert(responseWrapper);
-                            handleSuccess(responseCallback, RealCall.this, t);
-                        } catch (Exception e) {
-                            handleFailure(responseCallback, RealCall.this, e);
-                        }
-                    }
-                    responseWrapper.close();
+                    handleSuccess(responseCallback, ProxyRealCall.this, response);
                 }
             } catch (IOException e) {
                 if (signalledCallback) {
                     // Do not signal the callback twice!
                     Platform.get().log(INFO, "Callback failure for " + toLoggableString(), e);
                 } else {
-                    eventListener.callFailed(RealCall.this, e);
-                    responseCallback.onFailure(RealCall.this, e);
+                    eventListener.callFailed(ProxyRealCall.this, e);
+                    handleFailure(responseCallback, ProxyRealCall.this, e);
                 }
             } finally {
                 seHttp.getDispatcher().finished(this);
@@ -200,6 +188,9 @@ final class RealCall<T> implements Call {
         return originalRequest.url().redact();
     }
 
+    /**
+     * 处理应用拦截器和网络拦截器，并返回处理结果
+     */
     private Response getResponseWithInterceptorChain() throws IOException {
         OkHttpClient client = seHttp.getOkHttpClient();
         // Build a full stack of interceptors.
@@ -207,6 +198,7 @@ final class RealCall<T> implements Call {
         interceptors.addAll(client.interceptors());
         interceptors.add(retryAndFollowUpInterceptor);
         interceptors.add(new BridgeInterceptor(client.cookieJar()));
+        /* 取消内部缓存处理 */
 //    interceptors.add(new CacheInterceptor(client.internalCache()));
         interceptors.add(new ConnectInterceptor(client));
         if (!forWebSocket) {
@@ -221,43 +213,58 @@ final class RealCall<T> implements Call {
         return chain.proceed(originalRequest);
     }
 
-    private void a() {
+    /** 成功处理 */
+    private <T> void handleSuccess(BaseCallback<T> callback, final Call call, Response response) {
+        final Response responseWrapper = response.newBuilder()
+                .body(new ResponseBodyWrapper(seHttp, response.body(), callback))
+                .build();
+        if (callback != null) {
+            try {
+                T t = callback.convert(responseWrapper);
+                sendSuccess(callback, call, t);
+            } catch (Exception e) {
+                sendFailure(callback, call, e);
+            }
+        }
+        responseWrapper.close();
+    }
+
+    /** 失败处理 */
+    private <T> void handleFailure(BaseCallback<T> callback, final Call call, final Exception e) {
         if (!isCanceled() && currentRetryCount < seHttp.getRetryCount()) {
             currentRetryCount++;
-            clone().enqueueAsync();
+            ProxyRealCall.this.clone().enqueueAsync(callback);
         } else {
-            handleFailure(callback, call, e);
+            sendFailure(callback, call, e);
         }
     }
 
     /** 执行成功回调 */
-    private void handleSuccess(final BaseCallback<T> callback, final Call call, final T t) {
-        if (!checkIfNeedCallBack(callback, call)) {
-            return;
-        }
-        seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                if (checkIfNeedCallBack(callback, call)) {
-                    callback.onSuccess(t);
+    private <T> void sendSuccess(final BaseCallback<T> callback, final Call call, final T t) {
+        if (checkIfNeedCallBack(callback, call)) {
+            seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkIfNeedCallBack(callback, call)) {
+                        callback.onSuccess(t);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /** 执行失败回调 */
-    private void handleFailure(final BaseCallback callback, final Call call, final Exception e) {
-        if (!checkIfNeedCallBack(callback, call)) {
-            return;
-        }
-        seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                if (checkIfNeedCallBack(callback, call)) {
-                    callback.onFailure(e);
+    private void sendFailure(final BaseCallback callback, final Call call, final Exception e) {
+        if (checkIfNeedCallBack(callback, call)) {
+            seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkIfNeedCallBack(callback, call)) {
+                        callback.onFailure(e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /** 检查是否执行回调 */

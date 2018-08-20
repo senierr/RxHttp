@@ -35,9 +35,9 @@ public final class Dispatcher {
     private ExecutorService executorService;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private final Deque<RealCall.AsyncCall> readyAsyncCalls = new ArrayDeque<>();
-    private final Deque<RealCall.AsyncCall> runningAsyncCalls = new ArrayDeque<>();
-    private final Deque<RealCall> runningSyncCalls = new ArrayDeque<>();
+    private final Deque<ProxyRealCall.AsyncCall> readyAsyncCalls = new ArrayDeque<>();
+    private final Deque<ProxyRealCall.AsyncCall> runningAsyncCalls = new ArrayDeque<>();
+    private final Deque<ProxyRealCall> runningSyncCalls = new ArrayDeque<>();
 
     public Dispatcher() {}
 
@@ -90,7 +90,7 @@ public final class Dispatcher {
     }
 
     /** 异步执行Call */
-    public synchronized void enqueue(RealCall.AsyncCall call) {
+    public synchronized void enqueue(ProxyRealCall.AsyncCall call) {
         if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(call) < maxRequestsPerHost) {
             runningAsyncCalls.add(call);
             executorService().execute(call);
@@ -106,16 +106,36 @@ public final class Dispatcher {
         }
     }
 
+    public synchronized void cancelTag(Object tag) {
+        for (ProxyRealCall.AsyncCall call : readyAsyncCalls) {
+            if (tag.equals(call.request().tag())) {
+                call.get().cancel();
+            }
+        }
+
+        for (ProxyRealCall.AsyncCall call : runningAsyncCalls) {
+            if (tag.equals(call.request().tag())) {
+                call.get().cancel();
+            }
+        }
+
+        for (ProxyRealCall call : runningSyncCalls) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+    }
+
     public synchronized void cancelAll() {
-        for (RealCall.AsyncCall call : readyAsyncCalls) {
+        for (ProxyRealCall.AsyncCall call : readyAsyncCalls) {
             call.get().cancel();
         }
 
-        for (RealCall.AsyncCall call : runningAsyncCalls) {
+        for (ProxyRealCall.AsyncCall call : runningAsyncCalls) {
             call.get().cancel();
         }
 
-        for (RealCall call : runningSyncCalls) {
+        for (ProxyRealCall call : runningSyncCalls) {
             call.cancel();
         }
     }
@@ -124,8 +144,8 @@ public final class Dispatcher {
         if (runningAsyncCalls.size() >= maxRequests) return; // Already running max capacity.
         if (readyAsyncCalls.isEmpty()) return; // No ready calls to promote.
 
-        for (Iterator<RealCall.AsyncCall> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
-            RealCall.AsyncCall call = i.next();
+        for (Iterator<ProxyRealCall.AsyncCall> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
+            ProxyRealCall.AsyncCall call = i.next();
 
             if (runningCallsForHost(call) < maxRequestsPerHost) {
                 i.remove();
@@ -137,23 +157,23 @@ public final class Dispatcher {
         }
     }
 
-    private int runningCallsForHost(RealCall.AsyncCall call) {
+    private int runningCallsForHost(ProxyRealCall.AsyncCall call) {
         int result = 0;
-        for (RealCall.AsyncCall c : runningAsyncCalls) {
+        for (ProxyRealCall.AsyncCall c : runningAsyncCalls) {
             if (c.host().equals(call.host())) result++;
         }
         return result;
     }
 
-    public synchronized void executed(RealCall call) {
+    public synchronized void executed(ProxyRealCall call) {
         runningSyncCalls.add(call);
     }
 
-    public void finished(RealCall.AsyncCall call) {
+    public void finished(ProxyRealCall.AsyncCall call) {
         finished(runningAsyncCalls, call, true);
     }
 
-    public void finished(RealCall call) {
+    public void finished(ProxyRealCall call) {
         finished(runningSyncCalls, call, false);
     }
 
@@ -174,7 +194,7 @@ public final class Dispatcher {
 
     public synchronized List<Call> queuedCalls() {
         List<Call> result = new ArrayList<>();
-        for (RealCall.AsyncCall asyncCall : readyAsyncCalls) {
+        for (ProxyRealCall.AsyncCall asyncCall : readyAsyncCalls) {
             result.add(asyncCall.get());
         }
         return Collections.unmodifiableList(result);
@@ -183,7 +203,7 @@ public final class Dispatcher {
     public synchronized List<Call> runningCalls() {
         List<Call> result = new ArrayList<>();
         result.addAll(runningSyncCalls);
-        for (RealCall.AsyncCall asyncCall : runningAsyncCalls) {
+        for (ProxyRealCall.AsyncCall asyncCall : runningAsyncCalls) {
             result.add(asyncCall.get());
         }
         return Collections.unmodifiableList(result);

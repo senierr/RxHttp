@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
+import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.callback.BaseCallback;
-import com.senierr.sehttp.util.MainThreadExecutor;
 
 import java.io.IOException;
 
@@ -21,10 +21,12 @@ import okio.Sink;
  */
 public final class RequestBodyWrapper extends RequestBody {
 
+    private SeHttp seHttp;
     private RequestBody delegate;
     private BaseCallback callback;
 
-    public RequestBodyWrapper(RequestBody requestBody, BaseCallback callback) {
+    public RequestBodyWrapper(SeHttp seHttp, RequestBody requestBody, BaseCallback callback) {
+        this.seHttp = seHttp;
         this.delegate = requestBody;
         this.callback = callback;
     }
@@ -48,14 +50,12 @@ public final class RequestBodyWrapper extends RequestBody {
 
     private final class CountingSink extends ForwardingSink {
 
-        private MainThreadExecutor executor;
         private long bytesWritten = 0;
         private long contentLength = 0;
         private long lastRefreshUiTime;
 
         private CountingSink(Sink delegate) {
             super(delegate);
-            executor = MainThreadExecutor.getInstance();
         }
 
         @Override
@@ -70,8 +70,8 @@ public final class RequestBodyWrapper extends RequestBody {
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= executor.getRefreshInterval() || bytesWritten == contentLength) {
-                executor.execute(new Runnable() {
+            if (curTime - lastRefreshUiTime >= seHttp.getDispatcher().getRefreshInterval() || bytesWritten == contentLength) {
+                seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
                     @Override
                     public void run() {
                         if (callback == null) return;
