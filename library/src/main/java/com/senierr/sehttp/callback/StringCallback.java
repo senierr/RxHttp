@@ -14,7 +14,7 @@ import okio.BufferedSource;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public abstract class StringCallback extends BaseCallback<String> {
+public abstract class StringCallback extends Callback<String> {
 
     private Charset charset;
 

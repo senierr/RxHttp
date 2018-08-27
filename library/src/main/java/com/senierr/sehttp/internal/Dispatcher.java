@@ -35,9 +35,9 @@ public final class Dispatcher {
     private ExecutorService executorService;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private final Deque<CacheRealCall.AsyncCall> readyAsyncCalls = new ArrayDeque<>();
-    private final Deque<CacheRealCall.AsyncCall> runningAsyncCalls = new ArrayDeque<>();
-    private final Deque<CacheRealCall> runningSyncCalls = new ArrayDeque<>();
+    private final Deque<CacheCall.AsyncCall> readyAsyncCalls = new ArrayDeque<>();
+    private final Deque<CacheCall.AsyncCall> runningAsyncCalls = new ArrayDeque<>();
+    private final Deque<CacheCall> runningSyncCalls = new ArrayDeque<>();
 
     public Dispatcher() {}
 
@@ -90,7 +90,7 @@ public final class Dispatcher {
     }
 
     /** 异步执行Call */
-    public synchronized void enqueue(CacheRealCall.AsyncCall call) {
+    public synchronized void enqueue(CacheCall.AsyncCall call) {
         if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(call) < maxRequestsPerHost) {
             runningAsyncCalls.add(call);
             executorService().execute(call);
@@ -107,19 +107,19 @@ public final class Dispatcher {
     }
 
     public synchronized void cancelTag(Object tag) {
-        for (CacheRealCall.AsyncCall call : readyAsyncCalls) {
+        for (CacheCall.AsyncCall call : readyAsyncCalls) {
             if (tag.equals(call.request().tag())) {
                 call.get().cancel();
             }
         }
 
-        for (CacheRealCall.AsyncCall call : runningAsyncCalls) {
+        for (CacheCall.AsyncCall call : runningAsyncCalls) {
             if (tag.equals(call.request().tag())) {
                 call.get().cancel();
             }
         }
 
-        for (CacheRealCall call : runningSyncCalls) {
+        for (CacheCall call : runningSyncCalls) {
             if (tag.equals(call.request().tag())) {
                 call.cancel();
             }
@@ -127,15 +127,15 @@ public final class Dispatcher {
     }
 
     public synchronized void cancelAll() {
-        for (CacheRealCall.AsyncCall call : readyAsyncCalls) {
+        for (CacheCall.AsyncCall call : readyAsyncCalls) {
             call.get().cancel();
         }
 
-        for (CacheRealCall.AsyncCall call : runningAsyncCalls) {
+        for (CacheCall.AsyncCall call : runningAsyncCalls) {
             call.get().cancel();
         }
 
-        for (CacheRealCall call : runningSyncCalls) {
+        for (CacheCall call : runningSyncCalls) {
             call.cancel();
         }
     }
@@ -144,8 +144,8 @@ public final class Dispatcher {
         if (runningAsyncCalls.size() >= maxRequests) return; // Already running max capacity.
         if (readyAsyncCalls.isEmpty()) return; // No ready calls to promote.
 
-        for (Iterator<CacheRealCall.AsyncCall> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
-            CacheRealCall.AsyncCall call = i.next();
+        for (Iterator<CacheCall.AsyncCall> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
+            CacheCall.AsyncCall call = i.next();
 
             if (runningCallsForHost(call) < maxRequestsPerHost) {
                 i.remove();
@@ -157,23 +157,23 @@ public final class Dispatcher {
         }
     }
 
-    private int runningCallsForHost(CacheRealCall.AsyncCall call) {
+    private int runningCallsForHost(CacheCall.AsyncCall call) {
         int result = 0;
-        for (CacheRealCall.AsyncCall c : runningAsyncCalls) {
+        for (CacheCall.AsyncCall c : runningAsyncCalls) {
             if (c.host().equals(call.host())) result++;
         }
         return result;
     }
 
-    public synchronized void executed(CacheRealCall call) {
+    public synchronized void executed(CacheCall call) {
         runningSyncCalls.add(call);
     }
 
-    public void finished(CacheRealCall.AsyncCall call) {
+    public void finished(CacheCall.AsyncCall call) {
         finished(runningAsyncCalls, call, true);
     }
 
-    public void finished(CacheRealCall call) {
+    public void finished(CacheCall call) {
         finished(runningSyncCalls, call, false);
     }
 
@@ -194,7 +194,7 @@ public final class Dispatcher {
 
     public synchronized List<Call> queuedCalls() {
         List<Call> result = new ArrayList<>();
-        for (CacheRealCall.AsyncCall asyncCall : readyAsyncCalls) {
+        for (CacheCall.AsyncCall asyncCall : readyAsyncCalls) {
             result.add(asyncCall.get());
         }
         return Collections.unmodifiableList(result);
@@ -203,7 +203,7 @@ public final class Dispatcher {
     public synchronized List<Call> runningCalls() {
         List<Call> result = new ArrayList<>();
         result.addAll(runningSyncCalls);
-        for (CacheRealCall.AsyncCall asyncCall : runningAsyncCalls) {
+        for (CacheCall.AsyncCall asyncCall : runningAsyncCalls) {
             result.add(asyncCall.get());
         }
         return Collections.unmodifiableList(result);

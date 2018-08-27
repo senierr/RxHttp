@@ -8,7 +8,7 @@ import okhttp3.Response;
  * @author zhouchunjie
  * @date 2017/3/28
  */
-public abstract class BaseCallback<T> {
+public abstract class Callback<T> {
 
     /**
      * 内容转换

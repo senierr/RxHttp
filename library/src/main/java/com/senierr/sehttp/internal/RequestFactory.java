@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.cache.CacheEntity;
 import com.senierr.sehttp.cache.CachePolicy;
-import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.callback.Callback;
 import com.senierr.sehttp.util.Utils;
 
 import java.io.File;
@@ -58,7 +58,7 @@ public final class RequestFactory {
      *
      * @return
      */
-    public Request buildRequest(BaseCallback callback) {
+    public Request create(Callback callback) {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
@@ -87,7 +87,7 @@ public final class RequestFactory {
      *
      * @param callback
      */
-    public <T> void execute(BaseCallback<T> callback) {
+    public <T> void execute(Callback<T> callback) {
         // 检查缓存参数
         if (cachePolicy != CachePolicy.NO_CACHE) {
             if (TextUtils.isEmpty(cacheKey)) {
@@ -103,8 +103,7 @@ public final class RequestFactory {
         cacheEntity.setCachePolicy(cachePolicy);
         cacheEntity.setCacheDuration(cacheDuration);
 
-        CacheRealCall.newRealCall(seHttp, buildRequest(callback), false)
-                .enqueueAsync(callback, cacheEntity);
+        CacheCall.newCacheCall(seHttp, create(callback), cacheEntity).enqueue(callback);
     }
 
     /**
@@ -114,8 +113,7 @@ public final class RequestFactory {
      * @throws IOException
      */
     public Response execute() throws IOException {
-        return CacheRealCall.newRealCall(seHttp, buildRequest(null), false)
-                .execute();
+        return CacheCall.newCacheCall(seHttp, create(null), null).execute();
     }
 
     /**

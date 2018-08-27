@@ -1,7 +1,7 @@
 package com.senierr.sehttp.internal;
 
 import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.callback.BaseCallback;
+import com.senierr.sehttp.callback.Callback;
 
 import java.io.IOException;
 
@@ -24,9 +24,9 @@ public final class ResponseBodyWrapper extends ResponseBody {
     private SeHttp seHttp;
     private ResponseBody delegate;
     private BufferedSource bufferedSource;
-    private BaseCallback callback;
+    private Callback callback;
 
-    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, BaseCallback callback) {
+    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, Callback callback) {
         this.seHttp = seHttp;
         this.delegate = responseBody;
         this.callback = callback;

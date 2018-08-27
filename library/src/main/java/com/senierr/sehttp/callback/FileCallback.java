@@ -16,7 +16,7 @@ import okio.Okio;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public abstract class FileCallback extends BaseCallback<File> {
+public abstract class FileCallback extends Callback<File> {
 
     private File destDir;
     private String destName;
