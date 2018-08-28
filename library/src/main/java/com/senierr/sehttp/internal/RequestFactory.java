@@ -19,7 +19,7 @@ import okhttp3.Response;
 import okio.ByteString;
 
 /**
- * 请求封装类
+ * 请求工厂类
  *
  * @author zhouchunjie
  * @date 2017/3/27
@@ -62,7 +62,7 @@ public final class RequestFactory {
         // 封装RequestBody
         RequestBody requestBody = requestBodyBuilder.build();
         if (requestBody != null) {
-            requestBody = new RequestBodyWrapper(seHttp, requestBody, callback);
+            requestBody = new ProgressRequestBody(seHttp, requestBody, callback);
         }
         // 生成Request
         Request.Builder requestBuilder = new Request.Builder();
@@ -117,34 +117,16 @@ public final class RequestFactory {
     }
 
     /**
-     * 设置缓存Key
+     * 设置缓存
      *
-     * @param cacheKey
+     * @param cachePolicy 缓存策略
+     * @param cacheKey 缓存Key
+     * @param cacheDuration 缓存有效时长
      * @return
      */
-    public RequestFactory cacheKey(String cacheKey) {
-        this.cacheKey = cacheKey;
-        return this;
-    }
-
-    /**
-     * 设置缓存协议
-     *
-     * @param cachePolicy
-     * @return
-     */
-    public RequestFactory cachePolicy(CachePolicy cachePolicy) {
+    public RequestFactory cache(CachePolicy cachePolicy, String cacheKey, long cacheDuration) {
         this.cachePolicy = cachePolicy;
-        return this;
-    }
-
-    /**
-     * 设置缓存时长
-     *
-     * @param cacheDuration
-     * @return
-     */
-    public RequestFactory cacheDuration(long cacheDuration) {
+        this.cacheKey = cacheKey;
         this.cacheDuration = cacheDuration;
         return this;
     }

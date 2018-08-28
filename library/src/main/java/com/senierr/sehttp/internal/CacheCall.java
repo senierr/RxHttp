@@ -197,17 +197,17 @@ final class CacheCall<T> implements Call<T> {
         /** 成功处理 */
         private void handleSuccess(Callback<T> callback, final Call call, Response response) {
             final Response responseWrapper = response.newBuilder()
-                    .body(new ResponseBodyWrapper(seHttp, response.body(), callback))
+                    .body(new ProgressResponseBody(seHttp, response.body(), callback))
                     .build();
             if (callback != null) {
                 try {
-                    T t = callback.convert(responseWrapper);
+                    T t = callback.converter().convertResponse(responseWrapper);
                     sendSuccess(callback, call, t);
                     // 存入缓存
                     if (cacheEntity.getCachePolicy() != CachePolicy.NO_CACHE) {
                         putDataToCache(t);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     sendFailure(callback, call, e);
                 }
             }
@@ -215,7 +215,7 @@ final class CacheCall<T> implements Call<T> {
         }
 
         /** 失败处理 */
-        private void handleFailure(Callback<T> callback, final Call call, final Exception e) {
+        private void handleFailure(Callback<T> callback, final Call call, final Throwable e) {
             if (!isCanceled() && currentRetryCount < seHttp.getRetryCount()) {
                 currentRetryCount++;
                 retryCacheCall(seHttp, originalRequest, cacheEntity, currentRetryCount)
@@ -283,7 +283,7 @@ final class CacheCall<T> implements Call<T> {
         }
 
         /** 发送失败回调 */
-        private void sendFailure(final Callback callback, final Call call, final Exception e) {
+        private void sendFailure(final Callback callback, final Call call, final Throwable e) {
             if (checkIfNeedCallBack(callback, call)) {
                 seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
                     @Override

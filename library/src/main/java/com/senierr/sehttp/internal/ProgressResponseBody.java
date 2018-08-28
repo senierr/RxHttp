@@ -19,14 +19,14 @@ import okio.Source;
  * @author zhouchunjie
  * @date 2017/9/9
  */
-public final class ResponseBodyWrapper extends ResponseBody {
+public final class ProgressResponseBody extends ResponseBody {
 
     private SeHttp seHttp;
     private ResponseBody delegate;
     private BufferedSource bufferedSource;
     private Callback callback;
 
-    public ResponseBodyWrapper(SeHttp seHttp, ResponseBody responseBody, Callback callback) {
+    public ProgressResponseBody(SeHttp seHttp, ResponseBody responseBody, Callback callback) {
         this.seHttp = seHttp;
         this.delegate = responseBody;
         this.callback = callback;

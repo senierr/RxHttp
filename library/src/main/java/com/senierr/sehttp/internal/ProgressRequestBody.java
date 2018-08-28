@@ -19,13 +19,13 @@ import okio.Sink;
  * @author zhouchunjie
  * @date 2018/05/17
  */
-public final class RequestBodyWrapper extends RequestBody {
+public final class ProgressRequestBody extends RequestBody {
 
     private SeHttp seHttp;
     private RequestBody delegate;
     private Callback callback;
 
-    public RequestBodyWrapper(SeHttp seHttp, RequestBody requestBody, Callback callback) {
+    public ProgressRequestBody(SeHttp seHttp, RequestBody requestBody, Callback callback) {
         this.seHttp = seHttp;
         this.delegate = requestBody;
         this.callback = callback;

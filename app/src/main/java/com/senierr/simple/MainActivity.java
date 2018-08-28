@@ -13,7 +13,6 @@ import com.senierr.permission.PermissionManager;
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.cache.CachePolicy;
 import com.senierr.sehttp.callback.FileCallback;
-import com.senierr.sehttp.callback.JsonCallback;
 import com.senierr.sehttp.callback.StringCallback;
 
 import java.io.File;
@@ -84,20 +83,20 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .addUrlParam("ip", "112.64.217.29")
                 .addHeader("language", "China")
-                .execute(new JsonCallback<String>() {
+                .cache(CachePolicy.CACHE_THEN_REQUEST, URL_POST, 20 * 1000)
+                .execute(new MyCallback() {
                     @Override
-                    public String parseJson(String responseStr) {
-                        // 异步解析json数据
-                        return responseStr;
+                    public void onCacheSuccess(MyEntity entity) {
+                        printLog("--onCacheSuccess: " + entity.toString());
                     }
 
                     @Override
-                    public void onSuccess(String s) {
-                        printLog("--onSuccess: " + s);
+                    public void onSuccess(MyEntity entity) {
+                        printLog("--onSuccess: " + entity.toString());
                     }
 
                     @Override
-                    public void onFailure(Exception e) {
+                    public void onFailure(Throwable e) {
                         printLog("--onFailure: " + Log.getStackTraceString(e));
                     }
                 });
@@ -109,22 +108,14 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .addRequestParam("name", "hello")
                 .addRequestParam("age", "18")
-                .cacheKey(URL_POST)
-                .cachePolicy(CachePolicy.CACHE_THEN_REQUEST)
-                .cacheDuration(1000 * 10)
                 .execute(new StringCallback() {
-                    @Override
-                    public void onCacheSuccess(String s) {
-                        printLog("--onCacheSuccess: " + s);
-                    }
-
                     @Override
                     public void onSuccess(String s) {
                         printLog("--onSuccess: " + s);
                     }
 
                     @Override
-                    public void onFailure(Exception e) {
+                    public void onFailure(Throwable e) {
                         printLog("--onFailure: " + Log.getStackTraceString(e));
                     }
                 });
@@ -148,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Exception e) {
+                    public void onFailure(Throwable e) {
                         printLog(Log.getStackTraceString(e));
                     }
                 });
@@ -171,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Exception e) {
+                    public void onFailure(Throwable e) {
                         printLog(Log.getStackTraceString(e));
                     }
                 });

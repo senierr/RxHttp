@@ -1,6 +1,6 @@
 package com.senierr.sehttp.callback;
 
-import okhttp3.Response;
+import com.senierr.sehttp.converter.Converter;
 
 /**
  * 请求回调基类
@@ -10,16 +10,15 @@ import okhttp3.Response;
  */
 public abstract class Callback<T> {
 
-    /**
-     * 内容转换
-     *
-     * 注：异步线程
-     *
-     * @param response 请求返回
-     * @return
-     * @throws Exception
-     */
-    public abstract T convert(Response response) throws Exception;
+    private final Converter<T> converter;
+
+    public Callback(Converter<T> converter) {
+        this.converter = converter;
+    }
+
+    public Converter<T> converter() {
+        return converter;
+    }
 
     /**
      * 上传进度回调
@@ -58,5 +57,5 @@ public abstract class Callback<T> {
      *
      * @param e 失败异常
      */
-    public void onFailure(Exception e) {}
+    public void onFailure(Throwable e) {}
 }
