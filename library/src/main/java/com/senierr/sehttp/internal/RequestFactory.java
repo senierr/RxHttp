@@ -1,7 +1,5 @@
 package com.senierr.sehttp.internal;
 
-import android.text.TextUtils;
-
 import com.senierr.sehttp.SeHttp;
 import com.senierr.sehttp.cache.CacheEntity;
 import com.senierr.sehttp.cache.CachePolicy;
@@ -42,7 +40,7 @@ public final class RequestFactory {
     // 缓存协议
     private String cacheKey;
     // 缓存协议
-    private CachePolicy cachePolicy = CachePolicy.NO_CACHE;
+    private CachePolicy cachePolicy;
     // 缓存有效时长
     private long cacheDuration;
 
@@ -51,6 +49,9 @@ public final class RequestFactory {
         this.method = method;
         this.url = url;
         requestBodyBuilder = new RequestBodyBuilder();
+        cacheKey = url;
+        cachePolicy = CachePolicy.NO_CACHE;
+        cacheDuration = CacheEntity.DEFAULT_CACHE_DURATION;
     }
 
     /**
@@ -88,21 +89,7 @@ public final class RequestFactory {
      * @param callback
      */
     public <T> void execute(Callback<T> callback) {
-        // 检查缓存参数
-        if (cachePolicy != CachePolicy.NO_CACHE) {
-            if (TextUtils.isEmpty(cacheKey)) {
-                throw new IllegalArgumentException("CacheKey must be not null!");
-            }
-            if (cacheDuration <= 0) {
-                throw new IllegalArgumentException("CacheDuration must be greater than 0!");
-            }
-
-        }
-        CacheEntity<T> cacheEntity = new CacheEntity<>();
-        cacheEntity.setCacheKey(cacheKey);
-        cacheEntity.setCachePolicy(cachePolicy);
-        cacheEntity.setCacheDuration(cacheDuration);
-
+        CacheEntity<T> cacheEntity = new CacheEntity<>(cacheKey, cachePolicy, cacheDuration);
         CacheCall.newCacheCall(seHttp, create(callback), cacheEntity).enqueue(callback);
     }
 
@@ -117,16 +104,40 @@ public final class RequestFactory {
     }
 
     /**
-     * 设置缓存
+     * 设置缓存Key
      *
-     * @param cachePolicy 缓存策略
-     * @param cacheKey 缓存Key
-     * @param cacheDuration 缓存有效时长
+     * 默认请求url
+     *
+     * @param cacheKey
      * @return
      */
-    public RequestFactory cache(CachePolicy cachePolicy, String cacheKey, long cacheDuration) {
-        this.cachePolicy = cachePolicy;
+    public RequestFactory cacheKey(String cacheKey) {
         this.cacheKey = cacheKey;
+        return this;
+    }
+
+    /**
+     * 设置缓存协议
+     *
+     * 默认NO_CACHE
+     *
+     * @param cachePolicy
+     * @return
+     */
+    public RequestFactory cachePolicy(CachePolicy cachePolicy) {
+        this.cachePolicy = cachePolicy;
+        return this;
+    }
+
+    /**
+     * 设置缓存时长
+     *
+     * 默认24小时
+     *
+     * @param cacheDuration
+     * @return
+     */
+    public RequestFactory cacheDuration(long cacheDuration) {
         this.cacheDuration = cacheDuration;
         return this;
     }

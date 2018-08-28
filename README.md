@@ -22,17 +22,6 @@
 * 链式调用
 * 可扩展回调
 
-## 前言
-
-#### 为什么取消单例模式？
-
-假设这么一种场景：
-> 有两个业务模块：模块1和模块2，需要设置不同的的SSL加密方式、公共参数或者其他配置。
-
-旧版（1.X.X）由于是单例模式，只能设置一种公共配置，无法为各模块设置不同配置。  
-新版（2.X.X）的将单例模式设置上浮至使用者，使其更灵活适应不同的业务模块。
-
-
 ## 1. 配置
 
 #### 1.1. 导入仓库：
@@ -82,7 +71,7 @@ SeHttp seHttp = new SeHttp.Builder().build();
 -- sslFactory              // 设置SSL验证
 -- cookieJar               // 设置Cookie管理
 -- dispatcher              // 设置线程调度器
--- cacheStore              // 设置缓存配置
+-- cacheStore              // 设置缓存管理
 -- addInterceptor          // 增加拦截器
 -- addNetworkInterceptor   // 增加网络层拦截器
 ```
@@ -110,10 +99,10 @@ requestFactory.execute(...);
 -- setRequestBody4Xml       // 设置XML请求体
 -- setRequestBody4Byte      // 设置Byte请求体
 -- setRequestBody           // 设置自定义请求体
--- cacheKey                 // 设置缓存Key
--- cachePolicy              // 设置缓存策略
--- cacheDuration            // 设置缓存有效时长
--- buildRequest             // 构造Request
+-- cacheKey                 // 设置缓存Key，默认URL
+-- cachePolicy              // 设置缓存策略，默认NO_CACHE
+-- cacheDuration            // 设置缓存有效时长，默认24小时
+-- create                   // 构造Request
 -- execute()                // 同步请求
 -- execute(...)             // 异步请求
 ```
@@ -121,57 +110,64 @@ requestFactory.execute(...);
 ##### 当然，我们也可以用更简洁的链式请求：
 ```java
 seHttp.post(URL_GET)
-        .tag(this)
-        .addRequestParam("key", "value")
         ...
         .execute(...);
 ```
 
 ## 4. 请求回调
 
-``SeHttp``基础回调``BaseCallback``如下：
 ```java
-// Reponse解析：异步线程
-public abstract T convert(Response response) throws Exception;
-
-// 上传监听：主线程
+// 上传监听
 public void onUpload(int progress, long currentSize, long totalSize) {}
 
-// 下载监听：主线程
+// 下载监听
 public void onDownload(int progress, long currentSize, long totalSize) {}
 
-// 缓存成功回调：主线程
+// 缓存成功回调
 public void onCacheSuccess(T t) {}
 
-// 成功回调：主线程
+// 成功回调
 public abstract void onSuccess(T t);
 
-// 失败回调：主线程
+// 失败回调
 public void onFailure(Exception e) {}
 ```
-同时，还提供了扩展的``StringCallback``、``JsonCallback``、``FileCallback``。
+同时，还提供了扩展的``StringCallback``、``FileCallback``。
 
 #### 4.1. 自定义回调
 
-> ``BaseCallback``中，``convert()``的作用是将``Reponse``解析成需要返回的数据。
-> ``SeHttp``内部提供的``StringCallback``、``JsonCallback``、``FileCallback``就是继承``BaseCallback``通过重写``convert()``，实现不同的功能。
+在**自定义回调**之前，我们需要了解其工作原理：
 
-了解其原理，那么现在，你也就能通过重写``convert()``自定义适合自己项目的``Callback``了
+> ``Callback``是如何将``Response``转换成我们需要的数据T呢？它内置了一个数据转换器``Converter``，具体转换是由它在处理：
 
-#### 4.2. 特殊回调
-
-``JsonCallback``扩展了其特有的回调：
 ```java
-// 解析Json数据：异步线程
-public abstract T parseJson(String responseStr) throws Exception;
+public interface Converter<T> {
+    T convertResponse(Response response) throws Throwable;
+}
 ```
 
-#### 4.3. 字符集
+**自定义回调**的过程，其实是**自定义Converter**的过程，以``String``回调为例：
 
-对于``StringCallback``、``JsonCallback``，若不设置特殊字符集，默认返回UTF-8类型的字符串。若要设置返回字符集，可通过构造器传入：
+```java
+public class StringConverter implements Converter<String> {
+    public String convertResponse(Response response) throws Throwable {
+        // 此处为具体转换过程：异步线程
+        return responseBody.string();
+    }
+}
+
+public abstract class StringCallback extends Callback<String> {
+    public StringCallback() {
+        super(new StringConverter());
+    }
+}
+```
+
+#### 4.2. 字符集
+
+对于``StringCallback``，若不设置特殊字符集，默认返回UTF-8类型的字符串。若要设置返回字符集，可通过构造器传入：
 ```java
 public StringCallback(Charset charset)
-public JsonCallback(Charset charset)
 ```
 
 ## 5. Cookie
@@ -205,14 +201,31 @@ cookieJar.removeAllCookie();                // 移除所有Cookie
 
 #### 5.3. 自定义管理
 
-通过继承``ClearableCookieJar``抽象类，并在实例化时设置给``SeHttp``，实现自己的Cookie管理方式。
+通过继承``ClearableCookieJar``，并实现其抽象方法，在实例化时设置给``SeHttp``，实现自己的Cookie管理方式。
+
+```java
+public abstract void saveCookies(HttpUrl url, List<Cookie> cookies);
+
+public abstract void saveCookie(HttpUrl url, Cookie cookie);
+
+public abstract List<Cookie> getCookies(HttpUrl url);
+
+public abstract List<Cookie> getAllCookie();
+
+public abstract boolean removeCookie(HttpUrl url, Cookie cookie);
+
+public abstract boolean removeCookies(HttpUrl url);
+
+public abstract boolean removeAllCookie();
+```
+
 
 ## 6. HTTPS
 
 ```java
 // 实例化时设置SSL验证
 new SeHttp.Builder()
-        .sslFactory(new SSLFactory())
+        .sslFactory(new SSLFactory(...))
         .build();
 
 // 默认信任所有证书
@@ -257,9 +270,9 @@ public interface CacheStore {
 
 ```java
 seHttp.get(URL_GET)
-        .cacheKey("key")    // 缓存Key
-        .cachePolicy(CachePolicy.CACHE_THEN_REQUEST)    // 缓存策略
-        .cacheDuration(1000 * 60 * 60 * 24)     // 缓存有效时长
+        .cacheKey("key")    // 缓存Key，默认为url
+        .cachePolicy(CachePolicy.CACHE_THEN_REQUEST)    // 缓存策略，默认为NO_CACHE
+        .cacheDuration(1000 * 60 * 60 * 24)     // 缓存有效时长，默认为24小时
         .execute(...)
 ```
 

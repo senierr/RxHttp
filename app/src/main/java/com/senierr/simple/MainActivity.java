@@ -83,7 +83,9 @@ public class MainActivity extends AppCompatActivity {
                 .tag(this)
                 .addUrlParam("ip", "112.64.217.29")
                 .addHeader("language", "China")
-                .cache(CachePolicy.CACHE_THEN_REQUEST, URL_POST, 20 * 1000)
+                .cachePolicy(CachePolicy.REQUEST_ELSE_CACHE)
+                .cacheKey(URL_POST)
+                .cacheDuration(20 * 1000)
                 .execute(new MyCallback() {
                     @Override
                     public void onCacheSuccess(MyEntity entity) {

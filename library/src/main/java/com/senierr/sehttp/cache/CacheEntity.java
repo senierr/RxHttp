@@ -10,6 +10,8 @@ import java.io.Serializable;
  */
 public final class CacheEntity<T> implements Serializable {
 
+    public static final long DEFAULT_CACHE_DURATION = 1000 * 60 * 60 * 24;   // 24小时
+
     private static final long serialVersionUID = -4337711009801627866L;
 
     private String cacheKey;
@@ -17,6 +19,12 @@ public final class CacheEntity<T> implements Serializable {
     private long cacheDuration;
     private T content;
     private long cacheTime;
+
+    public CacheEntity(String cacheKey, CachePolicy cachePolicy, long cacheDuration) {
+        this.cacheKey = cacheKey;
+        this.cachePolicy = cachePolicy;
+        this.cacheDuration = cacheDuration;
+    }
 
     public String getCacheKey() {
         return cacheKey;
@@ -67,5 +75,14 @@ public final class CacheEntity<T> implements Serializable {
                 ", content=" + content +
                 ", cacheTime=" + cacheTime +
                 '}';
+    }
+
+    /**
+     * 是否过期
+     *
+     * @return
+     */
+    public boolean isExpired() {
+        return cacheTime + cacheDuration >= System.currentTimeMillis();
     }
 }
