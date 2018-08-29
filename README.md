@@ -5,7 +5,9 @@
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
-#### 精简、高效的网络请求框架
+#### 精简、高效且有趣的网络请求框架
+
+> 注意：版本之间API差异可能较大，请谨慎升级！
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
