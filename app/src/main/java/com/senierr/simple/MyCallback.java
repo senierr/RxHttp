@@ -1,7 +1,7 @@
 package com.senierr.simple;
 
-import com.senierr.sehttp.callback.Callback;
-import com.senierr.sehttp.converter.Converter;
+import com.senierr.http.callback.Callback;
+import com.senierr.http.converter.Converter;
 
 import org.json.JSONObject;
 

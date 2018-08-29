@@ -10,10 +10,10 @@ import android.view.View;
 
 import com.senierr.permission.CheckCallback;
 import com.senierr.permission.PermissionManager;
-import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.CachePolicy;
-import com.senierr.sehttp.callback.FileCallback;
-import com.senierr.sehttp.callback.StringCallback;
+import com.senierr.http.RxHttp;
+import com.senierr.http.cache.CachePolicy;
+import com.senierr.http.callback.FileCallback;
+import com.senierr.http.callback.StringCallback;
 
 import java.io.File;
 
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String URL_UPLOAD = HOST + "/post/form";
     private static final String URL_DOWNLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
-    private SeHttp seHttp = SessionApplication.getApplication().getHttp();
+    private RxHttp seHttp = SessionApplication.getApplication().getHttp();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

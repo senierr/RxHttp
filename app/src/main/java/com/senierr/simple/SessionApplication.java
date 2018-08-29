@@ -2,24 +2,24 @@ package com.senierr.simple;
 
 import android.app.Application;
 
-import com.senierr.sehttp.SeHttp;
-import com.senierr.sehttp.cache.DiskLruCacheStore;
-import com.senierr.sehttp.cookie.SPCookieJar;
-import com.senierr.sehttp.https.SSLFactory;
-import com.senierr.sehttp.https.UnSafeHostnameVerifier;
-import com.senierr.sehttp.util.HttpLogInterceptor;
+import com.senierr.http.RxHttp;
+import com.senierr.http.cache.DiskLruCacheStore;
+import com.senierr.http.cookie.SPCookieJar;
+import com.senierr.http.https.SSLFactory;
+import com.senierr.http.https.UnSafeHostnameVerifier;
+import com.senierr.http.util.HttpLogInterceptor;
 
 public class SessionApplication extends Application {
 
     private static SessionApplication application;
-    private SeHttp seHttp;
+    private RxHttp seHttp;
 
     @Override
     public void onCreate() {
         super.onCreate();
         application = this;
 
-        seHttp = new SeHttp.Builder()
+        seHttp = new RxHttp.Builder()
                 .debug("SeHttp", HttpLogInterceptor.LogLevel.BODY)
                 .connectTimeout(10 * 1000)
                 .readTimeout(10 * 1000)
@@ -39,7 +39,7 @@ public class SessionApplication extends Application {
         return application;
     }
 
-    public SeHttp getHttp() {
+    public RxHttp getHttp() {
         return seHttp;
     }
 }
