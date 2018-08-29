@@ -28,6 +28,7 @@ public abstract class ClearableCookieJar implements CookieJar {
     final public List<Cookie> loadForRequest(HttpUrl url) {
         List<Cookie> result = new ArrayList<>();
         List<Cookie> cookies = getCookies(url);
+        if (cookies == null) return null;
         for (Cookie cookie : cookies) {
             if (isCookieExpired(cookie)) {
                 removeCookie(url, cookie);
@@ -46,9 +47,9 @@ public abstract class ClearableCookieJar implements CookieJar {
 
     public abstract List<Cookie> getAllCookie();
 
-    public abstract boolean removeCookie(HttpUrl url, Cookie cookie);
+    public abstract void removeCookie(HttpUrl url, Cookie cookie);
 
-    public abstract boolean removeCookies(HttpUrl url);
+    public abstract void removeCookies(HttpUrl url);
 
-    public abstract boolean removeAllCookie();
+    public abstract void clear();
 }

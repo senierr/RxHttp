@@ -84,18 +84,17 @@ public final class SPCookieJar extends ClearableCookieJar {
     }
 
     @Override
-    public boolean removeCookie(HttpUrl url, Cookie cookie) {
+    public void removeCookie(HttpUrl url, Cookie cookie) {
         // 内存移除
         cookieCache.remove(cookie);
         // 文件移除
         SharedPreferences.Editor prefsWriter = cookiePrefs.edit();
         prefsWriter.remove(getCookiePrefsKey(cookie));
         prefsWriter.apply();
-        return false;
     }
 
     @Override
-    public boolean removeCookies(HttpUrl url) {
+    public void removeCookies(HttpUrl url) {
         // 内存移除
         List<Cookie> needRemove = new ArrayList<>();
         for (Cookie item : cookieCache) {
@@ -110,18 +109,16 @@ public final class SPCookieJar extends ClearableCookieJar {
             prefsWriter.remove(getCookiePrefsKey(cookie));
         }
         prefsWriter.apply();
-        return false;
     }
 
     @Override
-    public boolean removeAllCookie() {
+    public void clear() {
         // 内存移除
         cookieCache.clear();
         // 文件移除
         SharedPreferences.Editor prefsWriter = cookiePrefs.edit();
         prefsWriter.clear();
         prefsWriter.apply();
-        return false;
     }
 
     private String getCookiePrefsKey(Cookie cookie) {

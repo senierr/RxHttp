@@ -196,7 +196,7 @@ cookieJar.getAllCookie();                   // 获取所有Cookie
 cookieJar.getCookies(httpUrl);              // 获取URL对应所有Cookie
 cookieJar.removeCookie(httpUrl, cookie);    // 移除单个URL对应Cookie
 cookieJar.removeCookies(httpUrl);           // 移除URL对应所有Cookie
-cookieJar.removeAllCookie();                // 移除所有Cookie
+cookieJar.clear();                          // 移除所有Cookie
 ```
 
 #### 5.3. 自定义管理
@@ -216,7 +216,7 @@ public abstract boolean removeCookie(HttpUrl url, Cookie cookie);
 
 public abstract boolean removeCookies(HttpUrl url);
 
-public abstract boolean removeAllCookie();
+public abstract boolean clear();
 ```
 
 
