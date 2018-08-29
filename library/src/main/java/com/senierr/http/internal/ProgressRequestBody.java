@@ -1,7 +1,7 @@
 package com.senierr.http.internal;
 
 import com.senierr.http.RxHttp;
-import com.senierr.http.callback.Callback;
+import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 
@@ -21,14 +21,12 @@ import okio.Sink;
  */
 public final class ProgressRequestBody extends RequestBody {
 
-    private RxHttp seHttp;
     private RequestBody delegate;
-    private Callback callback;
+    private OnProgressListener listener;
 
-    public ProgressRequestBody(RxHttp seHttp, RequestBody requestBody, Callback callback) {
-        this.seHttp = seHttp;
+    public ProgressRequestBody(RequestBody requestBody, OnProgressListener listener) {
         this.delegate = requestBody;
-        this.callback = callback;
+        this.listener = listener;
     }
 
     @Override
@@ -61,7 +59,7 @@ public final class ProgressRequestBody extends RequestBody {
         @Override
         public void write(Buffer source, long byteCount) throws IOException {
             super.write(source, byteCount);
-            if (callback == null) return;
+            if (listener == null) return;
 
             if (contentLength <= 0) {
                 contentLength = contentLength();
@@ -70,20 +68,14 @@ public final class ProgressRequestBody extends RequestBody {
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= seHttp.getDispatcher().getRefreshInterval() || bytesWritten == contentLength) {
-                seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (callback == null) return;
-                        int progress;
-                        if (contentLength <= 0) {
-                            progress = 100;
-                        } else {
-                            progress = (int) (bytesWritten * 100 / contentLength);
-                        }
-                        callback.onUpload(progress, bytesWritten, contentLength);
-                    }
-                });
+            if (curTime - lastRefreshUiTime >= RxHttp.REFRESH_INTERVAL || bytesWritten == contentLength) {
+                int progress;
+                if (contentLength <= 0) {
+                    progress = 100;
+                } else {
+                    progress = (int) (bytesWritten * 100 / contentLength);
+                }
+                listener.onProgress(progress, bytesWritten, contentLength);
                 lastRefreshUiTime = System.currentTimeMillis();
             }
         }

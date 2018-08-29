@@ -1,59 +1,39 @@
 package com.senierr.http.model;
 
-import com.senierr.http.internal.RequestFactory;
-import com.senierr.http.util.Utils;
+import android.text.TextUtils;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
- * Http URL参数
+ * Http URL
  *
  * @author zhouchunjie
  * @date 2018/8/29
  */
-public class HttpUrlParams {
+public final class HttpUrl {
 
-    private final String url;
-    private final LinkedHashMap<String, String> httpUrlParams;
+    private String url;
+    private LinkedHashMap<String, String> urlParams = new LinkedHashMap<>();
 
-    public HttpUrlParams(String url) {
+    public HttpUrl(String url) {
         this.url = url;
-        httpUrlParams = new LinkedHashMap<>();
+        if (TextUtils.isEmpty(url)) {
+            throw new IllegalArgumentException("The url must not be null!");
+        }
+    }
+
+    public void addUrlParam(String key, String value) {
+        urlParams.put(key, value);
+    }
+
+    public void addUrlParams(LinkedHashMap<String, String> params) {
+        if (params == null) return;
+        for (String key: params.keySet()) {
+            urlParams.put(key, params.get(key));
+        }
     }
 
     public String generateUrl() {
-
-    }
-
-    /**
-     * 添加请求参数
-     *
-     * @param key
-     * @param value
-     * @return
-     */
-    public void addUrlParam(String key, String value) {
-        httpUrlParams.put(key, value);
-    }
-
-    /**
-     * 添加多个请求参数
-     *
-     * @param params
-     * @return
-     */
-    public void addUrlParams(LinkedHashMap<String, String> params) {
-        httpUrlParams = Utils.mergeMap(httpUrlParams, params);
-    }
-
-    /**
-     * 创建URL参数
-     *
-     * @param urlParams
-     * @return
-     */
-    public static String buildUrlParams(String url, Map<String, String> urlParams){
         if (urlParams != null && !urlParams.isEmpty()) {
             StringBuilder strParams = new StringBuilder();
             if (url.contains("?")) {

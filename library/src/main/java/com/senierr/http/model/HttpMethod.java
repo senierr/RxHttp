@@ -29,6 +29,10 @@ public enum HttpMethod {
         this.value = value;
     }
 
+    public String value() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return this.value;

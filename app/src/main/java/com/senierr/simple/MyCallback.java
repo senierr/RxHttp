@@ -1,6 +1,6 @@
 package com.senierr.simple;
 
-import com.senierr.http.callback.Callback;
+import com.senierr.http.listener.OnProgressListener;
 import com.senierr.http.converter.Converter;
 
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ import okhttp3.ResponseBody;
  * @author zhouchunjie
  * @date 2017/3/28
  */
-public abstract class MyCallback extends Callback<MyEntity> {
+public abstract class MyCallback extends OnProgressListener<MyEntity> {
 
     public MyCallback() {
         super(new MyConverter());

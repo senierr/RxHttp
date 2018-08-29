@@ -1,20 +1,19 @@
 package com.senierr.http.internal;
 
 import com.senierr.http.RxHttp;
-import com.senierr.http.cache.CacheEntity;
-import com.senierr.http.cache.CachePolicy;
-import com.senierr.http.callback.Callback;
-import com.senierr.http.util.Utils;
+import com.senierr.http.listener.OnProgressListener;
+import com.senierr.http.model.HttpHeaders;
+import com.senierr.http.model.HttpMethod;
+import com.senierr.http.model.HttpRequestBody;
+import com.senierr.http.model.HttpUrl;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.ByteString;
 
 /**
  * 请求工厂类
@@ -24,58 +23,42 @@ import okio.ByteString;
  */
 public final class RequestFactory {
 
-    private RxHttp seHttp;
-    // 请求方法
-    private String method;
-    // 请求
-    private String url;
-    // url参数
-    private LinkedHashMap<String, String> httpUrlParams;
-    // 请求头
-    private LinkedHashMap<String, String> httpHeaders;
-    // 请求体构造器
-    private RequestBodyBuilder requestBodyBuilder;
+    private RxHttp rxHttp;
+    private HttpMethod httpMethod;                  // 请求方法
+    private HttpUrl httpUrl;                        // 请求URL
+    private HttpHeaders httpHeaders;                // 请求头
+    private HttpRequestBody httpRequestBody;        // 请求体
 
-    public RequestFactory(RxHttp seHttp, String method, String url) {
-        this.seHttp = seHttp;
-        this.method = method;
-        this.url = url;
-        requestBodyBuilder = new RequestBodyBuilder();
+    private OnProgressListener onUploadListener;    // 上传进度监听
+    private OnProgressListener onDownloadListener;  // 下载进度监听
+
+    private RequestFactory() {}
+
+    /** 安全创建实例 */
+    public static RequestFactory newRequestFactory(RxHttp rxHttp, HttpMethod httpMethod, HttpUrl httpUrl) {
+        RequestFactory requestFactory = new RequestFactory();
+        requestFactory.rxHttp = rxHttp;
+        requestFactory.httpMethod = httpMethod;
+        requestFactory.httpUrl = httpUrl;
+        requestFactory.httpHeaders = new HttpHeaders();
+        requestFactory.httpRequestBody = new HttpRequestBody();
+        return requestFactory;
     }
 
-    /**
-     * 创建请求
-     *
-     * @return
-     */
-    public Request create(Callback callback) {
-        // 封装RequestBody
-        RequestBody requestBody = requestBodyBuilder.build();
-        if (requestBody != null) {
-            requestBody = new ProgressRequestBody(seHttp, requestBody, callback);
-        }
-        // 生成Request
+    /** 创建请求 */
+    public Request create() {
         Request.Builder requestBuilder = new Request.Builder();
-        httpUrlParams = Utils.mergeMap(seHttp.getCommonUrlParams(), httpUrlParams);
-        httpHeaders = Utils.mergeMap(seHttp.getCommonHeaders(), httpHeaders);
-        if (httpUrlParams != null && !httpUrlParams.isEmpty()) {
-            url = Utils.buildUrlParams(url, httpUrlParams);
+        // 封装RequestBody
+        RequestBody requestBody = httpRequestBody.generateRequestBody();
+        if (requestBody != null) {
+            requestBody = new ProgressRequestBody(requestBody, onUploadListener);
         }
-        if (httpHeaders != null && !httpHeaders.isEmpty()) {
-            requestBuilder.headers(Utils.buildHeaders(httpHeaders));
-        }
-        requestBuilder.method(method, requestBody);
-        requestBuilder.url(url);
+        requestBuilder.method(httpMethod.value(), requestBody);
+        // 封装URL
+        requestBuilder.url(httpUrl.generateUrl());
+        // 封装Header
+        requestBuilder.headers(httpHeaders.generateHeaders());
         return requestBuilder.build();
-    }
-
-    /**
-     * 执行异步请求
-     *
-     * @param callback
-     */
-    public <T> void execute(Callback<T> callback) {
-        CacheCall.newCacheCall(seHttp, create(callback), cacheEntity).enqueue(callback);
     }
 
     /**
@@ -85,7 +68,10 @@ public final class RequestFactory {
      * @throws IOException
      */
     public Response execute() throws IOException {
-        return CacheCall.newCacheCall(seHttp, create(null), null).execute();
+        Response response = rxHttp.getOkHttpClient().newCall(create()).execute();
+        return response.newBuilder()
+                .body(new ProgressResponseBody(response.body(), onDownloadListener))
+                .build();
     }
 
     /**
@@ -96,10 +82,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addUrlParam(String key, String value) {
-        if (httpUrlParams == null) {
-            httpUrlParams = new LinkedHashMap<>();
-        }
-        httpUrlParams.put(key, value);
+        httpUrl.addUrlParam(key, value);
         return this;
     }
 
@@ -110,7 +93,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addUrlParams(LinkedHashMap<String, String> params) {
-        httpUrlParams = Utils.mergeMap(httpUrlParams, params);
+        httpUrl.addUrlParams(params);
         return this;
     }
 
@@ -122,10 +105,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addHeader(String key, String value) {
-        if (httpHeaders == null) {
-            httpHeaders = new LinkedHashMap<>();
-        }
-        httpHeaders.put(key, value);
+        httpHeaders.addHeader(key, value);
         return this;
     }
 
@@ -136,7 +116,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addHeaders(LinkedHashMap<String, String> headers) {
-        httpHeaders = Utils.mergeMap(httpHeaders, headers);
+        httpHeaders.addHeaders(headers);
         return this;
     }
 
@@ -148,12 +128,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addRequestParam(String key, File file) {
-        LinkedHashMap<String, File> fileParams = requestBodyBuilder.getFileParams();
-        if (fileParams == null) {
-            fileParams = new LinkedHashMap<>();
-        }
-        fileParams.put(key, file);
-        requestBodyBuilder.setFileParams(fileParams);
+        httpRequestBody.addRequestParam(key, file);
         return this;
     }
 
@@ -164,7 +139,7 @@ public final class RequestFactory {
      * @returns
      */
     public RequestFactory addRequestFileParams(LinkedHashMap<String, File> fileParams) {
-        requestBodyBuilder.setFileParams(Utils.mergeMap(requestBodyBuilder.getFileParams(), fileParams));
+        httpRequestBody.addRequestFileParams(fileParams);
         return this;
     }
 
@@ -176,12 +151,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory addRequestParam(String key, String value) {
-        LinkedHashMap<String, String> stringParams = requestBodyBuilder.getStringParams();
-        if (stringParams == null) {
-            stringParams = new LinkedHashMap<>();
-        }
-        stringParams.put(key, value);
-        requestBodyBuilder.setStringParams(stringParams);
+        httpRequestBody.addRequestParam(key, value);
         return this;
     }
 
@@ -192,7 +162,7 @@ public final class RequestFactory {
      * @returns
      */
     public RequestFactory addRequestStringParams(LinkedHashMap<String, String> stringParams) {
-        requestBodyBuilder.setStringParams(Utils.mergeMap(requestBodyBuilder.getStringParams(), stringParams));
+        httpRequestBody.addRequestStringParams(stringParams);
         return this;
     }
 
@@ -203,8 +173,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory setRequestBody4JSon(String jsonStr) {
-        requestBodyBuilder.setStringContent(jsonStr);
-        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_JSON));
+        httpRequestBody.setRequestBody4JSon(jsonStr);
         return this;
     }
 
@@ -215,8 +184,7 @@ public final class RequestFactory {
      * @returne
      */
     public RequestFactory setRequestBody4Text(String textStr) {
-        requestBodyBuilder.setStringContent(textStr);
-        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_PLAIN));
+        httpRequestBody.setRequestBody4Text(textStr);
         return this;
     }
 
@@ -227,8 +195,7 @@ public final class RequestFactory {
      * @returne
      */
     public RequestFactory setRequestBody4Xml(String xmlStr) {
-        requestBodyBuilder.setStringContent(xmlStr);
-        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_XML));
+        httpRequestBody.setRequestBody4Xml(xmlStr);
         return this;
     }
 
@@ -239,8 +206,7 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory setRequestBody4Byte(byte[] bytes) {
-        requestBodyBuilder.setBytes(bytes);
-        requestBodyBuilder.setMediaType(MediaType.parse(RequestBodyBuilder.MEDIA_TYPE_STREAM));
+        httpRequestBody.setRequestBody4Byte(bytes);
         return this;
     }
 
@@ -251,32 +217,27 @@ public final class RequestFactory {
      * @return
      */
     public RequestFactory setRequestBody(RequestBody requestBody) {
-        requestBodyBuilder.setRequestBody(requestBody);
+        httpRequestBody.setRequestBody(requestBody);
         return this;
     }
 
-    public RequestFactory setRequestBody(MediaType contentType, File file) {
-        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, file));
+    /**
+     * 设置上传进度监听
+     *
+     * @param onUploadListener
+     */
+    public RequestFactory onUploadListener(OnProgressListener onUploadListener) {
+        this.onUploadListener = onUploadListener;
         return this;
     }
 
-    public RequestFactory setRequestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
-        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content, offset, byteCount));
-        return this;
-    }
-
-    public RequestFactory setRequestBody(MediaType contentType, byte[] content) {
-        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    public RequestFactory setRequestBody(MediaType contentType, ByteString content) {
-        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
-        return this;
-    }
-
-    public RequestFactory setRequestBody(MediaType contentType, String content) {
-        requestBodyBuilder.setRequestBody(RequestBody.create(contentType, content));
+    /**
+     * 设置下载进度监听
+     *
+     * @param onDownloadListener
+     */
+    public RequestFactory onDownloadListener(OnProgressListener onDownloadListener) {
+        this.onDownloadListener = onDownloadListener;
         return this;
     }
 }

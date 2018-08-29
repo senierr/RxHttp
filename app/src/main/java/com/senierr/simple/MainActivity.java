@@ -12,8 +12,6 @@ import com.senierr.permission.CheckCallback;
 import com.senierr.permission.PermissionManager;
 import com.senierr.http.RxHttp;
 import com.senierr.http.cache.CachePolicy;
-import com.senierr.http.callback.FileCallback;
-import com.senierr.http.callback.StringCallback;
 
 import java.io.File;
 

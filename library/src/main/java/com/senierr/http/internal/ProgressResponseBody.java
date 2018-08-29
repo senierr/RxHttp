@@ -1,7 +1,7 @@
 package com.senierr.http.internal;
 
 import com.senierr.http.RxHttp;
-import com.senierr.http.callback.Callback;
+import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 
@@ -21,13 +21,11 @@ import okio.Source;
  */
 public final class ProgressResponseBody extends ResponseBody {
 
-    private RxHttp seHttp;
     private ResponseBody delegate;
     private BufferedSource bufferedSource;
-    private Callback callback;
+    private OnProgressListener callback;
 
-    public ProgressResponseBody(RxHttp seHttp, ResponseBody responseBody, Callback callback) {
-        this.seHttp = seHttp;
+    public ProgressResponseBody(ResponseBody responseBody, OnProgressListener callback) {
         this.delegate = responseBody;
         this.callback = callback;
     }
@@ -74,20 +72,14 @@ public final class ProgressResponseBody extends ResponseBody {
             totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= seHttp.getDispatcher().getRefreshInterval() || totalBytesRead == contentLength) {
-                seHttp.getDispatcher().enqueueOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (callback == null) return;
-                        int progress;
-                        if (contentLength <= 0) {
-                            progress = 100;
-                        } else {
-                            progress = (int) (totalBytesRead * 100 / contentLength);
-                        }
-                        callback.onDownload(progress, totalBytesRead, contentLength);
-                    }
-                });
+            if (curTime - lastRefreshUiTime >= RxHttp.REFRESH_INTERVAL || totalBytesRead == contentLength) {
+                int progress;
+                if (contentLength <= 0) {
+                    progress = 100;
+                } else {
+                    progress = (int) (totalBytesRead * 100 / contentLength);
+                }
+                callback.onProgress(progress, totalBytesRead, contentLength);
                 lastRefreshUiTime = System.currentTimeMillis();
             }
             return bytesRead;

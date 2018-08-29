@@ -9,7 +9,7 @@ import okhttp3.Headers;
 import okhttp3.MediaType;
 
 /**
- * http工具类
+ * 工具类
  *
  * @author zhouchunjie
  * @date 2017/3/28
@@ -17,43 +17,25 @@ import okhttp3.MediaType;
 public class Utils {
 
     /**
-     * 创建请求头部
-     *
-     * @param headerParams
-     * @return
-     */
-    public static Headers buildHeaders(Map<String, String> headerParams){
-        Headers headers = null;
-        if (headerParams != null) {
-            Headers.Builder builder = new Headers.Builder();
-            for (String key: headerParams.keySet()) {
-                builder.add(key, headerParams.get(key));
-            }
-            headers = builder.build();
-        }
-        return headers;
-    }
-
-    /**
-     * 合并并生成新Map
+     * Map拼接
      *
      * @param oldMap
      * @param newMap
      * @return
      */
-    public static <T> LinkedHashMap<String, T> mergeMap(LinkedHashMap<String, T> oldMap, LinkedHashMap<String, T> newMap) {
-        LinkedHashMap<String, T> mergeMap = new LinkedHashMap<>();
-        if (oldMap != null) {
-            for (String key: oldMap.keySet()) {
-                mergeMap.put(key, oldMap.get(key));
-            }
+    public static <T> LinkedHashMap<String, T> appendMap(LinkedHashMap<String, T> oldMap, LinkedHashMap<String, T> newMap) {
+        if (oldMap == null) {
+            oldMap = new LinkedHashMap<>();
         }
-        if (newMap != null) {
-            for (String key: newMap.keySet()) {
-                mergeMap.put(key, newMap.get(key));
-            }
+
+        if (newMap == null || newMap.isEmpty()) {
+            return oldMap;
         }
-        return mergeMap;
+
+        for (String key: newMap.keySet()) {
+            oldMap.put(key, newMap.get(key));
+        }
+        return oldMap;
     }
 
     /**

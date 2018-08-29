@@ -4,8 +4,8 @@ import com.senierr.http.cookie.ClearableCookieJar;
 import com.senierr.http.https.SSLFactory;
 import com.senierr.http.internal.RequestFactory;
 import com.senierr.http.model.HttpMethod;
+import com.senierr.http.model.HttpUrl;
 import com.senierr.http.util.HttpLogInterceptor;
-import com.senierr.http.util.Utils;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +24,9 @@ import okhttp3.OkHttpClient;
 public final class RxHttp {
 
     // 默认超时时间
-    public static final int DEFAULT_TIMEOUT = 30 * 1000;
+    public static final long DEFAULT_TIMEOUT = 30 * 1000;
+    // 进度回调最小间隔时长(ms)
+    public static final long REFRESH_INTERVAL = 100;
 
     // 公共请求参数
     private LinkedHashMap<String, String> commonUrlParams;
@@ -77,9 +79,13 @@ public final class RxHttp {
         return method(HttpMethod.TRACE, urlStr);
     }
 
-    /** 自定义请求 */
     public RequestFactory method(HttpMethod method, String urlStr) {
-        return new RequestFactory(this, method.toString(), urlStr);
+        RequestFactory requestFactory = RequestFactory.newRequestFactory(this, method, new HttpUrl(urlStr));
+        // 添加公共URL参数
+        requestFactory.addUrlParams(commonUrlParams);
+        // 添加公共请求头
+        requestFactory.addHeaders(commonHeaders);
+        return requestFactory;
     }
 
     public LinkedHashMap<String, String> getCommonUrlParams() {
@@ -105,6 +111,8 @@ public final class RxHttp {
         private OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
+            commonUrlParams = new LinkedHashMap<>();
+            commonHeaders = new LinkedHashMap<>();
             okHttpClientBuilder = new OkHttpClient.Builder();
             okHttpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -118,28 +126,22 @@ public final class RxHttp {
 
         /** 自定义配置 **/
         public Builder addCommonUrlParam(String key, String value) {
-            if (commonUrlParams == null) {
-                commonUrlParams = new LinkedHashMap<>();
-            }
             commonUrlParams.put(key, value);
             return this;
         }
 
         public Builder addCommonUrlParams(LinkedHashMap<String, String> params) {
-            commonUrlParams = Utils.mergeMap(commonUrlParams, params);
+            commonUrlParams.putAll(params);
             return this;
         }
 
         public Builder addCommonHeader(String key, String value) {
-            if (commonHeaders == null) {
-                commonHeaders = new LinkedHashMap<>();
-            }
             commonHeaders.put(key, value);
             return this;
         }
 
         public Builder addCommonHeaders(LinkedHashMap<String, String> headers) {
-            commonHeaders = Utils.mergeMap(commonUrlParams, headers);
+            commonHeaders.putAll(headers);
             return this;
         }
 
