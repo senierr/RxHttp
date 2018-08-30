@@ -1,5 +1,7 @@
 package com.senierr.http.converter;
 
+import android.support.annotation.NonNull;
+
 import okhttp3.Response;
 
 /**
@@ -10,5 +12,5 @@ import okhttp3.Response;
  */
 public interface Converter<T> {
 
-    T convertResponse(Response response) throws Throwable;
+    @NonNull T convertResponse(@NonNull Response response) throws Throwable;
 }

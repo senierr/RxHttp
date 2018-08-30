@@ -1,5 +1,8 @@
 package com.senierr.http.internal;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.senierr.http.RxHttp;
 import com.senierr.http.listener.OnProgressListener;
 
@@ -21,13 +24,13 @@ import okio.Source;
  */
 public final class ProgressResponseBody extends ResponseBody {
 
-    private ResponseBody delegate;
-    private BufferedSource bufferedSource;
-    private OnProgressListener callback;
+    private @NonNull ResponseBody delegate;
+    private @Nullable BufferedSource bufferedSource;
+    private @Nullable OnProgressListener listener;
 
-    public ProgressResponseBody(ResponseBody responseBody, OnProgressListener callback) {
+    public ProgressResponseBody(@NonNull ResponseBody responseBody, @Nullable OnProgressListener listener) {
         this.delegate = responseBody;
-        this.callback = callback;
+        this.listener = listener;
     }
 
     @Override
@@ -50,9 +53,9 @@ public final class ProgressResponseBody extends ResponseBody {
 
     private final class CountingSource extends ForwardingSource {
 
-        private long totalBytesRead = 0;
-        private long contentLength = 0;
-        private long lastRefreshUiTime;
+        private long totalBytesRead;
+        private long contentLength;
+        private long lastRefreshTime;
 
         private CountingSource(Source delegate) {
             super(delegate);
@@ -61,7 +64,7 @@ public final class ProgressResponseBody extends ResponseBody {
         @Override
         public long read(Buffer sink, long byteCount) throws IOException {
             long bytesRead = super.read(sink, byteCount);
-            if (callback == null) {
+            if (listener == null) {
                 return bytesRead;
             }
 
@@ -72,15 +75,15 @@ public final class ProgressResponseBody extends ResponseBody {
             totalBytesRead += bytesRead != -1 ? bytesRead : 0;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= RxHttp.REFRESH_INTERVAL || totalBytesRead == contentLength) {
-                int progress;
+            if (curTime - lastRefreshTime >= RxHttp.REFRESH_MIN_INTERVAL || totalBytesRead == contentLength) {
+                int percent;
                 if (contentLength <= 0) {
-                    progress = 100;
+                    percent = 100;
                 } else {
-                    progress = (int) (totalBytesRead * 100 / contentLength);
+                    percent = (int) (totalBytesRead * 100 / contentLength);
                 }
-                callback.onProgress(progress, totalBytesRead, contentLength);
-                lastRefreshUiTime = System.currentTimeMillis();
+                listener.onProgress(new Progress(contentLength, totalBytesRead, percent, curTime));
+                lastRefreshTime = System.currentTimeMillis();
             }
             return bytesRead;
         }

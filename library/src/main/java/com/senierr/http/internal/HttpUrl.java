@@ -1,6 +1,6 @@
-package com.senierr.http.model;
+package com.senierr.http.internal;
 
-import android.text.TextUtils;
+import android.support.annotation.NonNull;
 
 import java.util.LinkedHashMap;
 
@@ -12,29 +12,25 @@ import java.util.LinkedHashMap;
  */
 public final class HttpUrl {
 
-    private String url;
-    private LinkedHashMap<String, String> urlParams = new LinkedHashMap<>();
+    private @NonNull String url;
+    private @NonNull LinkedHashMap<String, String> urlParams = new LinkedHashMap<>();
 
-    public HttpUrl(String url) {
+    public HttpUrl(@NonNull String url) {
         this.url = url;
-        if (TextUtils.isEmpty(url)) {
-            throw new IllegalArgumentException("The url must not be null!");
-        }
     }
 
-    public void addUrlParam(String key, String value) {
+    public void addUrlParam(@NonNull String key, @NonNull String value) {
         urlParams.put(key, value);
     }
 
-    public void addUrlParams(LinkedHashMap<String, String> params) {
-        if (params == null) return;
+    public void addUrlParams(@NonNull LinkedHashMap<String, String> params) {
         for (String key: params.keySet()) {
             urlParams.put(key, params.get(key));
         }
     }
 
-    public String generateUrl() {
-        if (urlParams != null && !urlParams.isEmpty()) {
+    public @NonNull String generateUrl() {
+        if (!urlParams.isEmpty()) {
             StringBuilder strParams = new StringBuilder();
             if (url.contains("?")) {
                 strParams.append("&");

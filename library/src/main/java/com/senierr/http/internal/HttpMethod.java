@@ -1,4 +1,6 @@
-package com.senierr.http.model;
+package com.senierr.http.internal;
+
+import android.support.annotation.NonNull;
 
 /**
  * Http请求方法
@@ -23,18 +25,18 @@ public enum HttpMethod {
 
     TRACE("TRACE");
 
-    private final String value;
+    private final @NonNull String value;
 
-    HttpMethod(String value) {
+    HttpMethod(@NonNull String value) {
         this.value = value;
     }
 
-    public String value() {
+    public @NonNull String value() {
         return value;
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return this.value;
     }
 

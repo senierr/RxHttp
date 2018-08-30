@@ -1,5 +1,7 @@
 package com.senierr.http.converter;
 
+import android.support.annotation.NonNull;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -18,20 +20,20 @@ import okio.Okio;
  */
 public class FileConverter implements Converter<File> {
 
-    private File destDir;
-    private String destName;
+    private @NonNull File destDir;
+    private @NonNull String destName;
 
-    public FileConverter(File destFile) {
+    public FileConverter(@NonNull File destFile) {
         this.destDir = destFile.getParentFile();
         this.destName = destFile.getName();
     }
 
-    public FileConverter(File destDir, String destName) {
+    public FileConverter(@NonNull File destDir, @NonNull String destName) {
         this.destDir = destDir;
         this.destName = destName;
     }
 
-    public File convertResponse(Response response) throws Throwable {
+    public @NonNull File convertResponse(@NonNull Response response) throws Throwable {
         // 判断路径是否存在
         if (!destDir.exists()) {
             boolean result = destDir.mkdirs();

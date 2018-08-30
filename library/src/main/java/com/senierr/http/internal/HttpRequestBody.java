@@ -1,15 +1,17 @@
-package com.senierr.http.model;
+package com.senierr.http.internal;
 
-import com.senierr.http.util.Utils;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.io.File;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.LinkedHashMap;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okio.ByteString;
 
 /**
  * Http请求体
@@ -31,87 +33,65 @@ public final class HttpRequestBody {
     public static final String MEDIA_TYPE_JSON = "application/json; charset=utf-8";
     public static final String MEDIA_TYPE_STREAM = "application/octet-stream";
 
-    private RequestBody requestBody;
-    private MediaType mediaType;
-    private LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
-    private LinkedHashMap<String, String> stringParams = new LinkedHashMap<>();
-    private String stringContent;
-    private byte[] bytes;
+    private @Nullable RequestBody requestBody;
+    private @Nullable MediaType mediaType;
+    private @NonNull LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
+    private @NonNull LinkedHashMap<String, String> stringParams = new LinkedHashMap<>();
+    private @Nullable String stringContent;
+    private @Nullable byte[] bytes;
 
-    public void addRequestParam(String key, String value) {
+    public void addRequestParam(@NonNull String key, @NonNull String value) {
         stringParams.put(key, value);
     }
 
-    public void addRequestStringParams(LinkedHashMap<String, String> params) {
-        if (params == null) return;
+    public void addRequestStringParams(@NonNull LinkedHashMap<String, String> params) {
         for (String key: params.keySet()) {
             stringParams.put(key, params.get(key));
         }
     }
 
-    public void addRequestParam(String key, File file) {
+    public void addRequestParam(@NonNull String key, @NonNull File file) {
         fileParams.put(key, file);
     }
 
-    public void addRequestFileParams(LinkedHashMap<String, File> params) {
-        if (params == null) return;
+    public void addRequestFileParams(@NonNull LinkedHashMap<String, File> params) {
         for (String key: params.keySet()) {
             fileParams.put(key, params.get(key));
         }
     }
 
-    public void setRequestBody4JSon(String jsonStr) {
+    public void setRequestBody4JSon(@NonNull String jsonStr) {
         stringContent = jsonStr;
         mediaType = MediaType.parse(MEDIA_TYPE_JSON);
     }
 
-    public void setRequestBody4Text(String textStr) {
+    public void setRequestBody4Text(@NonNull String textStr) {
         stringContent = textStr;
         mediaType = MediaType.parse(MEDIA_TYPE_PLAIN);
     }
 
-    public void setRequestBody4Xml(String xmlStr) {
+    public void setRequestBody4Xml(@NonNull String xmlStr) {
         stringContent = xmlStr;
         mediaType = MediaType.parse(MEDIA_TYPE_XML);
     }
 
-    public void setRequestBody4Byte(byte[] bytes) {
+    public void setRequestBody4Byte(@NonNull byte[] bytes) {
         this.bytes = bytes;
         mediaType = MediaType.parse(MEDIA_TYPE_STREAM);
     }
 
-    public void setRequestBody(RequestBody requestBody) {
+    public void setRequestBody(@NonNull RequestBody requestBody) {
         this.requestBody = requestBody;
     }
 
-    public void setRequestBody(MediaType contentType, File file) {
-        this.requestBody = RequestBody.create(contentType, file);
-    }
-
-    public void setRequestBody(MediaType contentType, byte[] content, int offset, int byteCount) {
-        this.requestBody = RequestBody.create(contentType, content, offset, byteCount);
-    }
-
-    public void setRequestBody(MediaType contentType, byte[] content) {
-        this.requestBody = RequestBody.create(contentType, content);
-    }
-
-    public void setRequestBody(MediaType contentType, ByteString content) {
-        this.requestBody = RequestBody.create(contentType, content);
-    }
-
-    public void setRequestBody(MediaType contentType, String content) {
-        this.requestBody = RequestBody.create(contentType, content);
-    }
-
-    public RequestBody generateRequestBody() {
+    public @Nullable RequestBody generateRequestBody() {
         if (requestBody != null) {
             return requestBody;
         } else if (!fileParams.isEmpty()) {
             MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
             for (String key: fileParams.keySet()) {
                 File value = fileParams.get(key);
-                RequestBody fileBody = RequestBody.create(Utils.guessMimeType(value.getPath()), value);
+                RequestBody fileBody = RequestBody.create(guessMimeType(value.getPath()), value);
                 multipartBodybuilder.addFormDataPart(key, value.getName(), fileBody);
             }
             if (!stringParams.isEmpty()) {
@@ -135,5 +115,15 @@ public final class HttpRequestBody {
         } else {
             return null;
         }
+    }
+
+    private static @Nullable MediaType guessMimeType(@NonNull String path) {
+        FileNameMap fileNameMap = URLConnection.getFileNameMap();
+        path = path.replace("#", "");   //解决文件名中含有#号异常的问题
+        String contentType = fileNameMap.getContentTypeFor(path);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        return MediaType.parse(contentType);
     }
 }

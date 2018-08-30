@@ -1,5 +1,6 @@
-package com.senierr.http.util;
+package com.senierr.http.internal;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
@@ -23,14 +24,14 @@ import okio.Buffer;
  * @author zhouchunjie
  * @date 2017/9/8
  */
-public class HttpLogInterceptor implements Interceptor {
+public class LogInterceptor implements Interceptor {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private String tag;
-    private LogLevel logLevel;
+    private @NonNull String tag;
+    private @NonNull LogLevel logLevel;
 
-    public HttpLogInterceptor(String tag, LogLevel logLevel) {
+    public LogInterceptor(@NonNull String tag, @NonNull LogLevel logLevel) {
         this.tag = tag;
         this.logLevel = logLevel;
     }

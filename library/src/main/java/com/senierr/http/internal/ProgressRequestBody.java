@@ -1,5 +1,8 @@
 package com.senierr.http.internal;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.senierr.http.RxHttp;
 import com.senierr.http.listener.OnProgressListener;
 
@@ -21,10 +24,10 @@ import okio.Sink;
  */
 public final class ProgressRequestBody extends RequestBody {
 
-    private RequestBody delegate;
-    private OnProgressListener listener;
+    private @NonNull RequestBody delegate;
+    private @Nullable OnProgressListener listener;
 
-    public ProgressRequestBody(RequestBody requestBody, OnProgressListener listener) {
+    public ProgressRequestBody(@NonNull RequestBody requestBody, @Nullable OnProgressListener listener) {
         this.delegate = requestBody;
         this.listener = listener;
     }
@@ -48,9 +51,9 @@ public final class ProgressRequestBody extends RequestBody {
 
     private final class CountingSink extends ForwardingSink {
 
-        private long bytesWritten = 0;
-        private long contentLength = 0;
-        private long lastRefreshUiTime;
+        private long bytesWritten;
+        private long contentLength;
+        private long lastRefreshTime;
 
         private CountingSink(Sink delegate) {
             super(delegate);
@@ -68,15 +71,15 @@ public final class ProgressRequestBody extends RequestBody {
             bytesWritten += byteCount;
 
             long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshUiTime >= RxHttp.REFRESH_INTERVAL || bytesWritten == contentLength) {
-                int progress;
+            if (curTime - lastRefreshTime >= RxHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
+                int percent;
                 if (contentLength <= 0) {
-                    progress = 100;
+                    percent = 100;
                 } else {
-                    progress = (int) (bytesWritten * 100 / contentLength);
+                    percent = (int) (bytesWritten * 100 / contentLength);
                 }
-                listener.onProgress(progress, bytesWritten, contentLength);
-                lastRefreshUiTime = System.currentTimeMillis();
+                listener.onProgress(new Progress(contentLength, bytesWritten, percent, curTime));
+                lastRefreshTime = System.currentTimeMillis();
             }
         }
     }

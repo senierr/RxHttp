@@ -1,7 +1,8 @@
-package com.senierr.http.model;
+package com.senierr.http.internal;
+
+import android.support.annotation.NonNull;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import okhttp3.Headers;
 
@@ -15,18 +16,17 @@ public final class HttpHeaders {
 
     private LinkedHashMap<String, String> httpHeaders = new LinkedHashMap<>();
 
-    public void addHeader(String key, String value) {
+    public void addHeader(@NonNull String key, @NonNull String value) {
         httpHeaders.put(key, value);
     }
 
-    public void addHeaders(LinkedHashMap<String, String> headers) {
-        if (headers == null) return;
+    public void addHeaders(@NonNull LinkedHashMap<String, String> headers) {
         for (String key: headers.keySet()) {
             httpHeaders.put(key, headers.get(key));
         }
     }
 
-    public Headers generateHeaders(){
+    public @NonNull Headers generateHeaders(){
         Headers.Builder builder = new Headers.Builder();
         for (String key: httpHeaders.keySet()) {
             builder.add(key, httpHeaders.get(key));

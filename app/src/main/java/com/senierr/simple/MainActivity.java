@@ -8,12 +8,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.senierr.http.RxHttp;
+import com.senierr.http.converter.FileConverter;
+import com.senierr.http.converter.StringConverter;
+import com.senierr.http.internal.Progress;
+import com.senierr.http.internal.Result;
 import com.senierr.permission.CheckCallback;
 import com.senierr.permission.PermissionManager;
-import com.senierr.http.RxHttp;
-import com.senierr.http.cache.CachePolicy;
 
 import java.io.File;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String URL_UPLOAD = HOST + "/post/form";
     private static final String URL_DOWNLOAD = "http://dldir1.qq.com/weixin/Windows/WeChatSetup.exe";
 
-    private RxHttp seHttp = SessionApplication.getApplication().getHttp();
+    private RxHttp rxHttp = SessionApplication.getApplication().getHttp();
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        seHttp.cancelTag(this);
+        compositeDisposable.clear();
         super.onDestroy();
     }
 
@@ -72,100 +82,110 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 break;
+            case R.id.btn_cancel:
+                compositeDisposable.clear();
+                break;
         }
     }
 
+    private Consumer<Throwable> throwableConsumer = new Consumer<Throwable>() {
+        @Override
+        public void accept(Throwable throwable) throws Exception {
+            printLog("--onFailure: " + Log.getStackTraceString(throwable));
+        }
+    };
+
     /** Get请求 */
     private void get() {
-        seHttp.get(URL_GET)
-                .tag(this)
+        Disposable disposable = rxHttp.get(URL_GET)
                 .addUrlParam("ip", "112.64.217.29")
                 .addHeader("language", "China")
-                .cachePolicy(CachePolicy.REQUEST_ELSE_CACHE)
-                .cacheKey(URL_POST)
-                .cacheDuration(20 * 1000)
-                .execute(new MyCallback() {
+                .execute(new MyConverter())
+                .singleOrError()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Result<MyEntity>>() {
                     @Override
-                    public void onCacheSuccess(MyEntity entity) {
-                        printLog("--onCacheSuccess: " + entity.toString());
+                    public void accept(Result<MyEntity> myEntityResult) throws Exception {
+                        MyEntity body = myEntityResult.body();
+                        if (body != null) {
+                            printLog("--onSuccess: " + body.toString());
+                        }
                     }
-
-                    @Override
-                    public void onSuccess(MyEntity entity) {
-                        printLog("--onSuccess: " + entity.toString());
-                    }
-
-                    @Override
-                    public void onFailure(Throwable e) {
-                        printLog("--onFailure: " + Log.getStackTraceString(e));
-                    }
-                });
+                }, throwableConsumer);
+        compositeDisposable.add(disposable);
     }
 
     /** Post请求 */
     private void post() {
-        seHttp.post(URL_POST)
-                .tag(this)
+        Disposable disposable = rxHttp.post(URL_POST)
                 .addRequestParam("name", "hello")
                 .addRequestParam("age", "18")
-                .execute(new StringCallback() {
+                .execute(new StringConverter())
+                .singleOrError()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Result<String>>() {
                     @Override
-                    public void onSuccess(String s) {
-                        printLog("--onSuccess: " + s);
+                    public void accept(Result<String> stringResult) throws Exception {
+                        String body = stringResult.body();
+                        if (body != null) {
+                            printLog("--onSuccess: " + body);
+                        }
                     }
-
-                    @Override
-                    public void onFailure(Throwable e) {
-                        printLog("--onFailure: " + Log.getStackTraceString(e));
-                    }
-                });
+                }, throwableConsumer);
+        compositeDisposable.add(disposable);
     }
 
     /** 上传文件 */
     private void upload() {
         File destFile = new File(Environment.getExternalStorageDirectory(), "111.png");
-        seHttp.post(URL_UPLOAD)
-                .tag(this)
+        Disposable disposable = rxHttp.post(URL_UPLOAD)
                 .addRequestParam("file", destFile)
-                .execute(new StringCallback() {
+                .openUploadListener(true)
+                .execute(new StringConverter())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Result<String>>() {
                     @Override
-                    public void onUpload(int progress, long currentSize, long totalSize) {
-                        printLog(progress + ":" + currentSize + "@" + totalSize);
-                    }
+                    public void accept(Result<String> stringResult) throws Exception {
+                        Progress progress = stringResult.uploadProgress();
+                        if (progress != null) {
+                            printLog("--onProgress: " + progress.toString());
+                        }
 
-                    @Override
-                    public void onSuccess(String s) {
-                        printLog(s);
+                        String body = stringResult.body();
+                        if (body != null) {
+                            printLog("--onSuccess: " + body);
+                        }
                     }
-
-                    @Override
-                    public void onFailure(Throwable e) {
-                        printLog(Log.getStackTraceString(e));
-                    }
-                });
+                }, throwableConsumer);
+        compositeDisposable.add(disposable);
     }
 
     /** 下载文件 */
     private void download() {
         File destFile = new File(Environment.getExternalStorageDirectory(), "WeChat.exe");
-        seHttp.get(URL_DOWNLOAD)
-                .tag(this)
-                .execute(new FileCallback(destFile) {
+        Disposable disposable = rxHttp.get(URL_DOWNLOAD)
+                .openDownloadListener(true)
+                .execute(new FileConverter(destFile))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Result<File>>() {
                     @Override
-                    public void onDownload(int progress, long currentSize, long totalSize) {
-                        printLog(progress + ":" + currentSize + "@" + totalSize);
-                    }
+                    public void accept(Result<File> stringResult) throws Exception {
+                        Progress progress = stringResult.downloadProgress();
+                        if (progress != null) {
+                            printLog("--onProgress: " + progress.toString());
+                        }
 
-                    @Override
-                    public void onSuccess(File file) {
-                        printLog(file.getAbsolutePath());
+                        File body = stringResult.body();
+                        if (body != null) {
+                            printLog("--onSuccess: " + body.getPath());
+                        }
                     }
-
-                    @Override
-                    public void onFailure(Throwable e) {
-                        printLog(Log.getStackTraceString(e));
-                    }
-                });
+                }, throwableConsumer);
+        compositeDisposable.add(disposable);
     }
 
     private void printLog(String logStr) {

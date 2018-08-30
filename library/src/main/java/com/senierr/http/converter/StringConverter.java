@@ -1,5 +1,8 @@
 package com.senierr.http.converter;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 
@@ -16,13 +19,20 @@ import okio.BufferedSource;
  */
 public class StringConverter implements Converter<String> {
 
-    private Charset charset;
+    private @Nullable Charset charset;
 
-    public StringConverter(Charset charset) {
+    public StringConverter() {
+    }
+
+    public StringConverter(@NonNull Charset charset) {
         this.charset = charset;
     }
 
-    public String convertResponse(Response response) throws Throwable {
+    public StringConverter(@NonNull String charsetName) {
+        this.charset = Charset.forName(charsetName);
+    }
+
+    public @NonNull String convertResponse(@NonNull Response response) throws Throwable {
         ResponseBody responseBody = response.body();
         if (responseBody == null) {
             throw new IOException("ResponseBody is null!");
