@@ -4,43 +4,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_get"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onBtnClick"
-        android:text="@string/get"
-        android:textAllCaps="false" />
+    <include layout="@layout/layout_top_bar_normal"/>
 
-    <Button
-        android:id="@+id/btn_post"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/srl_refresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onBtnClick"
-        android:text="@string/post_form"
-        android:textAllCaps="false" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn_upload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onBtnClick"
-        android:text="@string/upload"
-        android:textAllCaps="false" />
-
-    <Button
-        android:id="@+id/btn_download"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onBtnClick"
-        android:text="@string/download"
-        android:textAllCaps="false" />
-
-    <Button
-        android:id="@+id/btn_cancel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onBtnClick"
-        android:text="@string/cancel"
-        android:textAllCaps="false" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_notes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

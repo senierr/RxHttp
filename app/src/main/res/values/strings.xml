@@ -1,10 +1,14 @@
 <resources>
-    <string name="app_name">SeHttp</string>
+    <string name="app_name">RxHttp</string>
 
-    <string name="get">Get</string>
-    <string name="post_form">Post form</string>
-    <string name="post_json">Post json</string>
-    <string name="upload">Upload</string>
-    <string name="download">Download</string>
-    <string name="cancel">Cancel</string>
+    <string name="network_error">网络连接失败，请检查网络！</string>
+
+    <string name="loading">正在加载&#8230;</string>
+    <string name="completed">加载完成</string>
+    <string name="no_more">没有更多</string>
+    <string name="failure">加载失败</string>
+
+    <string name="title">标题</string>
+    <string name="content">内容</string>
+    <string name="confirm">确认</string>
 </resources>
