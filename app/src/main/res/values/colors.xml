@@ -18,6 +18,7 @@
     <color name="text_error">#ce3d3a</color>
 
     <color name="divider">#999999</color>
+    <color name="bg_content_grey">#F4F6F9</color>
 
     <color name="color_cdcdcd">#cdcdcd</color>
     <color name="color_20000000">#20000000</color>

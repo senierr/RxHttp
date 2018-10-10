@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".domain.NoteActivity"/>
+        <activity android:name=".domain.FileActivity"/>
     </application>
 
 </manifest>

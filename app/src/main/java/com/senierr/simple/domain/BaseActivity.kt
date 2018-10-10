@@ -1,4 +1,4 @@
-package com.senierr.simple.domain.base
+package com.senierr.simple.domain
 
 import android.support.v7.app.AppCompatActivity
 import io.reactivex.disposables.CompositeDisposable

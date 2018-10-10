@@ -7,7 +7,7 @@
               android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv_content"
+        android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_8"
@@ -16,8 +16,37 @@
         android:textColor="@color/text_normal"
         android:textSize="@dimen/sp_14"/>
 
+    <LinearLayout
+        android:id="@+id/ll_progress"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ProgressBar
+            android:id="@+id/pb_bar"
+            android:max="100"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btn_operate"
+            android:text="@string/confirm"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="@dimen/sp_15"
+            android:background="@drawable/shape_corner"
+            android:backgroundTint="@color/color_button_transparent"
+            style="@style/BaseButton.Normal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
     <TextView
-        android:id="@+id/tv_date"
+        android:id="@+id/tv_path"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_8"

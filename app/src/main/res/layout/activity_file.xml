@@ -10,20 +10,29 @@
         android:layout_height="@dimen/dp_48"
         android:background="@color/colorPrimaryDark">
 
+        <ImageButton
+            android:id="@+id/btn_left"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:background="@color/white"
+            android:backgroundTint="@color/color_button_transparent"
+            android:paddingStart="@dimen/dp_16"
+            android:paddingEnd="@dimen/dp_16"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"/>
+
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/btn_left"
-            android:layout_marginStart="@dimen/dp_16"
             android:layout_centerVertical="true"
             android:text="@string/app_name"
             android:textColor="@color/text_white"
             android:textSize="@dimen/sp_18"/>
 
         <ImageButton
-            android:id="@+id/btn_add"
-            android:src="@drawable/ic_add_black_24dp"
+            android:id="@+id/btn_upload"
+            android:src="@drawable/ic_file_upload_black_24dp"
             android:background="@color/white"
             android:backgroundTint="@color/color_button_transparent"
             android:layout_alignParentEnd="true"
@@ -31,29 +40,10 @@
             android:paddingEnd="@dimen/dp_16"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"/>
-
-        <ImageButton
-            android:id="@+id/btn_folder"
-            android:src="@drawable/ic_folder_black_24dp"
-            android:background="@color/white"
-            android:backgroundTint="@color/color_button_transparent"
-            android:paddingStart="@dimen/dp_16"
-            android:paddingEnd="@dimen/dp_16"
-            android:layout_toStartOf="@id/btn_add"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
     </RelativeLayout>
 
-    <TextView
-        android:text="@string/tips"
-        android:textColor="@color/text_error"
-        android:textSize="@dimen/sp_12"
-        android:padding="@dimen/dp_8"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_notes"
+        android:id="@+id/rv_files"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </LinearLayout>

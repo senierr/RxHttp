@@ -1,9 +1,7 @@
-package com.senierr.simple.repository.remote
+package com.senierr.simple.remote
 
 import com.google.gson.Gson
 import com.senierr.http.converter.Converter
-import com.senierr.simple.repository.bean.BmobArray
-import com.senierr.simple.repository.bean.BmobError
 import okhttp3.Response
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
