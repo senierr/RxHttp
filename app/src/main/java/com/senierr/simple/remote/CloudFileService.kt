@@ -57,6 +57,7 @@ class CloudFileService {
     fun upload(file: File): Observable<Result<BmobInsert>> {
         return SessionApplication.application.dataHttp
                 .post("$API_FILE_SERVICE/${file.name}")
+                .addRequestParam(file.name, file)
                 .openUploadListener(true)
                 .execute(BmobObjectConverter(BmobFile::class.java))
                 .flatMap {
@@ -65,8 +66,8 @@ class CloudFileService {
                     } else if (it.response() != null) {
                         val param = mapOf(
                                 Pair("filename", it.body()?.filename),
-                                Pair("url", it.body()?.filename),
-                                Pair("cdn", it.body()?.filename)
+                                Pair("url", it.body()?.url),
+                                Pair("cdn", it.body()?.cdn)
                         )
                         return@flatMap SessionApplication.application.dataHttp
                                 .post(API_FILE)

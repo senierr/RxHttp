@@ -13,14 +13,31 @@ import io.reactivex.disposables.Disposable
 open class BaseActivity : AppCompatActivity() {
 
     private val compositeDisposable = CompositeDisposable()
+    private val disposableMap = mutableMapOf<Any, Disposable>()
 
     override fun onDestroy() {
-        compositeDisposable.clear()
+        unsubscribeAll()
         super.onDestroy()
     }
 
-    fun Disposable.bindToLifecycle(): Disposable {
-        compositeDisposable.add(this)
+    fun Disposable.bindToLifecycle(tag: Any? = null): Disposable {
+        if (tag == null) {
+            compositeDisposable.add(this)
+        } else {
+            disposableMap[tag] = this
+        }
         return this
+    }
+
+    fun unsubscribe(tag: Any) {
+        disposableMap[tag]?.dispose()
+        disposableMap.remove(tag)
+    }
+
+    fun unsubscribeAll() {
+        disposableMap.forEach { _, disposable ->
+            disposable.dispose()
+        }
+        compositeDisposable.clear()
     }
 }

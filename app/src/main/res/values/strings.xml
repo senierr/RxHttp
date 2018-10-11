@@ -8,6 +8,9 @@
 
     <string name="tips">点击更新，长按删除</string>
 
-    <string name="start">下载</string>
-    <string name="stop">暂停</string>
+    <string name="start">开始</string>
+    <string name="pause">暂停</string>
+
+    <string name="uploading">正在上传</string>
+    <string name="upload_success">上传成功</string>
 </resources>

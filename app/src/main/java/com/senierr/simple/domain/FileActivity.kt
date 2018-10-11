@@ -1,17 +1,27 @@
 package com.senierr.simple.domain
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.view.View
 import com.senierr.adapter.internal.MultiTypeAdapter
+import com.senierr.adapter.internal.RVHolder
+import com.senierr.adapter.internal.ViewHolderWrapper
+import com.senierr.permission.CheckCallback
+import com.senierr.permission.PermissionManager
 import com.senierr.simple.R
 import com.senierr.simple.remote.BmobError
 import com.senierr.simple.remote.CloudFile
 import com.senierr.simple.remote.CloudFileService
+import com.senierr.simple.remote.DownloadProgress
 import com.senierr.simple.util.ToastUtil
+import com.senierr.simple.util.UriUtil
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_file.*
+import java.io.File
+
 
 /**
  *
@@ -19,6 +29,10 @@ import kotlinx.android.synthetic.main.activity_file.*
  * @date 2018/9/23
  */
 class FileActivity : BaseActivity() {
+
+    companion object {
+        const val REQUEST_CODE_PICK_FILE = 1001
+    }
 
     private val cloudFileService = CloudFileService()
     private val multiTypeAdapter = MultiTypeAdapter()
@@ -28,13 +42,30 @@ class FileActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_file)
 
-        initView()
-        loadData()
+        PermissionManager.with(this)
+                .permissions(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                .request(object : CheckCallback() {
+                    override fun onAllGranted() {
+                        initView()
+                        loadData()
+                    }
+
+                    override fun onDenied(deniedWithNextAskList: MutableList<String>?,
+                                          deniedWithNoAskList: MutableList<String>?) {
+                        finish()
+                    }
+                })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        if (requestCode == REQUEST_CODE_PICK_FILE && resultCode == RESULT_OK) {
+            data?.data?.let {
+                upload(UriUtil.getPath(this, it))
+            }
+        }
     }
 
     private fun initView() {
@@ -42,9 +73,24 @@ class FileActivity : BaseActivity() {
             finish()
         }
         btn_upload.setOnClickListener {
-
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "*/*"
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            startActivityForResult(intent, REQUEST_CODE_PICK_FILE)
         }
 
+        cloudFileWrapper.setOnItemChildClickListener(R.id.btn_operate,
+                object : ViewHolderWrapper.OnItemChildClickListener() {
+            override fun onClick(viewHolder: RVHolder?, view: View?, position: Int) {
+                download(position)
+            }
+        })
+        cloudFileWrapper.setOnItemChildClickListener(R.id.btn_cancel,
+                object : ViewHolderWrapper.OnItemChildClickListener() {
+                    override fun onClick(viewHolder: RVHolder?, view: View?, position: Int) {
+                        unsubscribe("download_$position")
+                    }
+                })
         multiTypeAdapter.bind(CloudFile::class.java, cloudFileWrapper)
 
         rv_files.layoutManager = LinearLayoutManager(this)
@@ -72,7 +118,75 @@ class FileActivity : BaseActivity() {
                 .bindToLifecycle()
     }
 
-    private fun upload() {
+    /**
+     * 上传文件
+     */
+    private fun upload(path: String) {
+        val uploadDialog = UploadDialog(this, path)
+        uploadDialog.setOnCancelListener {
+            unsubscribe("upload")
+        }
+        uploadDialog.show()
+        cloudFileService.upload(File(path))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally {
+                    uploadDialog.cancel()
+                    loadData()
+                }
+                .subscribe({
+                    it.uploadProgress()?.let { progress ->
+                        uploadDialog.updateProgress(progress.percent())
+                    }
+                    it.body()?.let { _ ->
+                        ToastUtil.showShort(this, R.string.upload_success)
+                    }
+                }, {
+                    if (it is BmobError) {
+                        ToastUtil.showShort(this, it.error)
+                    } else {
+                        ToastUtil.showShort(this, R.string.network_error)
+                    }
+                })
+                .bindToLifecycle("upload")
+    }
 
+    /**
+     * 下载
+     */
+    private fun download(position: Int) {
+        val cloudFile = multiTypeAdapter.dataList[position] as CloudFile
+        val destFile = File(externalCacheDir, cloudFile.filename)
+
+        cloudFileService.download(cloudFile.url, destFile)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    it.downloadProgress()?.let { progress ->
+                        var downloadProgress = cloudFileWrapper.statusMap[position]
+                        if (downloadProgress == null) {
+                            downloadProgress = DownloadProgress(
+                                    cloudFile.url, destFile.path,
+                                    0, 0, 0, DownloadProgress.STATUS_START)
+                        }
+                        downloadProgress.currentSize = progress.currentSize()
+                        downloadProgress.totalSize = progress.totalSize()
+                        downloadProgress.percent = progress.percent()
+                        downloadProgress.status = DownloadProgress.STATUS_START
+
+                        cloudFileWrapper.statusMap[position] = downloadProgress
+                        multiTypeAdapter.notifyItemChanged(position)
+                    }
+                    it.body()?.let { _ ->
+                        ToastUtil.showShort(this, R.string.upload_success)
+                    }
+                }, {
+                    if (it is BmobError) {
+                        ToastUtil.showShort(this, it.error)
+                    } else {
+                        ToastUtil.showShort(this, R.string.network_error)
+                    }
+                })
+                .bindToLifecycle("download_$position")
     }
 }

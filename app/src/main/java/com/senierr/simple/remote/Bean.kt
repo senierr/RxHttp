@@ -47,19 +47,26 @@ data class Note(
 )
 
 data class CloudFile(
-        var objectId: String? = null,
-        var createdAt: String? = null,
-        var updatedAt: String? = null,
+        var objectId: String,
+        var createdAt: String,
+        var updatedAt: String,
 
-        var filename: String? = null,
-        var url: String? = null,
-        var cdn: String? = null
+        var filename: String,
+        var url: String,
+        var cdn: String
 )
 
 data class DownloadProgress(
         var url: String,
-        val destPath: String,
-        val totalSize: Long,
-        val currentSize: Long,
-        val percent: Int
-)
+        var destPath: String,
+        var totalSize: Long,
+        var currentSize: Long,
+        var percent: Int,
+        var status: Int
+) {
+    companion object {
+        const val STATUS_START = 1
+        const val STATUS_PAUSE = 2
+        const val STATUS_COMPLETED = 3
+    }
+}
