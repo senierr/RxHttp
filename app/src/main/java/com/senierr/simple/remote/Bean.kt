@@ -58,14 +58,14 @@ data class CloudFile(
 
 data class DownloadProgress(
         var url: String,
-        var destPath: String,
         var totalSize: Long,
         var currentSize: Long,
         var percent: Int,
         var status: Int
 ) {
     companion object {
-        const val STATUS_START = 1
+        const val STATUS_UN_DOWNLOAD = 0
+        const val STATUS_DOWNLOADING = 1
         const val STATUS_PAUSE = 2
         const val STATUS_COMPLETED = 3
     }

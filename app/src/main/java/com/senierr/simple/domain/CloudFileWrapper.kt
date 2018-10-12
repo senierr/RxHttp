@@ -28,21 +28,27 @@ class CloudFileWrapper : ViewHolderWrapper<CloudFile>() {
         val pbBar = p0.getView<ProgressBar>(R.id.pb_bar)
         val btnOperate = p0.getView<Button>(R.id.btn_operate)
 
-        tvName.text = p1.filename
-        val downloadProgress = statusMap[p0.layoutPosition]
+        var downloadProgress = statusMap[p0.layoutPosition]
         if (downloadProgress == null) {
-            pbBar.progress = 0
-            btnOperate.setText(R.string.start)
-        } else {
-            when (downloadProgress.status) {
-                DownloadProgress.STATUS_START -> {
-                    pbBar.progress = downloadProgress.percent
-                    btnOperate.setText(R.string.pause)
-                }
-                DownloadProgress.STATUS_PAUSE ->
-                    btnOperate.setText(R.string.start)
-                DownloadProgress.STATUS_COMPLETED ->
-                    btnOperate.setText(R.string.start)
+            downloadProgress = DownloadProgress(p1.url, 0, 0, 0, DownloadProgress.STATUS_UN_DOWNLOAD)
+            statusMap[p0.layoutPosition] = downloadProgress
+        }
+
+        tvName.text = p1.filename
+        when (downloadProgress.status) {
+            DownloadProgress.STATUS_UN_DOWNLOAD -> {
+                pbBar.progress = 0
+                btnOperate.setText(R.string.start)
+            }
+            DownloadProgress.STATUS_DOWNLOADING -> {
+                pbBar.progress = downloadProgress.percent
+                btnOperate.setText(R.string.cancel)
+            }
+            DownloadProgress.STATUS_PAUSE ->
+                btnOperate.setText(R.string.start)
+            DownloadProgress.STATUS_COMPLETED -> {
+                pbBar.progress = 100
+                btnOperate.setText(R.string.start)
             }
         }
     }

@@ -14,26 +14,14 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/btn_cancel"
+            android:id="@+id/btn_operate"
             android:text="@string/cancel"
-            android:textColor="@color/text_error"
+            android:textColor="@color/text_white"
             android:textSize="@dimen/sp_14"
             android:background="@drawable/shape_corner"
-            android:backgroundTint="@color/color_button_transparent"
+            android:backgroundTint="@color/color_button_primary"
             style="@style/BaseButton.Normal"
             android:layout_alignParentEnd="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/btn_operate"
-            android:text="@string/confirm"
-            android:textColor="@color/text_link"
-            android:textSize="@dimen/sp_14"
-            android:background="@drawable/shape_corner"
-            android:backgroundTint="@color/color_button_transparent"
-            style="@style/BaseButton.Normal"
-            android:layout_toStartOf="@id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 

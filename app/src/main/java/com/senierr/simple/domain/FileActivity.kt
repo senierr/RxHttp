@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.View
 import com.senierr.adapter.internal.MultiTypeAdapter
 import com.senierr.adapter.internal.RVHolder
@@ -83,15 +82,15 @@ class FileActivity : BaseActivity() {
         cloudFileWrapper.setOnItemChildClickListener(R.id.btn_operate,
                 object : ViewHolderWrapper.OnItemChildClickListener() {
             override fun onClick(viewHolder: RVHolder?, view: View?, position: Int) {
-                download(position)
+                val downloadProgress = cloudFileWrapper.statusMap[position]
+                when (downloadProgress!!.status) {
+                    DownloadProgress.STATUS_UN_DOWNLOAD -> download(position)
+                    DownloadProgress.STATUS_DOWNLOADING -> cancelDownload(position)
+                    DownloadProgress.STATUS_PAUSE -> download(position)
+                    DownloadProgress.STATUS_COMPLETED -> download(position)
+                }
             }
         })
-        cloudFileWrapper.setOnItemChildClickListener(R.id.btn_cancel,
-                object : ViewHolderWrapper.OnItemChildClickListener() {
-                    override fun onClick(viewHolder: RVHolder?, view: View?, position: Int) {
-                        unsubscribe("download_$position")
-                    }
-                })
         multiTypeAdapter.bind(CloudFile::class.java, cloudFileWrapper)
 
         rv_files.layoutManager = LinearLayoutManager(this)
@@ -162,25 +161,28 @@ class FileActivity : BaseActivity() {
         cloudFileService.download(cloudFile.url, destFile)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    val downloadProgress = cloudFileWrapper.statusMap[position]
+                    downloadProgress?.currentSize = 0
+                    downloadProgress?.totalSize = 0
+                    downloadProgress?.percent = 0
+                    downloadProgress?.status = DownloadProgress.STATUS_DOWNLOADING
+                    multiTypeAdapter.notifyItemChanged(position)
+                }
                 .subscribe({
                     it.downloadProgress()?.let { progress ->
-                        Log.e("download", "${progress.percent()}")
-                        var downloadProgress = cloudFileWrapper.statusMap[position]
-                        if (downloadProgress == null) {
-                            downloadProgress = DownloadProgress(
-                                    cloudFile.url, destFile.path,
-                                    0, 0, 0, DownloadProgress.STATUS_START)
-                        }
-                        downloadProgress.currentSize = progress.currentSize()
-                        downloadProgress.totalSize = progress.totalSize()
-                        downloadProgress.percent = progress.percent()
-                        downloadProgress.status = DownloadProgress.STATUS_START
-
-                        cloudFileWrapper.statusMap[position] = downloadProgress
+                        val downloadProgress = cloudFileWrapper.statusMap[position]
+                        downloadProgress?.currentSize = progress.currentSize()
+                        downloadProgress?.totalSize = progress.totalSize()
+                        downloadProgress?.percent = progress.percent()
+                        downloadProgress?.status = DownloadProgress.STATUS_DOWNLOADING
                         multiTypeAdapter.notifyItemChanged(position)
                     }
                     it.body()?.let { _ ->
-                        ToastUtil.showShort(this, R.string.upload_success)
+                        val downloadProgress = cloudFileWrapper.statusMap[position]
+                        downloadProgress?.status = DownloadProgress.STATUS_COMPLETED
+                        multiTypeAdapter.notifyItemChanged(position)
+                        ToastUtil.showShort(this, R.string.download_success)
                     }
                 }, {
                     if (it is BmobError) {
@@ -190,5 +192,16 @@ class FileActivity : BaseActivity() {
                     }
                 })
                 .bindToLifecycle("download_$position")
+    }
+
+    /**
+     * 取消下载
+     */
+    private fun cancelDownload(position: Int) {
+        unsubscribe("download_$position")
+        val downloadProgress = cloudFileWrapper.statusMap[position]
+        downloadProgress?.percent = 0
+        downloadProgress?.status = DownloadProgress.STATUS_UN_DOWNLOAD
+        multiTypeAdapter.notifyItemChanged(position)
     }
 }
