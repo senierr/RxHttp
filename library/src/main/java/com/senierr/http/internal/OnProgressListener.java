@@ -1,8 +1,6 @@
-package com.senierr.http.listener;
+package com.senierr.http.internal;
 
 import android.support.annotation.NonNull;
-
-import com.senierr.http.internal.Progress;
 
 /**
  * 进度回调

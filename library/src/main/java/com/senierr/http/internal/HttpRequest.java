@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
-import com.senierr.http.listener.OnProgressListener;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -28,8 +27,8 @@ public final class HttpRequest {
     private @NonNull HttpHeaders httpHeaders;                // 请求头
     private @NonNull HttpRequestBody httpRequestBody;        // 请求体
 
-    private boolean openUploadListener = false;              // 是否开启上传监听
-    private boolean openDownloadListener = false;            // 是否开启下载监听
+    private boolean enableUploadListener = false;            // 是否开启上传监听
+    private boolean enableDownloadListener = false;          // 是否开启下载监听
 
     private HttpRequest() {}
 
@@ -139,6 +138,17 @@ public final class HttpRequest {
     }
 
     /**
+     * 设置是否分片上传
+     *
+     * @param isMultipart
+     * @return
+     */
+    public @NonNull HttpRequest isMultipart(boolean isMultipart) {
+        httpRequestBody.isMultipart(isMultipart);
+        return this;
+    }
+
+    /**
      * 设置JSON格式请求体
      *
      * @param jsonStr
@@ -183,6 +193,17 @@ public final class HttpRequest {
     }
 
     /**
+     * 设置文件请求体
+     *
+     * @param file
+     * @return
+     */
+    public @NonNull HttpRequest setRequestBody4File(@NonNull File file) {
+        httpRequestBody.setRequestBody4File(file);
+        return this;
+    }
+
+    /**
      * 设置请求体
      *
      * @param requestBody
@@ -196,16 +217,16 @@ public final class HttpRequest {
     /**
      * 设置上传进度监听
      */
-    public @NonNull HttpRequest openUploadListener(boolean isOpen) {
-        this.openUploadListener = isOpen;
+    public @NonNull HttpRequest enableUploadListener(boolean enable) {
+        this.enableUploadListener = enable;
         return this;
     }
 
     /**
      * 设置下载进度监听
      */
-    public @NonNull HttpRequest openDownloadListener(boolean isOpen) {
-        this.openDownloadListener = isOpen;
+    public @NonNull HttpRequest enableDownloadListener(boolean enable) {
+        this.enableDownloadListener = enable;
         return this;
     }
 
@@ -227,6 +248,6 @@ public final class HttpRequest {
 
     /** 执行请求 */
     public @NonNull <T> Observable<Result<T>> execute(@NonNull Converter<T> converter) {
-        return new ExecuteObservable<>(rxHttp, this, converter, openUploadListener, openDownloadListener);
+        return new ExecuteObservable<>(rxHttp, this, converter, enableUploadListener, enableDownloadListener);
     }
 }

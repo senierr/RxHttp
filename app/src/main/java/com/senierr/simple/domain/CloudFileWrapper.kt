@@ -35,8 +35,10 @@ class CloudFileWrapper : ViewHolderWrapper<CloudFile>() {
             btnOperate.setText(R.string.start)
         } else {
             when (downloadProgress.status) {
-                DownloadProgress.STATUS_START ->
+                DownloadProgress.STATUS_START -> {
+                    pbBar.progress = downloadProgress.percent
                     btnOperate.setText(R.string.pause)
+                }
                 DownloadProgress.STATUS_PAUSE ->
                     btnOperate.setText(R.string.start)
                 DownloadProgress.STATUS_COMPLETED ->

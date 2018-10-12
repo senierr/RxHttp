@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
-import com.senierr.http.listener.OnProgressListener;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.View
 import com.senierr.adapter.internal.MultiTypeAdapter
 import com.senierr.adapter.internal.RVHolder
@@ -163,6 +164,7 @@ class FileActivity : BaseActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     it.downloadProgress()?.let { progress ->
+                        Log.e("download", "${progress.percent()}")
                         var downloadProgress = cloudFileWrapper.statusMap[position]
                         if (downloadProgress == null) {
                             downloadProgress = DownloadProgress(

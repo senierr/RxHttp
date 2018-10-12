@@ -28,17 +28,54 @@ import okhttp3.RequestBody;
  */
 public final class HttpRequestBody {
 
-    public static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";
-    public static final String MEDIA_TYPE_XML = "text/xml; charset=utf-8";
-    public static final String MEDIA_TYPE_JSON = "application/json; charset=utf-8";
-    public static final String MEDIA_TYPE_STREAM = "application/octet-stream";
+    private static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";
+    private static final String MEDIA_TYPE_XML = "text/xml; charset=utf-8";
+    private static final String MEDIA_TYPE_JSON = "application/json; charset=utf-8";
+    private static final String MEDIA_TYPE_STREAM = "application/octet-stream";
 
     private @Nullable RequestBody requestBody;
+
     private @Nullable MediaType mediaType;
-    private @NonNull LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
-    private @NonNull LinkedHashMap<String, String> stringParams = new LinkedHashMap<>();
     private @Nullable String stringContent;
     private @Nullable byte[] bytes;
+    private @Nullable File file;
+
+    private boolean isMultipart = false;
+    private @NonNull LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
+    private @NonNull LinkedHashMap<String, String> stringParams = new LinkedHashMap<>();
+
+    public void setRequestBody(@NonNull RequestBody requestBody) {
+        this.requestBody = requestBody;
+    }
+
+    public void setRequestBody4Text(@NonNull String textStr) {
+        stringContent = textStr;
+        mediaType = MediaType.parse(MEDIA_TYPE_PLAIN);
+    }
+
+    public void setRequestBody4JSon(@NonNull String jsonStr) {
+        stringContent = jsonStr;
+        mediaType = MediaType.parse(MEDIA_TYPE_JSON);
+    }
+
+    public void setRequestBody4Xml(@NonNull String xmlStr) {
+        stringContent = xmlStr;
+        mediaType = MediaType.parse(MEDIA_TYPE_XML);
+    }
+
+    public void setRequestBody4Byte(@NonNull byte[] bytes) {
+        this.bytes = bytes;
+        mediaType = MediaType.parse(MEDIA_TYPE_STREAM);
+    }
+
+    public void setRequestBody4File(@NonNull File file) {
+        this.file = file;
+        mediaType = guessMimeType(file.getPath());
+    }
+
+    public void isMultipart(boolean isMultipart) {
+        this.isMultipart = isMultipart;
+    }
 
     public void addRequestParam(@NonNull String key, @NonNull String value) {
         stringParams.put(key, value);
@@ -60,34 +97,21 @@ public final class HttpRequestBody {
         }
     }
 
-    public void setRequestBody4JSon(@NonNull String jsonStr) {
-        stringContent = jsonStr;
-        mediaType = MediaType.parse(MEDIA_TYPE_JSON);
-    }
-
-    public void setRequestBody4Text(@NonNull String textStr) {
-        stringContent = textStr;
-        mediaType = MediaType.parse(MEDIA_TYPE_PLAIN);
-    }
-
-    public void setRequestBody4Xml(@NonNull String xmlStr) {
-        stringContent = xmlStr;
-        mediaType = MediaType.parse(MEDIA_TYPE_XML);
-    }
-
-    public void setRequestBody4Byte(@NonNull byte[] bytes) {
-        this.bytes = bytes;
-        mediaType = MediaType.parse(MEDIA_TYPE_STREAM);
-    }
-
-    public void setRequestBody(@NonNull RequestBody requestBody) {
-        this.requestBody = requestBody;
-    }
-
     public @Nullable RequestBody generateRequestBody() {
         if (requestBody != null) {
+            // 自定义
             return requestBody;
+        } else if (stringContent != null && mediaType != null) {
+            // 字符串
+            return RequestBody.create(mediaType, stringContent);
+        } else if (bytes != null && mediaType != null) {
+            // 字节数组
+            return RequestBody.create(mediaType, bytes);
+        } else if (file != null && mediaType != null) {
+            // 文件
+            return RequestBody.create(mediaType, file);
         } else if (!fileParams.isEmpty()) {
+            // 分片提交
             MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
             for (String key: fileParams.keySet()) {
                 File value = fileParams.get(key);
@@ -102,27 +126,34 @@ public final class HttpRequestBody {
             }
             return multipartBodybuilder.build();
         } else if (!stringParams.isEmpty()) {
-            FormBody.Builder bodyBuilder = new FormBody.Builder();
-            for (String key : stringParams.keySet()) {
-                String value = stringParams.get(key);
-                bodyBuilder.add(key, value);
+            if (isMultipart) {
+                // 强制分片
+                MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+                for (String key: stringParams.keySet()) {
+                    String value = stringParams.get(key);
+                    multipartBodybuilder.addFormDataPart(key, value);
+                }
+                return multipartBodybuilder.build();
+            } else {
+                // 默认表单
+                FormBody.Builder bodyBuilder = new FormBody.Builder();
+                for (String key : stringParams.keySet()) {
+                    String value = stringParams.get(key);
+                    bodyBuilder.add(key, value);
+                }
+                return bodyBuilder.build();
             }
-            return bodyBuilder.build();
-        } else if (stringContent != null && mediaType != null) {
-            return RequestBody.create(mediaType, stringContent);
-        } else if (bytes != null && mediaType != null) {
-            return RequestBody.create(mediaType, bytes);
         } else {
             return null;
         }
     }
 
-    private static @Nullable MediaType guessMimeType(@NonNull String path) {
+    private @Nullable MediaType guessMimeType(@NonNull String path) {
         FileNameMap fileNameMap = URLConnection.getFileNameMap();
         path = path.replace("#", "");   //解决文件名中含有#号异常的问题
         String contentType = fileNameMap.getContentTypeFor(path);
         if (contentType == null) {
-            contentType = "application/octet-stream";
+            contentType = MEDIA_TYPE_STREAM;
         }
         return MediaType.parse(contentType);
     }

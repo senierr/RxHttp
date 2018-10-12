@@ -57,8 +57,8 @@ class CloudFileService {
     fun upload(file: File): Observable<Result<BmobInsert>> {
         return SessionApplication.application.dataHttp
                 .post("$API_FILE_SERVICE/${file.name}")
-                .addRequestParam(file.name, file)
-                .openUploadListener(true)
+                .setRequestBody4File(file)
+                .enableUploadListener(true)
                 .execute(BmobObjectConverter(BmobFile::class.java))
                 .flatMap {
                     if (it.uploadProgress() != null) {
@@ -82,7 +82,7 @@ class CloudFileService {
     fun download(url: String, destFile: File): Observable<Result<File>> {
         return SessionApplication.application.dataHttp
                 .get(url)
-                .openDownloadListener(true)
+                .enableDownloadListener(true)
                 .execute(FileConverter(destFile))
     }
 }

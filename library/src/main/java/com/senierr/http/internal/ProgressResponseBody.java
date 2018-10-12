@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
-import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 
