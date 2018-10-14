@@ -1,30 +1,34 @@
-# SeHttp
+# RxHttp
 
-[![](https://jitpack.io/v/senierr/SeHttp.svg)](https://jitpack.io/#senierr/SeHttp)
-[![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/SeHttp)
+[![](https://jitpack.io/v/senierr/RxHttp.svg)](https://jitpack.io/#senierr/RxHttp)
+[![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
 #### 精简、高效且有趣的网络请求框架
 
-> 注意：版本之间API差异可能较大，请谨慎升级！
+> 此库主要用于探索**retrofit**、**okhttp**等一系列网络请求库，在使用方面的不足和遗憾。
+> **注意：版本之间API差异可能较大，请谨慎升级！**
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
+* 自定义请求
 * 自定义公共请求参数、请求头
 * 自定义请求参数、请求头、请求体
-* 文件下载、上传
-* 多级别日志打印
-* 301、302重定向
+* 请求进度监听，包括但不仅限于：上传、下载
 * 多种HTTPS验证
-* Cookie持久化管理
-* 多种缓存策略
-* 自定义失败重连次数
-* 根据Tag取消请求
+* 可扩展Cookie管理
+* 多级别日志打印
+* 请求重定向
+* 可扩展数据解析
 * 链式调用
-* 可扩展回调
+* 支持RxJava2
 
-## 1. 配置
+## 工作流程
+
+> 主要工作流程可以概括为：**构造** -> **请求** -> **解析** -> **返回**
+
+## 1. 基本使用
 
 #### 1.1. 导入仓库：
 
@@ -35,13 +39,15 @@ maven { url 'https://jitpack.io' }
 #### 1.2. 添加依赖
 
 ```java
-implementation 'com.github.senierr:SeHttp:<release_version>'
+implementation 'com.github.senierr:RxHttp:<release_version>'
 ```
 
-`SeHttp`底层基于`okhttp3`，所以默认依赖：
+**注：`RxHttp`内部关联依赖：**
 
 ```java
-implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+-- 'com.android.support:support-annotations:27.1.1'
+-- 'com.squareup.okhttp3:okhttp:3.11.0'
+-- 'io.reactivex.rxjava2:rxjava:2.1.10'
 ```
 
 #### 1.3. 添加权限
@@ -53,128 +59,85 @@ implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-## 2. 实例化
+#### 1.4. 实例化
 
 ```java
-SeHttp seHttp = new SeHttp.Builder().build();
-```
-``Builder``可选方法：
-```java
--- addCommonUrlParam       // 增加单个公共URL参数
--- addCommonUrlParams      // 增加多个公共URL参数
--- addCommonHeader         // 增加单个公共头信息
--- addCommonHeaders        // 增加多个公共头信息
--- retryCount              // 设置失败重连次数
--- debug                   // 设置Debug模式
--- connectTimeout          // 设置连接超时(ms)
--- readTimeout             // 设置读超时(ms)
--- writeTimeout            // 设置写超时(ms)
--- hostnameVerifier        // 设置域名校验规则
--- sslFactory              // 设置SSL验证
--- cookieJar               // 设置Cookie管理
--- dispatcher              // 设置线程调度器
--- cacheStore              // 设置缓存管理
--- addInterceptor          // 增加拦截器
--- addNetworkInterceptor   // 增加网络层拦截器
+val rxHttp = RxHttp.Builder()
+        .debug(...)                 // 开启Debug模式
+        .addCommonHeader(...)       // 增加单个公共头
+        .addCommonHeaders(...)      // 增加多个公共头
+        .addCommonUrlParam(...)     // 增加单个公共URL参数
+        .addCommonUrlParams(...)    // 增加多个公共URL参数
+        .connectTimeout(...)        // 设置连接超时(ms)
+        .readTimeout(...)           // 设置读超时(ms)
+        .writeTimeout(...)          // 设置写超时(ms)
+        .hostnameVerifier(...)      // 设置域名校验规则
+        .sslFactory(...)            // 设置SSL验证
+        .cookieJar(...)             // 设置Cookie管理
+        .addInterceptor(...)        // 增加拦截器
+        .addNetworkInterceptor(...) // 增加网络层拦截器
+        .build()
 ```
 
-## 3. 请求
+#### 1.5. 发起请求
 
 ```java
-// 创建请求器
-RequestFactory requestFactory = new RequestFactory(seHttp, method, urlStr);
-// 通过请求器发起请求
-requestFactory.execute(...);
-```
-``RequestFactory``可选方法：
-```java
--- tag                      // 设置请求标签
--- addUrlParam              // 增加单个URL参数
--- addUrlParams             // 增加多个URL参数
--- addHeader                // 增加单个头信息
--- addHeaders               // 增加多个头信息
--- addRequestParam          // 增加单个请求体参数
--- addRequestFileParams     // 增加多个文件请求体参数
--- addRequestStringParams   // 增加多个字符串请求体参数
--- setRequestBody4JSon      // 设置Json请求体
--- setRequestBody4Text      // 设置Text请求体
--- setRequestBody4Xml       // 设置XML请求体
--- setRequestBody4Byte      // 设置Byte请求体
--- setRequestBody           // 设置自定义请求体
--- cacheKey                 // 设置缓存Key，默认URL
--- cachePolicy              // 设置缓存策略，默认NO_CACHE
--- cacheDuration            // 设置缓存有效时长，默认24小时
--- create                   // 构造Request
--- execute()                // 同步请求
--- execute(...)             // 异步请求
+// 通过RxHttp实例发起请求
+rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、method(自定义请求)
+        .addHeader(...)                 // 增加单个头
+        .addHeaders(...)                // 增加多个头
+        .addUrlParam(...)               // 增加单个URL参数
+        .addUrlParams(...)              // 增加多个URL参数
+        .addRequestParam(...)           // 增加单个表单参数
+        .addRequestStringParams(...)    // 增加多个字符串表单参数
+        .addRequestFileParams(...)      // 增加多个文件表单参数
+        .setRequestBody4JSon(...)       // 设置Json请求体
+        .setRequestBody4Text(...)       // 设置Text请求体
+        .setRequestBody4Xml(...)        // 设置XML请求体
+        .setRequestBody4Byte(...)       // 设置Byte请求体
+        .setRequestBody4File(...)       // 设置File请求体
+        .setRequestBody(...)            // 自定义请求体
+        .isMultipart(...)               // 是否分片表单
+        .setOnUploadListener(...)       // 设置上传进度监听
+        .setOnDownloadListener(...)     // 设置下载进度监听
+        .generateRequest()              // 创建Okhttp请求
+        .execute(...)                   // 发起请求
 ```
 
-##### 当然，我们也可以用更简洁的链式请求：
-```java
-seHttp.post(URL_GET)
-        ...
-        .execute(...);
-```
+## 2. 数据解析
 
-## 4. 请求回调
+``RxHttp``在发起请求``execute(...)``时需要传入数据解析器：``Converter<T>``，以便返回所需的正确结果。
 
-```java
-// 上传监听
-public void onUpload(int progress, long currentSize, long totalSize) {}
+``RxHttp``内置了两种``Converter``: ``StringConverter(字符串结果)``和``FileConverter(文件存储)``
 
-// 下载监听
-public void onDownload(int progress, long currentSize, long totalSize) {}
-
-// 缓存成功回调
-public void onCacheSuccess(T t) {}
-
-// 成功回调
-public abstract void onSuccess(T t);
-
-// 失败回调
-public void onFailure(Exception e) {}
-```
-同时，还提供了扩展的``StringCallback``、``FileCallback``。
-
-#### 4.1. 自定义回调
-
-在**自定义回调**之前，我们需要了解其工作原理：
-
-> ``Callback``是如何将``Response``转换成我们需要的数据T呢？它内置了一个数据转换器``Converter``，具体转换是由它在处理：
-
+当然，你也可以自定义``Converter<T>``，并返回自己需要的数据类型：
 ```java
 public interface Converter<T> {
-    T convertResponse(Response response) throws Throwable;
+    @NonNull T convertResponse(@NonNull Response response) throws Throwable;
 }
 ```
 
-**自定义回调**的过程，其实是**自定义Converter**的过程，以``String``回调为例：
+## 3. 请求结果
+
+返回结果的类型为``Observable<Response<T>>``，其中泛型``<T>``就是解析的结果类型。
+
+## 4. 进度监听
+
+``RxHttp``将``进度监听``和``返回结果``进行了剥离，并使其适用于**任意请求**。
 
 ```java
-public class StringConverter implements Converter<String> {
-    public String convertResponse(Response response) throws Throwable {
-        // 此处为具体转换过程：异步线程
-        return responseBody.string();
-    }
+public interface OnProgressListener {
+    void onProgress(@NonNull Progress progress);
 }
 
-public abstract class StringCallback extends Callback<String> {
-    public StringCallback() {
-        super(new StringConverter());
-    }
-}
-```
-
-#### 4.2. 字符集
-
-对于``StringCallback``，若不设置特殊字符集，默认返回UTF-8类型的字符串。若要设置返回字符集，可通过构造器传入：
-```java
-public StringCallback(Charset charset)
+// 在发起请求时，可以分别设置：
+-- setOnUploadListener(...)       // 设置上传数据进度监听
+-- setOnDownloadListener(...)     // 设置下载数据进度监听
 ```
 
 ## 5. Cookie
 
-``SeHttp``默认提供以下方式管理``Cookie``：
+``RxHttp``提供以下方式持久化管理``Cookie``：
 ```java
 -- SPCookieJar      // SharedPreferences
 ```
@@ -182,15 +145,15 @@ public StringCallback(Charset charset)
 
 ```java
 // 实例化时配置Cookie管理
-new SeHttp.Builder()
+new RxHttp.Builder()
         .cookieJar(new SPCookieJar(this))
         .build();
 ```
 
-#### 5.2. 手动管理
+#### 5.2. 管理
 
 ```java
-ClearableCookieJar cookieJar = seHttp.getCookieJar();   // 获取管理器
+ClearableCookieJar cookieJar = rxHttp.getCookieJar();   // 获取管理器
 
 cookieJar.saveCookie(httpUrl, cookie);      // 保存单个URL对应Cookie
 cookieJar.saveCookies(httpUrl, cookies);    // 保存多个URL对应Cookie
@@ -203,7 +166,7 @@ cookieJar.clear();                          // 移除所有Cookie
 
 #### 5.3. 自定义管理
 
-通过继承``ClearableCookieJar``，并实现其抽象方法，在实例化时设置给``SeHttp``，实现自己的Cookie管理方式。
+通过继承``ClearableCookieJar``，并实现其抽象方法，在实例化时设置给``RxHttp``，自定义Cookie管理方式。
 
 ```java
 public abstract void saveCookies(HttpUrl url, List<Cookie> cookies);
@@ -221,12 +184,11 @@ public abstract boolean removeCookies(HttpUrl url);
 public abstract boolean clear();
 ```
 
-
 ## 6. HTTPS
 
 ```java
 // 实例化时设置SSL验证
-new SeHttp.Builder()
+new RxHttp.Builder()
         .sslFactory(new SSLFactory(...))
         .build();
 
@@ -242,67 +204,7 @@ public SSLFactory(InputStream bksFile, String password, InputStream... certifica
 public SSLFactory(InputStream bksFile, String password, X509TrustManager trustManager)
 ```
 
-## 7. 缓存
-
-``SeHttp``默认提供以下方式管理缓存：
-```java
--- DiskLruCacheStore    // DiskLruCache
-```
-
-#### 7.1. 配置
-
-```java
-// 实例化时配置缓存管理
-new SeHttp.Builder()
-        .cacheStore(new DiskLruCacheStore(...))
-        .build();
-```
-
-#### 7.2. 自定义缓存管理
-
-你可以实现``CacheStore``接口，并在实例化时设置给``SeHttp``，自定义缓存管理：
-```java
-public interface CacheStore {
-    <T> void put(String key, CacheEntity<T> cacheEntity);
-    <T> CacheEntity<T> get(String key);
-}
-```
-
-#### 7.3. 缓存请求
-
-```java
-seHttp.get(URL_GET)
-        .cacheKey("key")    // 缓存Key，默认为url
-        .cachePolicy(CachePolicy.CACHE_THEN_REQUEST)    // 缓存策略，默认为NO_CACHE
-        .cacheDuration(1000 * 60 * 60 * 24)     // 缓存有效时长，默认为24小时
-        .execute(...)
-```
-
-#### 7.4. 缓存策略
-
-``SeHttp``默认请求为```CachePolicy.NO_CACHE```模式。
-```java
-CachePolicy:
--- NO_CACHE,            // 不缓存
--- REQUEST_ELSE_CACHE,  // 优先请求网络，若失败，使用缓存
--- CACHE_ELSE_REQUEST,  // 优先使用缓存，若无，请求网络
--- CACHE_THEN_REQUEST   // 先使用缓存，无论是否成功，然后请求网络
-```
-
-#### 7.5. 缓存回调
-
-相应策略下，若获取缓存成功，则回调```onCacheSuccess(T t)```
-
-## 8. 取消请求
-
-```java
-// 取消对应tag请求
-seHttp.cancelTag(tag);
-// 取消所有请求
-seHttp.cancelAll();
-```
-
-## 9. 混淆
+## 7. 混淆
 
 ```java
 #okhttp
