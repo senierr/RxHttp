@@ -1,5 +1,7 @@
 package com.senierr.http.internal;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -7,6 +9,7 @@ import com.senierr.http.RxHttp;
 
 import java.io.IOException;
 
+import io.reactivex.disposables.Disposable;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -24,11 +27,17 @@ import okio.Sink;
 public final class ProgressRequestBody extends RequestBody {
 
     private @NonNull RequestBody delegate;
-    private @Nullable OnProgressListener listener;
+    private @NonNull OnProgressListener listener;
+    private @NonNull Disposable disposable;
+    private @NonNull Handler uiScheduler;
 
-    public ProgressRequestBody(@NonNull RequestBody requestBody, @Nullable OnProgressListener listener) {
+    public ProgressRequestBody(@NonNull RequestBody requestBody,
+                               @NonNull OnProgressListener listener,
+                               @NonNull Disposable disposable) {
         this.delegate = requestBody;
         this.listener = listener;
+        this.disposable = disposable;
+        uiScheduler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -61,23 +70,30 @@ public final class ProgressRequestBody extends RequestBody {
         @Override
         public void write(Buffer source, long byteCount) throws IOException {
             super.write(source, byteCount);
-            if (listener == null) return;
+            if (disposable.isDisposed()) return;
 
             if (contentLength <= 0) {
                 contentLength = contentLength();
             }
 
             bytesWritten += byteCount;
-
-            long curTime = System.currentTimeMillis();
+            final long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshTime >= RxHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
-                int percent;
-                if (contentLength <= 0) {
-                    percent = 100;
-                } else {
-                    percent = (int) (bytesWritten * 100 / contentLength);
+                if (!disposable.isDisposed()) {
+                    uiScheduler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (disposable.isDisposed()) return;
+                            int percent;
+                            if (contentLength <= 0) {
+                                percent = 100;
+                            } else {
+                                percent = (int) (bytesWritten * 100 / contentLength);
+                            }
+                            listener.onProgress(new Progress(contentLength, bytesWritten, percent, curTime));
+                        }
+                    });
                 }
-                listener.onProgress(new Progress(contentLength, bytesWritten, percent, curTime));
                 lastRefreshTime = System.currentTimeMillis();
             }
         }

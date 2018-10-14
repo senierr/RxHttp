@@ -31,7 +31,7 @@ class NoteService {
                 .addUrlParam("order", "updatedAt")
                 .execute(BmobArrayConverter(Note::class.java))
                 .map {
-                    it.body()?.results
+                    it.body().results
                 }
     }
 

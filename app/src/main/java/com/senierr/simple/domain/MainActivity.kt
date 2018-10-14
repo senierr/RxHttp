@@ -38,7 +38,7 @@ class MainActivity : BaseActivity() {
 
     private fun initView() {
         btn_folder.setOnClickListener {
-            startActivity(Intent(this, FileActivity::class.java))
+            startActivity(Intent(this, CloudFileActivity::class.java))
         }
         btn_add.setOnClickListener {
             insertOrReplace(null)

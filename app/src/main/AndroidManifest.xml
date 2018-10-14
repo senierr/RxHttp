@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".domain.FileActivity"/>
+        <activity android:name=".domain.CloudFileActivity"/>
     </application>
 
 </manifest>

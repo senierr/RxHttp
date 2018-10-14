@@ -10,6 +10,8 @@ import java.io.File;
 import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -27,8 +29,8 @@ public final class HttpRequest {
     private @NonNull HttpHeaders httpHeaders;                // 请求头
     private @NonNull HttpRequestBody httpRequestBody;        // 请求体
 
-    private boolean enableUploadListener = false;            // 是否开启上传监听
-    private boolean enableDownloadListener = false;          // 是否开启下载监听
+    private @Nullable OnProgressListener onUploadListener;      // 上传进度监听
+    private @Nullable OnProgressListener onDownloadListener;    // 下载进度监听
 
     private HttpRequest() {}
 
@@ -217,26 +219,36 @@ public final class HttpRequest {
     /**
      * 设置上传进度监听
      */
-    public @NonNull HttpRequest enableUploadListener(boolean enable) {
-        this.enableUploadListener = enable;
+    public @NonNull HttpRequest setOnUploadListener(OnProgressListener onUploadListener) {
+        this.onUploadListener = onUploadListener;
         return this;
     }
 
     /**
      * 设置下载进度监听
      */
-    public @NonNull HttpRequest enableDownloadListener(boolean enable) {
-        this.enableDownloadListener = enable;
+    public @NonNull HttpRequest setOnDownloadListener(OnProgressListener onDownloadListener) {
+        this.onDownloadListener = onDownloadListener;
         return this;
     }
 
     /** 创建请求 */
-    public @NonNull Request generateRequest(@Nullable OnProgressListener onUploadListener) {
+    public @NonNull Request generateRequest() {
+        return generateRequest(null, null);
+    }
+
+    /** 执行请求 */
+    public @NonNull <T> Observable<Response<T>> execute(@NonNull Converter<T> converter) {
+        return new ExecuteObservable<>(rxHttp, this, converter, onUploadListener, onDownloadListener);
+    }
+
+    /** 创建请求 */
+    @NonNull Request generateRequest(@Nullable OnProgressListener onUploadListener, @Nullable Disposable disposable) {
         Request.Builder requestBuilder = new Request.Builder();
         // 封装RequestBody
         RequestBody requestBody = httpRequestBody.generateRequestBody();
-        if (requestBody != null) {
-            requestBody = new ProgressRequestBody(requestBody, onUploadListener);
+        if (requestBody != null && disposable != null && onUploadListener != null) {
+            requestBody = new ProgressRequestBody(requestBody, onUploadListener, disposable);
         }
         requestBuilder.method(httpMethod.value(), requestBody);
         // 封装URL
@@ -244,10 +256,5 @@ public final class HttpRequest {
         // 封装Header
         requestBuilder.headers(httpHeaders.generateHeaders());
         return requestBuilder.build();
-    }
-
-    /** 执行请求 */
-    public @NonNull <T> Observable<Result<T>> execute(@NonNull Converter<T> converter) {
-        return new ExecuteObservable<>(rxHttp, this, converter, enableUploadListener, enableDownloadListener);
     }
 }

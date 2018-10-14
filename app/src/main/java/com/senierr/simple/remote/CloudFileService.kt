@@ -2,7 +2,8 @@ package com.senierr.simple.remote
 
 import com.google.gson.Gson
 import com.senierr.http.converter.FileConverter
-import com.senierr.http.internal.Result
+import com.senierr.http.internal.OnProgressListener
+import com.senierr.http.internal.Response
 import com.senierr.simple.app.SessionApplication
 import io.reactivex.Observable
 import java.io.File
@@ -26,7 +27,7 @@ class CloudFileService {
                 .addUrlParam("order", "updatedAt")
                 .execute(BmobArrayConverter(CloudFile::class.java))
                 .map {
-                    it.body()?.results
+                    it.body().results
                 }
     }
 
@@ -54,35 +55,21 @@ class CloudFileService {
                 }
     }
 
-    fun upload(file: File): Observable<Result<BmobInsert>> {
+    fun upload(file: File, onUploadListener: OnProgressListener): Observable<BmobInsert> {
         return SessionApplication.application.dataHttp
                 .post("$API_FILE_SERVICE/${file.name}")
                 .setRequestBody4File(file)
-                .enableUploadListener(true)
+                .setOnUploadListener(onUploadListener)
                 .execute(BmobObjectConverter(BmobFile::class.java))
                 .flatMap {
-                    if (it.uploadProgress() != null) {
-                        return@flatMap Observable.just(Result.upload<BmobInsert>(it.uploadProgress()!!))
-                    } else if (it.response() != null) {
-                        val param = mapOf(
-                                Pair("filename", it.body()?.filename),
-                                Pair("url", it.body()?.url),
-                                Pair("cdn", it.body()?.cdn)
-                        )
-                        return@flatMap SessionApplication.application.dataHttp
-                                .post(API_FILE)
-                                .setRequestBody4JSon(Gson().toJson(param))
-                                .execute(BmobObjectConverter(BmobInsert::class.java))
-                    } else {
-                        return@flatMap Observable.just(Result.download<BmobInsert>(it.downloadProgress()!!))
-                    }
+                    return@flatMap insert(it.body())
                 }
     }
 
-    fun download(url: String, destFile: File): Observable<Result<File>> {
+    fun download(url: String, destFile: File, onDownloadListener: OnProgressListener): Observable<Response<File>> {
         return SessionApplication.application.dataHttp
                 .get(url)
-                .enableDownloadListener(true)
+                .setOnDownloadListener(onDownloadListener)
                 .execute(FileConverter(destFile))
     }
 }

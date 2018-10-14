@@ -4,10 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.View
 import com.senierr.adapter.internal.MultiTypeAdapter
 import com.senierr.adapter.internal.RVHolder
 import com.senierr.adapter.internal.ViewHolderWrapper
+import com.senierr.http.internal.OnProgressListener
+import com.senierr.http.internal.Progress
 import com.senierr.permission.CheckCallback
 import com.senierr.permission.PermissionManager
 import com.senierr.simple.R
@@ -22,13 +25,12 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_file.*
 import java.io.File
 
-
 /**
  *
  * @author zhouchunjie
  * @date 2018/9/23
  */
-class FileActivity : BaseActivity() {
+class CloudFileActivity : BaseActivity() {
 
     companion object {
         const val REQUEST_CODE_PICK_FILE = 1001
@@ -127,7 +129,9 @@ class FileActivity : BaseActivity() {
             unsubscribe("upload")
         }
         uploadDialog.show()
-        cloudFileService.upload(File(path))
+        cloudFileService.upload(File(path), OnProgressListener {
+            uploadDialog.updateProgress(it.percent())
+        })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally {
@@ -135,16 +139,12 @@ class FileActivity : BaseActivity() {
                     loadData()
                 }
                 .subscribe({
-                    it.uploadProgress()?.let { progress ->
-                        uploadDialog.updateProgress(progress.percent())
-                    }
-                    it.body()?.let { _ ->
-                        ToastUtil.showShort(this, R.string.upload_success)
-                    }
+                    ToastUtil.showShort(this, R.string.upload_success)
                 }, {
                     if (it is BmobError) {
                         ToastUtil.showShort(this, it.error)
                     } else {
+                        Log.e("upload", Log.getStackTraceString(it))
                         ToastUtil.showShort(this, R.string.network_error)
                     }
                 })
@@ -158,7 +158,14 @@ class FileActivity : BaseActivity() {
         val cloudFile = multiTypeAdapter.dataList[position] as CloudFile
         val destFile = File(externalCacheDir, cloudFile.filename)
 
-        cloudFileService.download(cloudFile.url, destFile)
+        cloudFileService.download(cloudFile.url, destFile, OnProgressListener {
+            val downloadProgress = cloudFileWrapper.statusMap[position]
+            downloadProgress?.currentSize = it.currentSize()
+            downloadProgress?.totalSize = it.totalSize()
+            downloadProgress?.percent = it.percent()
+            downloadProgress?.status = DownloadProgress.STATUS_DOWNLOADING
+            multiTypeAdapter.notifyItemChanged(position)
+        })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe {
@@ -170,24 +177,15 @@ class FileActivity : BaseActivity() {
                     multiTypeAdapter.notifyItemChanged(position)
                 }
                 .subscribe({
-                    it.downloadProgress()?.let { progress ->
-                        val downloadProgress = cloudFileWrapper.statusMap[position]
-                        downloadProgress?.currentSize = progress.currentSize()
-                        downloadProgress?.totalSize = progress.totalSize()
-                        downloadProgress?.percent = progress.percent()
-                        downloadProgress?.status = DownloadProgress.STATUS_DOWNLOADING
-                        multiTypeAdapter.notifyItemChanged(position)
-                    }
-                    it.body()?.let { _ ->
-                        val downloadProgress = cloudFileWrapper.statusMap[position]
-                        downloadProgress?.status = DownloadProgress.STATUS_COMPLETED
-                        multiTypeAdapter.notifyItemChanged(position)
-                        ToastUtil.showShort(this, R.string.download_success)
-                    }
+                    val downloadProgress = cloudFileWrapper.statusMap[position]
+                    downloadProgress?.status = DownloadProgress.STATUS_COMPLETED
+                    multiTypeAdapter.notifyItemChanged(position)
+                    ToastUtil.showShort(this, R.string.download_success)
                 }, {
                     if (it is BmobError) {
                         ToastUtil.showShort(this, it.error)
                     } else {
+                        Log.e("download", Log.getStackTraceString(it))
                         ToastUtil.showShort(this, R.string.network_error)
                     }
                 })

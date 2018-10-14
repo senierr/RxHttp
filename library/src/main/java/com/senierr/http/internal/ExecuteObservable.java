@@ -13,32 +13,32 @@ import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.Call;
-import okhttp3.Response;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 
-final class ExecuteObservable<T> extends Observable<Result<T>> {
+final class ExecuteObservable<T> extends Observable<Response<T>> {
 
-    private final RxHttp rxHttp;
-    private final HttpRequest httpRequest;
-    private final Converter<T> converter;
-    private boolean openUploadListener;
-    private boolean openDownloadListener;
+    private @NonNull RxHttp rxHttp;
+    private @NonNull HttpRequest httpRequest;
+    private @NonNull Converter<T> converter;
+    private @Nullable OnProgressListener onUploadListener;
+    private @Nullable OnProgressListener onDownloadListener;
 
     ExecuteObservable(@NonNull RxHttp rxHttp,
                       @NonNull HttpRequest httpRequest,
                       @NonNull Converter<T> converter,
-                      boolean openUploadListener,
-                      boolean openDownloadListener) {
+                      @Nullable OnProgressListener onUploadListener,
+                      @Nullable OnProgressListener onDownloadListener) {
         this.rxHttp = rxHttp;
         this.httpRequest = httpRequest;
         this.converter = converter;
-        this.openUploadListener = openUploadListener;
-        this.openDownloadListener = openDownloadListener;
+        this.onUploadListener = onUploadListener;
+        this.onDownloadListener = onDownloadListener;
     }
 
     @Override
-    protected void subscribeActual(final Observer<? super Result<T>> observer) {
-        final CallDisposable disposable = new CallDisposable();
+    protected void subscribeActual(final Observer<? super Response<T>> observer) {
+        CallDisposable disposable = new CallDisposable();
         observer.onSubscribe(disposable);
         if (disposable.isDisposed()) {
             return;
@@ -46,18 +46,21 @@ final class ExecuteObservable<T> extends Observable<Result<T>> {
 
         boolean terminated = false;
         try {
-            Call call = disposable.newCall(rxHttp, httpRequest, generateUploadListener(disposable, observer));
-            Response rawResponse = call.execute();
+            Request request = httpRequest.generateRequest(onUploadListener, disposable);
+            Call call = rxHttp.getOkHttpClient().newCall(request);
+            disposable.call = call;
+
+            okhttp3.Response rawResponse = call.execute();
             ResponseBody responseBody = rawResponse.body();
-            if (responseBody != null) {
+            if (responseBody != null && onDownloadListener != null) {
                 rawResponse = rawResponse.newBuilder()
-                        .body(new ProgressResponseBody(responseBody, generateDownloadListener(disposable, observer)))
+                        .body(new ProgressResponseBody(responseBody, onDownloadListener, disposable))
                         .build();
             }
 
             T t = converter.convertResponse(rawResponse);
             if (!disposable.isDisposed()) {
-                observer.onNext(Result.success(rawResponse, t));
+                observer.onNext(Response.success(call, rawResponse, t));
             }
             if (!disposable.isDisposed()) {
                 terminated = true;
@@ -78,43 +81,10 @@ final class ExecuteObservable<T> extends Observable<Result<T>> {
         }
     }
 
-    private @Nullable OnProgressListener generateUploadListener(final CallDisposable disposable,
-                                                                final Observer<? super Result<T>> observer) {
-        if (!openUploadListener) return null;
-        return new OnProgressListener() {
-            @Override
-            public void onProgress(@NonNull Progress progress) {
-                if (!disposable.isDisposed()) {
-                    observer.onNext(Result.<T>upload(progress));
-                }
-            }
-        };
-    }
-
-    private @Nullable OnProgressListener generateDownloadListener(final CallDisposable disposable,
-                                                                  final Observer<? super Result<T>> observer) {
-        if (!openDownloadListener) return null;
-        return new OnProgressListener() {
-            @Override
-            public void onProgress(@NonNull Progress progress) {
-                if (!disposable.isDisposed()) {
-                    observer.onNext(Result.<T>download(progress));
-                }
-            }
-        };
-    }
-
     private static final class CallDisposable implements Disposable {
-        private Call call;
-        private volatile boolean disposed;
 
-        private Call newCall(@NonNull RxHttp rxHttp,
-                                  @NonNull HttpRequest httpRequest,
-                                  @Nullable OnProgressListener onProgressListener) {
-            call = rxHttp.getOkHttpClient()
-                    .newCall(httpRequest.generateRequest(onProgressListener));
-            return call;
-        }
+        Call call;
+        private volatile boolean disposed;
 
         @Override
         public void dispose() {
