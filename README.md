@@ -6,7 +6,7 @@
 [![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
 
 > 此库主要用于探索**retrofit**、**okhttp**等一系列网络请求库，在使用方面的不足和遗憾。  
-> **注意：版本之间API差异可能较大，请谨慎升级！**
+> 主要工作流程：**构造** -> **请求** -> **解析** -> **返回**
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -21,10 +21,6 @@
 * 可扩展数据解析
 * 链式调用
 * 支持RxJava2
-
-## 工作流程
-
-> 主要工作流程可以概括为：**构造** -> **请求** -> **解析** -> **返回**
 
 ## 1. 基本使用
 
@@ -215,7 +211,7 @@ public SSLFactory(InputStream bksFile, String password, X509TrustManager trustMa
 -keep class okio.**{*;}
 ```
 
-## License
+## 8. License
 
 ```
 Copyright 2018 senierr
