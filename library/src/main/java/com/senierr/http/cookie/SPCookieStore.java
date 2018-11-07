@@ -8,15 +8,19 @@ import java.util.List;
 import java.util.Map;
 
 import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 
 /**
- * SharedPreferences存储器
+ * SharedPreferences Cookie存储器
+ *
+ * 内存临时缓存
+ * SP持久层
  *
  * @author zhouchunjie
  * @date 2018/8/14
  */
-public final class SPCookieJar extends ClearableCookieJar {
+public final class SPCookieStore implements CookieStore {
 
     private static final String COOKIE_PREFS = "cookie_store";
     private static final String COOKIE_PREFIX = "cookie_";
@@ -24,7 +28,7 @@ public final class SPCookieJar extends ClearableCookieJar {
     private final SharedPreferences cookiePrefs;
     private List<Cookie> cookieCache;
 
-    public SPCookieJar(Context context) {
+    public SPCookieStore(Context context) {
         cookiePrefs = context.getSharedPreferences(COOKIE_PREFS, Context.MODE_PRIVATE);
         cookieCache = new ArrayList<>();
         // 文件同步至内存
@@ -40,6 +44,36 @@ public final class SPCookieJar extends ClearableCookieJar {
     }
 
     @Override
+    public CookieJar getCookieJar() {
+        return new CookieJar() {
+            @Override
+            public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                saveCookies(url, cookies);
+            }
+
+            @Override
+            public List<Cookie> loadForRequest(HttpUrl url) {
+                List<Cookie> result = new ArrayList<>();
+                List<Cookie> cookies = getCookies(url);
+                if (cookies == null) return null;
+                for (Cookie cookie : cookies) {
+                    if (isExpired(cookie)) {
+                        removeCookie(url, cookie);
+                    } else {
+                        result.add(cookie);
+                    }
+                }
+                return result;
+            }
+        };
+    }
+
+    @Override
+    public boolean isExpired(Cookie cookie) {
+        return cookie.expiresAt() < System.currentTimeMillis();
+    }
+
+    @Override
     public void saveCookies(HttpUrl url, List<Cookie> cookies) {
         for (Cookie cookie : cookies) {
             saveCookie(url, cookie);
@@ -49,7 +83,7 @@ public final class SPCookieJar extends ClearableCookieJar {
     @Override
     public void saveCookie(HttpUrl url, Cookie cookie) {
         // 过期无需缓存
-        if (isCookieExpired(cookie)) {
+        if (isExpired(cookie)) {
             return;
         }
         // 内存缓存

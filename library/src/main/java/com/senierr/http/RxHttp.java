@@ -1,12 +1,10 @@
 package com.senierr.http;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.senierr.http.cookie.ClearableCookieJar;
 import com.senierr.http.https.SSLFactory;
-import com.senierr.http.internal.HttpRequest;
 import com.senierr.http.internal.HttpMethod;
+import com.senierr.http.internal.HttpRequest;
 import com.senierr.http.internal.LogInterceptor;
 
 import java.util.LinkedHashMap;
@@ -14,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 
+import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
@@ -32,15 +31,12 @@ public final class RxHttp {
     private @NonNull LinkedHashMap<String, String> commonUrlParams;
     // 公共请求头
     private @NonNull LinkedHashMap<String, String> commonHeaders;
-    // Cookie管理器
-    private @Nullable ClearableCookieJar cookieJar;
     // 网络请求器
     private @NonNull OkHttpClient okHttpClient;
 
     private RxHttp(Builder builder) {
         this.commonUrlParams = builder.commonUrlParams;
         this.commonHeaders = builder.commonHeaders;
-        this.cookieJar = builder.cookieJar;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -79,6 +75,7 @@ public final class RxHttp {
         return method(HttpMethod.TRACE, urlStr);
     }
 
+    /** 自定义请求 **/
     public @NonNull HttpRequest method(@NonNull HttpMethod method, @NonNull String urlStr) {
         HttpRequest httpRequest = HttpRequest.newHttpRequest(this, method, urlStr);
         // 添加公共URL参数
@@ -96,10 +93,6 @@ public final class RxHttp {
         return commonHeaders;
     }
 
-    public @Nullable ClearableCookieJar getCookieJar() {
-        return cookieJar;
-    }
-
     public @NonNull OkHttpClient getOkHttpClient() {
         return okHttpClient;
     }
@@ -107,7 +100,6 @@ public final class RxHttp {
     public static final class Builder {
         private @NonNull LinkedHashMap<String, String> commonUrlParams = new LinkedHashMap<>();
         private @NonNull LinkedHashMap<String, String> commonHeaders = new LinkedHashMap<>();
-        private @Nullable ClearableCookieJar cookieJar;
         private @NonNull OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -143,7 +135,7 @@ public final class RxHttp {
             return this;
         }
 
-        /** okHttpClientBuilder配置 **/
+        /** OkHttp常用配置 **/
         public @NonNull Builder debug(@NonNull String tag, @NonNull LogInterceptor.LogLevel logLevel) {
             LogInterceptor logInterceptor = new LogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
@@ -175,8 +167,7 @@ public final class RxHttp {
             return this;
         }
 
-        public @NonNull Builder cookieJar(@NonNull ClearableCookieJar cookieJar) {
-            this.cookieJar = cookieJar;
+        public @NonNull Builder cookieJar(@NonNull CookieJar cookieJar) {
             okHttpClientBuilder.cookieJar(cookieJar);
             return this;
         }

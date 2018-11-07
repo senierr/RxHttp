@@ -2,6 +2,7 @@ package com.senierr.simple.app
 
 import android.app.Application
 import com.senierr.http.RxHttp
+import com.senierr.http.cookie.SPCookieStore
 import com.senierr.http.internal.LogInterceptor
 
 class SessionApplication : Application() {
@@ -32,6 +33,7 @@ class SessionApplication : Application() {
                 .connectTimeout(TIMEOUT)
                 .readTimeout(TIMEOUT)
                 .writeTimeout(TIMEOUT)
+                .cookieJar(SPCookieStore(this).cookieJar)
                 .build()
     }
 }
