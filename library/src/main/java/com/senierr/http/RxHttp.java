@@ -25,8 +25,6 @@ import okhttp3.OkHttpClient;
  */
 public final class RxHttp {
 
-    // 默认超时时间
-    public static final long DEFAULT_TIMEOUT = 30 * 1000;
     // 进度回调最小间隔时长(ms)
     public static final long REFRESH_MIN_INTERVAL = 100;
 
@@ -106,20 +104,18 @@ public final class RxHttp {
         return okHttpClient;
     }
 
-    public final static class Builder {
-        private @NonNull LinkedHashMap<String, String> commonUrlParams;
-        private @NonNull LinkedHashMap<String, String> commonHeaders;
+    public static final class Builder {
+        private @NonNull LinkedHashMap<String, String> commonUrlParams = new LinkedHashMap<>();
+        private @NonNull LinkedHashMap<String, String> commonHeaders = new LinkedHashMap<>();
         private @Nullable ClearableCookieJar cookieJar;
         private @NonNull OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
-            commonUrlParams = new LinkedHashMap<>();
-            commonHeaders = new LinkedHashMap<>();
             okHttpClientBuilder = new OkHttpClient.Builder();
-            okHttpClientBuilder.connectTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-            okHttpClientBuilder.readTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-            okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-            okHttpClientBuilder.retryOnConnectionFailure(true);
+        }
+
+        public Builder(@NonNull OkHttpClient.Builder okHttpClientBuilder) {
+            this.okHttpClientBuilder = okHttpClientBuilder;
         }
 
         public @NonNull RxHttp build() {
