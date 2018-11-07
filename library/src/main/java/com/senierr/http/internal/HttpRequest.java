@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -44,6 +43,10 @@ public final class HttpRequest {
         httpRequest.httpUrl = new HttpUrl(url);
         httpRequest.httpHeaders = new HttpHeaders();
         httpRequest.httpRequestBody = new HttpRequestBody();
+        // 添加公共URL参数
+        httpRequest.addUrlParams(rxHttp.getCommonUrlParams());
+        // 添加公共请求头
+        httpRequest.addHeaders(rxHttp.getCommonHeaders());
         return httpRequest;
     }
 

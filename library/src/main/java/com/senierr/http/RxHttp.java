@@ -77,12 +77,7 @@ public final class RxHttp {
 
     /** 自定义请求 **/
     public @NonNull HttpRequest method(@NonNull HttpMethod method, @NonNull String urlStr) {
-        HttpRequest httpRequest = HttpRequest.newHttpRequest(this, method, urlStr);
-        // 添加公共URL参数
-        httpRequest.addUrlParams(commonUrlParams);
-        // 添加公共请求头
-        httpRequest.addHeaders(commonHeaders);
-        return httpRequest;
+        return HttpRequest.newHttpRequest(this, method, urlStr);
     }
 
     public @NonNull LinkedHashMap<String, String> getCommonUrlParams() {
