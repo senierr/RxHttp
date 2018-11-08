@@ -52,9 +52,9 @@ public final class HttpRequest {
                                                       @NonNull String url) {
         HttpRequest httpRequest = new HttpRequest(rxHttp, httpMethod, new HttpUrl(url));
         // 添加公共URL参数
-        httpRequest.addUrlParams(rxHttp.getCommonUrlParams());
+        httpRequest.addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
-        httpRequest.addHeaders(rxHttp.getCommonHeaders());
+        httpRequest.addHeaders(rxHttp.getBaseHeaders());
         return httpRequest;
     }
 

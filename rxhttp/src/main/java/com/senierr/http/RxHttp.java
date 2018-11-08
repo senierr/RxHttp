@@ -28,16 +28,16 @@ public final class RxHttp {
     // 进度回调最小间隔时长(ms)
     public static final long REFRESH_MIN_INTERVAL = 100;
 
-    // 公共请求参数
-    private @NonNull LinkedHashMap<String, String> commonUrlParams;
-    // 公共请求头
-    private @NonNull LinkedHashMap<String, String> commonHeaders;
+    // 基础请求参数
+    private @NonNull LinkedHashMap<String, String> baseUrlParams;
+    // 基础请求头
+    private @NonNull LinkedHashMap<String, String> baseHeaders;
     // 网络请求器
     private @NonNull OkHttpClient okHttpClient;
 
     private RxHttp(Builder builder) {
-        this.commonUrlParams = builder.commonUrlParams;
-        this.commonHeaders = builder.commonHeaders;
+        this.baseUrlParams = builder.baseUrlParams;
+        this.baseHeaders = builder.baseHeaders;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -81,12 +81,12 @@ public final class RxHttp {
         return HttpRequest.newHttpRequest(this, method, urlStr);
     }
 
-    public @NonNull LinkedHashMap<String, String> getCommonUrlParams() {
-        return commonUrlParams;
+    public @NonNull LinkedHashMap<String, String> getBaseUrlParams() {
+        return baseUrlParams;
     }
 
-    public @NonNull LinkedHashMap<String, String> getCommonHeaders() {
-        return commonHeaders;
+    public @NonNull LinkedHashMap<String, String> getBaseHeaders() {
+        return baseHeaders;
     }
 
     public @NonNull OkHttpClient getOkHttpClient() {
@@ -94,8 +94,8 @@ public final class RxHttp {
     }
 
     public static final class Builder {
-        private @NonNull LinkedHashMap<String, String> commonUrlParams = new LinkedHashMap<>();
-        private @NonNull LinkedHashMap<String, String> commonHeaders = new LinkedHashMap<>();
+        private @NonNull LinkedHashMap<String, String> baseUrlParams = new LinkedHashMap<>();
+        private @NonNull LinkedHashMap<String, String> baseHeaders = new LinkedHashMap<>();
         private @NonNull OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -111,23 +111,23 @@ public final class RxHttp {
         }
 
         /** 自定义配置 **/
-        public @NonNull Builder addCommonUrlParam(@NonNull String key, @NonNull String value) {
-            commonUrlParams.put(key, value);
+        public @NonNull Builder addBaseUrlParam(@NonNull String key, @NonNull String value) {
+            baseUrlParams.put(key, value);
             return this;
         }
 
-        public @NonNull Builder addCommonUrlParams(@NonNull LinkedHashMap<String, String> params) {
-            commonUrlParams.putAll(params);
+        public @NonNull Builder addBaseUrlParams(@NonNull LinkedHashMap<String, String> params) {
+            baseUrlParams.putAll(params);
             return this;
         }
 
-        public @NonNull Builder addCommonHeader(@NonNull String key, @NonNull String value) {
-            commonHeaders.put(key, value);
+        public @NonNull Builder addBaseHeader(@NonNull String key, @NonNull String value) {
+            baseHeaders.put(key, value);
             return this;
         }
 
-        public @NonNull Builder addCommonHeaders(@NonNull LinkedHashMap<String, String> headers) {
-            commonHeaders.putAll(headers);
+        public @NonNull Builder addBaseHeaders(@NonNull LinkedHashMap<String, String> headers) {
+            baseHeaders.putAll(headers);
             return this;
         }
 
