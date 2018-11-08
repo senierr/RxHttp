@@ -66,6 +66,11 @@ public final class RxHttp {
         return method(HttpMethod.PUT, urlStr);
     }
 
+    /** patch请求 */
+    public @NonNull HttpRequest patch(@NonNull String urlStr) {
+        return method(HttpMethod.PATCH, urlStr);
+    }
+
     /** options请求 */
     public @NonNull HttpRequest options(@NonNull String urlStr) {
         return method(HttpMethod.OPTIONS, urlStr);

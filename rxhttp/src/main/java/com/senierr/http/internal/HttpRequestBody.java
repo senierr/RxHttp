@@ -16,13 +16,6 @@ import okhttp3.RequestBody;
 /**
  * Http请求体
  *
- * 规则优先级：
- *  1. requestBody
- *  2. multipart
- *  3. form
- *  4. string
- *  5. byte
- *
  * @author zhouchunjie
  * @date 2018/8/29
  */
