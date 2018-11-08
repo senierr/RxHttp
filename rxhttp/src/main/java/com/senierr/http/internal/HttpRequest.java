@@ -15,7 +15,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 /**
- * 请求工厂类
+ * HTTP请求类
  *
  * @author zhouchunjie
  * @date 2017/3/27
@@ -31,18 +31,21 @@ public final class HttpRequest {
     private @Nullable OnProgressListener onUploadListener;      // 上传进度监听
     private @Nullable OnProgressListener onDownloadListener;    // 下载进度监听
 
-    private HttpRequest() {}
+    private HttpRequest(@NonNull RxHttp rxHttp,
+                       @NonNull HttpMethod httpMethod,
+                       @NonNull HttpUrl httpUrl) {
+        this.rxHttp = rxHttp;
+        this.httpMethod = httpMethod;
+        this.httpUrl = httpUrl;
+        this.httpHeaders = new HttpHeaders();
+        this.httpRequestBody = new HttpRequestBody();
+    }
 
     /** 安全创建实例 */
     public static @NonNull HttpRequest newHttpRequest(@NonNull RxHttp rxHttp,
                                                       @NonNull HttpMethod httpMethod,
                                                       @NonNull String url) {
-        HttpRequest httpRequest = new HttpRequest();
-        httpRequest.rxHttp = rxHttp;
-        httpRequest.httpMethod = httpMethod;
-        httpRequest.httpUrl = new HttpUrl(url);
-        httpRequest.httpHeaders = new HttpHeaders();
-        httpRequest.httpRequestBody = new HttpRequestBody();
+        HttpRequest httpRequest = new HttpRequest(rxHttp, httpMethod, new HttpUrl(url));
         // 添加公共URL参数
         httpRequest.addUrlParams(rxHttp.getCommonUrlParams());
         // 添加公共请求头
