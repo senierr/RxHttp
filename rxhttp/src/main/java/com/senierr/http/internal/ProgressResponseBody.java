@@ -1,7 +1,5 @@
 package com.senierr.http.internal;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -9,7 +7,6 @@ import com.senierr.http.RxHttp;
 
 import java.io.IOException;
 
-import io.reactivex.disposables.Disposable;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -19,7 +16,7 @@ import okio.Okio;
 import okio.Source;
 
 /**
- * 带进度回调的响应体
+ * 封装进度回调的响应体
  *
  * @author zhouchunjie
  * @date 2017/9/9
@@ -29,16 +26,11 @@ public final class ProgressResponseBody extends ResponseBody {
     private @NonNull ResponseBody delegate;
     private @Nullable BufferedSource bufferedSource;
     private @NonNull OnProgressListener listener;
-    private @NonNull Disposable disposable;
-    private @NonNull Handler uiScheduler;
 
     public ProgressResponseBody(@NonNull ResponseBody responseBody,
-                                @NonNull OnProgressListener listener,
-                                @NonNull Disposable disposable) {
+                                @NonNull OnProgressListener listener) {
         this.delegate = responseBody;
         this.listener = listener;
-        this.disposable = disposable;
-        uiScheduler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -72,10 +64,6 @@ public final class ProgressResponseBody extends ResponseBody {
         @Override
         public long read(Buffer sink, long byteCount) throws IOException {
             long bytesRead = super.read(sink, byteCount);
-            if (disposable.isDisposed()) {
-                return bytesRead;
-            }
-
             if (contentLength <= 0) {
                 contentLength = contentLength();
             }
@@ -83,21 +71,13 @@ public final class ProgressResponseBody extends ResponseBody {
             totalBytesRead += bytesRead != -1 ? bytesRead : 0;
             final long curTime = System.currentTimeMillis();
             if (curTime - lastRefreshTime >= RxHttp.REFRESH_MIN_INTERVAL || totalBytesRead == contentLength) {
-                if (!disposable.isDisposed()) {
-                    uiScheduler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (disposable.isDisposed()) return;
-                            int percent;
-                            if (contentLength <= 0) {
-                                percent = 100;
-                            } else {
-                                percent = (int) (totalBytesRead * 100 / contentLength);
-                            }
-                            listener.onProgress(new Progress(contentLength, totalBytesRead, percent, curTime));
-                        }
-                    });
+                int percent;
+                if (contentLength <= 0) {
+                    percent = 100;
+                } else {
+                    percent = (int) (totalBytesRead * 100 / contentLength);
                 }
+                listener.onProgress(new Progress(Progress.TYPE_DOWNLOAD, contentLength, totalBytesRead, percent));
                 lastRefreshTime = System.currentTimeMillis();
             }
             return bytesRead;

@@ -6,6 +6,7 @@ import com.senierr.http.internal.OnProgressListener
 import com.senierr.http.internal.Response
 import com.senierr.simple.app.SessionApplication
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
 
 /**
@@ -60,6 +61,7 @@ class CloudFileService {
                 .post("$API_FILE_SERVICE/${file.name}")
                 .setRequestBody4File(file)
                 .setOnUploadListener(onUploadListener)
+                .setProgressOn(AndroidSchedulers.mainThread())
                 .execute(BmobObjectConverter(BmobFile::class.java))
                 .flatMap {
                     return@flatMap insert(it.body())
@@ -70,6 +72,7 @@ class CloudFileService {
         return SessionApplication.application.dataHttp
                 .get(url)
                 .setOnDownloadListener(onDownloadListener)
+                .setProgressOn(AndroidSchedulers.mainThread())
                 .execute(FileConverter(destFile))
     }
 }

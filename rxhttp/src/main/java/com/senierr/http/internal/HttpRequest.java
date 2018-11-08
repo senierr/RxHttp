@@ -10,7 +10,10 @@ import java.io.File;
 import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -23,13 +26,14 @@ import okhttp3.RequestBody;
 public final class HttpRequest {
 
     private @NonNull RxHttp rxHttp;
-    private @NonNull HttpMethod httpMethod;                  // 请求方法
-    private @NonNull HttpUrl httpUrl;                        // 请求URL
-    private @NonNull HttpHeaders httpHeaders;                // 请求头
-    private @NonNull HttpRequestBody httpRequestBody;        // 请求体
+    @NonNull HttpMethod httpMethod;                  // 请求方法
+    @NonNull HttpUrl httpUrl;                        // 请求URL
+    @NonNull HttpHeaders httpHeaders;                // 请求头
+    @NonNull HttpRequestBody httpRequestBody;        // 请求体
 
-    private @Nullable OnProgressListener onUploadListener;      // 上传进度监听
-    private @Nullable OnProgressListener onDownloadListener;    // 下载进度监听
+    @Nullable OnProgressListener onUploadListener;      // 上传进度监听
+    @Nullable OnProgressListener onDownloadListener;    // 下载进度监听
+    @NonNull Scheduler progressScheduler;               // 进度线程
 
     private HttpRequest(@NonNull RxHttp rxHttp,
                        @NonNull HttpMethod httpMethod,
@@ -39,6 +43,7 @@ public final class HttpRequest {
         this.httpUrl = httpUrl;
         this.httpHeaders = new HttpHeaders();
         this.httpRequestBody = new HttpRequestBody();
+        progressScheduler = Schedulers.io();
     }
 
     /** 安全创建实例 */
@@ -238,29 +243,59 @@ public final class HttpRequest {
         return this;
     }
 
-    /** 创建请求 */
+    /**
+     * 设置进度回调线程
+     */
+    public @NonNull HttpRequest setProgressOn(Scheduler scheduler) {
+        this.progressScheduler = scheduler;
+        return this;
+    }
+
+    /** 创建OkHttp请求 */
     public @NonNull Request generateRequest() {
-        return generateRequest(null, null);
-    }
-
-    /** 执行请求 */
-    public @NonNull <T> Observable<Response<T>> execute(@NonNull Converter<T> converter) {
-        return new ExecuteObservable<>(rxHttp, this, converter, onUploadListener, onDownloadListener);
-    }
-
-    /** 创建请求 */
-    @NonNull Request generateRequest(@Nullable OnProgressListener onUploadListener, @Nullable Disposable disposable) {
         Request.Builder requestBuilder = new Request.Builder();
-        // 封装RequestBody
+        // 封装method
         RequestBody requestBody = httpRequestBody.generateRequestBody();
-        if (requestBody != null && disposable != null && onUploadListener != null) {
-            requestBody = new ProgressRequestBody(requestBody, onUploadListener, disposable);
-        }
         requestBuilder.method(httpMethod.value(), requestBody);
         // 封装URL
         requestBuilder.url(httpUrl.generateUrl());
         // 封装Header
         requestBuilder.headers(httpHeaders.generateHeaders());
         return requestBuilder.build();
+    }
+
+    /** 执行请求 */
+    public @NonNull <T> Observable<Response<T>> execute(@NonNull Converter<T> converter) {
+        return new ExecuteObservable<>(rxHttp, this, converter)
+                .subscribeOn(Schedulers.io())   // 指定网络请求线程
+                .observeOn(progressScheduler)   // 指定进度回调线程
+                .filter(new Predicate<Object>() {
+                    @Override
+                    public boolean test(Object result) throws Exception {
+                        // 上传进度过滤
+                        if (onUploadListener != null) {
+                            if (result instanceof Progress && ((Progress) result).type() == Progress.TYPE_UPLOAD) {
+                                onUploadListener.onProgress((Progress) result);
+                                return false;
+                            }
+                        }
+                        // 下载进度过滤
+                        if (onDownloadListener != null) {
+                            if (result instanceof Progress && ((Progress) result).type() == Progress.TYPE_DOWNLOAD) {
+                                onDownloadListener.onProgress((Progress) result);
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                })
+                .ofType(Response.class) // 过滤解析结果
+                .observeOn(Schedulers.io()) // 切回IO线程
+                .map(new Function<Object, Response<T>>() {
+                    @Override @SuppressWarnings("unchecked")
+                    public Response<T> apply(Object o) throws Exception {
+                        return (Response<T>) o;
+                    }
+                });
     }
 }
