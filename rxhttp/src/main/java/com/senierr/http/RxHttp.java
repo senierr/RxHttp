@@ -2,7 +2,6 @@ package com.senierr.http;
 
 import android.support.annotation.NonNull;
 
-import com.senierr.http.https.SSLFactory;
 import com.senierr.http.internal.HttpMethod;
 import com.senierr.http.internal.HttpRequest;
 import com.senierr.http.internal.LogInterceptor;
@@ -11,6 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
@@ -157,8 +158,9 @@ public final class RxHttp {
             return this;
         }
 
-        public @NonNull Builder sslFactory(@NonNull SSLFactory sslFactory) {
-            okHttpClientBuilder.sslSocketFactory(sslFactory.getsSLSocketFactory(), sslFactory.getTrustManager());
+        public @NonNull Builder sslSocketFactory(@NonNull SSLSocketFactory sslSocketFactory,
+                                           @NonNull X509TrustManager trustManager) {
+            okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager);
             return this;
         }
 
