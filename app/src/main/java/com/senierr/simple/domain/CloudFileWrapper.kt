@@ -4,7 +4,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import com.senierr.adapter.internal.RVHolder
+import com.senierr.adapter.internal.ViewHolder
 import com.senierr.adapter.internal.ViewHolderWrapper
 import com.senierr.simple.R
 import com.senierr.simple.remote.CloudFile
@@ -19,14 +19,14 @@ class CloudFileWrapper : ViewHolderWrapper<CloudFile>() {
 
     val statusMap : MutableMap<Int, DownloadProgress> = mutableMapOf()
 
-    override fun onCreateViewHolder(p0: ViewGroup): RVHolder {
-        return RVHolder.create(p0, R.layout.item_file)
+    override fun onCreateViewHolder(p0: ViewGroup): ViewHolder {
+        return ViewHolder.create(p0, R.layout.item_file)
     }
 
-    override fun onBindViewHolder(p0: RVHolder, p1: CloudFile) {
-        val tvName = p0.getView<TextView>(R.id.tv_name)
-        val pbBar = p0.getView<ProgressBar>(R.id.pb_bar)
-        val btnOperate = p0.getView<Button>(R.id.btn_operate)
+    override fun onBindViewHolder(p0: ViewHolder, p1: CloudFile) {
+        val tvName = p0.findView<TextView>(R.id.tv_name)
+        val pbBar = p0.findView<ProgressBar>(R.id.pb_bar)
+        val btnOperate = p0.findView<Button>(R.id.btn_operate)
 
         var downloadProgress = statusMap[p0.layoutPosition]
         if (downloadProgress == null) {

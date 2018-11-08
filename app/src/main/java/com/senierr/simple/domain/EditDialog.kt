@@ -26,7 +26,7 @@ class EditDialog(
         setContentView(R.layout.dialog_edit)
         setCancelable(true)
         setCanceledOnTouchOutside(true)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
 
         btn_cancel.setOnClickListener {

@@ -5,12 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
-import android.view.View
 import com.senierr.adapter.internal.MultiTypeAdapter
-import com.senierr.adapter.internal.RVHolder
-import com.senierr.adapter.internal.ViewHolderWrapper
 import com.senierr.http.internal.OnProgressListener
-import com.senierr.http.internal.Progress
 import com.senierr.permission.CheckCallback
 import com.senierr.permission.PermissionManager
 import com.senierr.simple.R
@@ -81,19 +77,17 @@ class CloudFileActivity : BaseActivity() {
             startActivityForResult(intent, REQUEST_CODE_PICK_FILE)
         }
 
-        cloudFileWrapper.setOnItemChildClickListener(R.id.btn_operate,
-                object : ViewHolderWrapper.OnItemChildClickListener() {
-            override fun onClick(viewHolder: RVHolder?, view: View?, position: Int) {
-                val downloadProgress = cloudFileWrapper.statusMap[position]
-                when (downloadProgress!!.status) {
-                    DownloadProgress.STATUS_UN_DOWNLOAD -> download(position)
-                    DownloadProgress.STATUS_DOWNLOADING -> cancelDownload(position)
-                    DownloadProgress.STATUS_PAUSE -> download(position)
-                    DownloadProgress.STATUS_COMPLETED -> download(position)
-                }
+        cloudFileWrapper.setOnChildClickListener(R.id.btn_operate) {
+            _, _, position, _ ->
+            val downloadProgress = cloudFileWrapper.statusMap[position]
+            when (downloadProgress!!.status) {
+                DownloadProgress.STATUS_UN_DOWNLOAD -> download(position)
+                DownloadProgress.STATUS_DOWNLOADING -> cancelDownload(position)
+                DownloadProgress.STATUS_PAUSE -> download(position)
+                DownloadProgress.STATUS_COMPLETED -> download(position)
             }
-        })
-        multiTypeAdapter.bind(CloudFile::class.java, cloudFileWrapper)
+        }
+        multiTypeAdapter.register(CloudFile::class.java, cloudFileWrapper)
 
         rv_files.layoutManager = LinearLayoutManager(this)
         rv_files.adapter = multiTypeAdapter
@@ -107,8 +101,8 @@ class CloudFileActivity : BaseActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    multiTypeAdapter.dataList.clear()
-                    multiTypeAdapter.dataList.addAll(it)
+                    multiTypeAdapter.data.clear()
+                    multiTypeAdapter.data.addAll(it)
                     multiTypeAdapter.notifyDataSetChanged()
                 }, {
                     if (it is BmobError) {
@@ -155,7 +149,7 @@ class CloudFileActivity : BaseActivity() {
      * 下载
      */
     private fun download(position: Int) {
-        val cloudFile = multiTypeAdapter.dataList[position] as CloudFile
+        val cloudFile = multiTypeAdapter.data[position] as CloudFile
         val destFile = File(externalCacheDir, cloudFile.filename)
 
         cloudFileService.download(cloudFile.url, destFile, OnProgressListener {

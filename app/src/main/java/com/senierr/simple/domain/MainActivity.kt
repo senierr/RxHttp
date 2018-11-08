@@ -6,7 +6,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.ViewGroup
 import android.widget.TextView
 import com.senierr.adapter.internal.MultiTypeAdapter
-import com.senierr.adapter.internal.RVHolder
+import com.senierr.adapter.internal.ViewHolder
 import com.senierr.adapter.internal.ViewHolderWrapper
 import com.senierr.simple.R
 import com.senierr.simple.remote.BmobError
@@ -45,34 +45,31 @@ class MainActivity : BaseActivity() {
         }
 
         val noteWrapper = object : ViewHolderWrapper<Note>() {
-            override fun onCreateViewHolder(p0: ViewGroup): RVHolder {
-                return RVHolder.create(p0, R.layout.item_note)
+            override fun onCreateViewHolder(p0: ViewGroup): ViewHolder {
+                return ViewHolder.create(p0, R.layout.item_note)
             }
 
-            override fun onBindViewHolder(p0: RVHolder, p1: Note) {
-                val tvContent = p0.getView<TextView>(R.id.tv_content)
-                val tvDate = p0.getView<TextView>(R.id.tv_date)
+            override fun onBindViewHolder(p0: ViewHolder, p1: Note) {
+                val tvContent = p0.findView<TextView>(R.id.tv_content)
+                val tvDate = p0.findView<TextView>(R.id.tv_date)
 
                 tvContent.text = p1.content
                 tvDate.text = p1.updatedAt
             }
         }
 
-        noteWrapper.onItemClickListener = object : ViewHolderWrapper.OnItemClickListener() {
-            override fun onClick(viewHolder: RVHolder?, position: Int) {
-                val note = multiTypeAdapter.dataList[position] as Note
-                insertOrReplace(note)
-            }
-
-            override fun onLongClick(viewHolder: RVHolder?, position: Int): Boolean {
-                val note = multiTypeAdapter.dataList[position] as Note
-                note.objectId?.let {
-                    delete(it)
-                }
-                return true
-            }
+        noteWrapper.setOnItemClickListener { _, _, t ->
+            insertOrReplace(t)
         }
-        multiTypeAdapter.bind(Note::class.java, noteWrapper)
+
+        noteWrapper.setOnItemLongClickListener { _, _, t ->
+            t.objectId?.let {
+                delete(it)
+            }
+            return@setOnItemLongClickListener true
+        }
+
+        multiTypeAdapter.register(Note::class.java, noteWrapper)
 
         rv_notes.layoutManager = LinearLayoutManager(this)
         rv_notes.adapter = multiTypeAdapter
@@ -86,8 +83,8 @@ class MainActivity : BaseActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    multiTypeAdapter.dataList.clear()
-                    multiTypeAdapter.dataList.addAll(it)
+                    multiTypeAdapter.data.clear()
+                    multiTypeAdapter.data.addAll(it)
                     multiTypeAdapter.notifyDataSetChanged()
                 }, {
                     if (it is BmobError) {
