@@ -25,15 +25,18 @@ import okhttp3.RequestBody;
  */
 public final class HttpRequest {
 
+    private Scheduler defaultScheduler = Schedulers.io();   // 默认线程
+
     private @NonNull RxHttp rxHttp;
     @NonNull HttpMethod httpMethod;                  // 请求方法
     @NonNull HttpUrl httpUrl;                        // 请求URL
     @NonNull HttpHeaders httpHeaders;                // 请求头
     @NonNull HttpRequestBody httpRequestBody;        // 请求体
 
-    @Nullable OnProgressListener onUploadListener;      // 上传进度监听
-    @Nullable OnProgressListener onDownloadListener;    // 下载进度监听
-    @NonNull Scheduler progressScheduler;               // 进度线程
+    private @NonNull Scheduler uploadListenerScheduler;     // 上传监听线程
+    private @NonNull Scheduler downloadListenerScheduler;   // 下载监听线程
+    @Nullable OnProgressListener onUploadListener;          // 上传监听
+    @Nullable OnProgressListener onDownloadListener;        // 下载监听
 
     private HttpRequest(@NonNull RxHttp rxHttp,
                        @NonNull HttpMethod httpMethod,
@@ -43,7 +46,8 @@ public final class HttpRequest {
         this.httpUrl = httpUrl;
         this.httpHeaders = new HttpHeaders();
         this.httpRequestBody = new HttpRequestBody();
-        progressScheduler = Schedulers.io();
+        uploadListenerScheduler = defaultScheduler;
+        downloadListenerScheduler = defaultScheduler;
     }
 
     /** 安全创建实例 */
@@ -244,10 +248,18 @@ public final class HttpRequest {
     }
 
     /**
-     * 设置进度回调线程
+     * 设置上传监听线程
      */
-    public @NonNull HttpRequest setProgressOn(Scheduler scheduler) {
-        this.progressScheduler = scheduler;
+    public @NonNull HttpRequest setUploadListenerOn(Scheduler scheduler) {
+        this.uploadListenerScheduler = scheduler;
+        return this;
+    }
+
+    /**
+     * 设置下载监听线程
+     */
+    public @NonNull HttpRequest setDownloadListenerOn(Scheduler scheduler) {
+        this.downloadListenerScheduler = scheduler;
         return this;
     }
 
@@ -267,24 +279,29 @@ public final class HttpRequest {
     /** 执行请求 */
     public @NonNull <T> Observable<Response<T>> execute(@NonNull Converter<T> converter) {
         return new ExecuteObservable<>(rxHttp, this, converter)
-                .subscribeOn(Schedulers.io())   // 指定网络请求线程
-                .observeOn(progressScheduler)   // 指定进度回调线程
+                .subscribeOn(defaultScheduler)  // 指定网络请求为IO线程
+                .observeOn(uploadListenerScheduler)
                 .filter(new Predicate<Object>() {
                     @Override
                     public boolean test(Object result) throws Exception {
                         // 上传进度过滤
-                        if (onUploadListener != null) {
-                            if (result instanceof Progress && ((Progress) result).type() == Progress.TYPE_UPLOAD) {
-                                onUploadListener.onProgress((Progress) result);
-                                return false;
-                            }
+                        if (onUploadListener != null && result instanceof Progress
+                                && ((Progress) result).type() == Progress.TYPE_UPLOAD) {
+                            onUploadListener.onProgress((Progress) result);
+                            return false;
                         }
+                        return true;
+                    }
+                })
+                .observeOn(downloadListenerScheduler)
+                .filter(new Predicate<Object>() {
+                    @Override
+                    public boolean test(Object result) throws Exception {
                         // 下载进度过滤
-                        if (onDownloadListener != null) {
-                            if (result instanceof Progress && ((Progress) result).type() == Progress.TYPE_DOWNLOAD) {
-                                onDownloadListener.onProgress((Progress) result);
-                                return false;
-                            }
+                        if (onDownloadListener != null && result instanceof Progress
+                                && ((Progress) result).type() == Progress.TYPE_DOWNLOAD) {
+                            onDownloadListener.onProgress((Progress) result);
+                            return false;
                         }
                         return true;
                     }

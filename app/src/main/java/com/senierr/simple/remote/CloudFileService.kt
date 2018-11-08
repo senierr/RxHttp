@@ -61,7 +61,7 @@ class CloudFileService {
                 .post("$API_FILE_SERVICE/${file.name}")
                 .setRequestBody4File(file)
                 .setOnUploadListener(onUploadListener)
-                .setProgressOn(AndroidSchedulers.mainThread())
+                .setUploadListenerOn(AndroidSchedulers.mainThread())
                 .execute(BmobObjectConverter(BmobFile::class.java))
                 .flatMap {
                     return@flatMap insert(it.body())
@@ -72,7 +72,7 @@ class CloudFileService {
         return SessionApplication.application.dataHttp
                 .get(url)
                 .setOnDownloadListener(onDownloadListener)
-                .setProgressOn(AndroidSchedulers.mainThread())
+                .setDownloadListenerOn(AndroidSchedulers.mainThread())
                 .execute(FileConverter(destFile))
     }
 }
