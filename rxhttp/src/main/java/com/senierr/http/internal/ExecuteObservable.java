@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 
+import java.io.IOException;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -16,7 +18,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 
-final class ExecuteObservable<T> extends Observable<Object> {
+final class ExecuteObservable<T> extends Observable<Response<T>> {
 
     private @NonNull RxHttp rxHttp;
     private @NonNull HttpRequest httpRequest;
@@ -31,7 +33,7 @@ final class ExecuteObservable<T> extends Observable<Object> {
     }
 
     @Override
-    protected void subscribeActual(final Observer<? super Object> observer) {
+    protected void subscribeActual(final Observer<? super Response<T>> observer) {
         final CallDisposable disposable = new CallDisposable();
         observer.onSubscribe(disposable);
         if (disposable.isDisposed()) {
@@ -40,46 +42,11 @@ final class ExecuteObservable<T> extends Observable<Object> {
 
         boolean terminated = false;
         try {
-            // 创建Request
-            Request.Builder requestBuilder = new Request.Builder();
-            RequestBody requestBody = httpRequest.httpRequestBody.generateRequestBody();
-            if (requestBody != null && httpRequest.onUploadListener != null) {
-                requestBody = new ProgressRequestBody(requestBody, new OnProgressListener() {
-                    @Override
-                    public void onProgress(@NonNull Progress progress) {
-                        if (!disposable.isDisposed()) {
-                            observer.onNext(progress);
-                        }
-                    }
-                });
-            }
-            requestBuilder.method(httpRequest.httpMethod.value(), requestBody);
-            requestBuilder.url(httpRequest.httpUrl.generateUrl());
-            requestBuilder.headers(httpRequest.httpHeaders.generateHeaders());
-            Request request = requestBuilder.build();
-            // 创建Call
-            Call call = rxHttp.getOkHttpClient().newCall(request);
-            disposable.call = call;
-            // 发送请求
-            okhttp3.Response rawResponse = call.execute();
-            ResponseBody responseBody = rawResponse.body();
-            if (responseBody != null && httpRequest.onDownloadListener != null) {
-                rawResponse = rawResponse.newBuilder()
-                        .body(new ProgressResponseBody(responseBody, new OnProgressListener() {
-                            @Override
-                            public void onProgress(@NonNull Progress progress) {
-                                if (!disposable.isDisposed()) {
-                                    observer.onNext(progress);
-                                }
-                            }
-                        }))
-                        .build();
-            }
-            // 解析请求
-            T t = converter.convertResponse(rawResponse);
+            okhttp3.Response rawResponse = postRequest(observer, disposable);
+            T t = convertResponse(rawResponse, observer, disposable);
 
             if (!disposable.isDisposed()) {
-                Response<T> response = new Response<>(call, rawResponse, t);
+                Response<T> response = new Response<>(rawResponse, t);
                 observer.onNext(response);
             }
             if (!disposable.isDisposed()) {
@@ -99,6 +66,55 @@ final class ExecuteObservable<T> extends Observable<Object> {
                 }
             }
         }
+    }
+
+    /**
+     * 发送请求
+     */
+    private okhttp3.Response postRequest(final Observer observer,
+                                         final CallDisposable disposable) throws IOException {
+        Request rawRequest = httpRequest.generateRequest();
+        String method = rawRequest.method();
+        RequestBody requestBody = rawRequest.body();
+        if (requestBody != null && observer instanceof ProgressObserver) {
+            requestBody = new ProgressRequestBody(requestBody, new OnProgressListener() {
+                @Override
+                public void onProgress(@NonNull Progress progress) {
+                    if (!disposable.isDisposed()) {
+                        ((ProgressObserver) observer).onUpload(progress);
+                    }
+                }
+            });
+        }
+        Request request = rawRequest.newBuilder()
+                .method(method, requestBody)
+                .build();
+
+        Call call = rxHttp.getOkHttpClient().newCall(request);
+        disposable.call = call;
+        return call.execute();
+    }
+
+    /**
+     * 解析结果
+     */
+    private T convertResponse(okhttp3.Response rawResponse,
+                              final Observer observer,
+                              final CallDisposable disposable) throws Throwable {
+        ResponseBody responseBody = rawResponse.body();
+        if (responseBody != null && observer instanceof ProgressObserver) {
+            rawResponse = rawResponse.newBuilder()
+                    .body(new ProgressResponseBody(responseBody, new OnProgressListener() {
+                        @Override
+                        public void onProgress(@NonNull Progress progress) {
+                            if (!disposable.isDisposed()) {
+                                ((ProgressObserver) observer).onDownload(progress);
+                            }
+                        }
+                    }))
+                    .build();
+        }
+        return converter.convertResponse(rawResponse);
     }
 
     private static final class CallDisposable implements Disposable {

@@ -2,7 +2,6 @@ package com.senierr.http.internal;
 
 import android.support.annotation.NonNull;
 
-import okhttp3.Call;
 import okhttp3.Headers;
 
 /**
@@ -13,18 +12,12 @@ import okhttp3.Headers;
  */
 public final class Response<T> {
 
-    private @NonNull Call rawCall;
     private @NonNull okhttp3.Response rawResponse;
     private @NonNull T body;
 
-    public Response(@NonNull Call rawCall, @NonNull okhttp3.Response rawResponse, @NonNull T body) {
-        this.rawCall = rawCall;
+    public Response(@NonNull okhttp3.Response rawResponse, @NonNull T body) {
         this.rawResponse = rawResponse;
         this.body = body;
-    }
-
-    public @NonNull Call rawCall() {
-        return rawCall;
     }
 
     public @NonNull okhttp3.Response rawResponse() {
