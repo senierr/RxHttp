@@ -28,8 +28,8 @@ class SessionApplication : Application() {
 
         dataHttp = RxHttp.Builder()
                 .debug(DEBUG_TAG, LogInterceptor.LogLevel.BODY)
-                .addCommonHeader(APP_ID_KEY, APP_ID_VALUE)
-                .addCommonHeader(REST_API_KEY, REST_API_VALUE)
+                .addBaseHeader(APP_ID_KEY, APP_ID_VALUE)
+                .addBaseHeader(REST_API_KEY, REST_API_VALUE)
                 .connectTimeout(TIMEOUT)
                 .readTimeout(TIMEOUT)
                 .writeTimeout(TIMEOUT)
