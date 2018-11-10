@@ -26,26 +26,16 @@ public final class RequestBuilder {
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
 
-    private RequestBuilder(@NonNull RxHttp rxHttp,
-                           @NonNull MethodBuilder methodBuilder,
-                           @NonNull UrlBuilder urlBuilder) {
+    public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
-        this.methodBuilder = methodBuilder;
-        this.urlBuilder = urlBuilder;
+        this.methodBuilder = new MethodBuilder(method);
+        this.urlBuilder = new UrlBuilder(url);
         this.headerBuilder = new HeaderBuilder();
         this.requestBodyBuilder = new RequestBodyBuilder();
-    }
-
-    /** 安全创建实例，防止基础参数未设置 */
-    public static @NonNull RequestBuilder newRequestBuilder(@NonNull RxHttp rxHttp,
-                                                            @NonNull MethodBuilder httpMethod,
-                                                            @NonNull UrlBuilder urlBuilder) {
-        RequestBuilder httpRequest = new RequestBuilder(rxHttp, httpMethod, urlBuilder);
         // 添加公共URL参数
-        httpRequest.addUrlParams(rxHttp.getBaseUrlParams());
+        addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
-        httpRequest.addHeaders(rxHttp.getBaseHeaders());
-        return httpRequest;
+        addHeaders(rxHttp.getBaseHeaders());
     }
 
     /** 添加请求参数 */

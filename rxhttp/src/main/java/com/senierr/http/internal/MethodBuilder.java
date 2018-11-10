@@ -10,42 +10,19 @@ import android.support.annotation.NonNull;
  */
 public class MethodBuilder {
 
+    public static final String GET = "GET";
+    public static final String POST = "POST";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
+    public static final String HEAD = "HEAD";
+    public static final String PATCH = "PATCH";
+    public static final String OPTIONS = "OPTIONS";
+    public static final String TRACE = "TRACE";
+
     private @NonNull String value;
 
-    private MethodBuilder(@NonNull String value) {
+    public MethodBuilder(@NonNull String value) {
         this.value = value;
-    }
-
-    public static MethodBuilder get() {
-        return new MethodBuilder("GET");
-    }
-
-    public static MethodBuilder post() {
-        return new MethodBuilder("POST");
-    }
-
-    public static MethodBuilder put() {
-        return new MethodBuilder("PUT");
-    }
-
-    public static MethodBuilder delete() {
-        return new MethodBuilder("DELETE");
-    }
-
-    public static MethodBuilder head() {
-        return new MethodBuilder("HEAD");
-    }
-
-    public static MethodBuilder patch() {
-        return new MethodBuilder("PATCH");
-    }
-
-    public static MethodBuilder options() {
-        return new MethodBuilder("OPTIONS");
-    }
-
-    public static MethodBuilder trace() {
-        return new MethodBuilder("TRACE");
     }
 
     public String build() {

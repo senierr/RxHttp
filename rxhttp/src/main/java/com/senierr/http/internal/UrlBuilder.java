@@ -20,18 +20,19 @@ public final class UrlBuilder {
         urlParams = new LinkedHashMap<>();
     }
 
-    public void addUrlParam(@NonNull String key, @NonNull String value) {
+    public @NonNull UrlBuilder addUrlParam(@NonNull String key, @NonNull String value) {
         urlParams.put(key, value);
+        return this;
     }
 
-    public void addUrlParams(@NonNull LinkedHashMap<String, String> params) {
+    public @NonNull UrlBuilder addUrlParams(@NonNull LinkedHashMap<String, String> params) {
         for (String key : params.keySet()) {
             urlParams.put(key, params.get(key));
         }
+        return this;
     }
 
-    @NonNull
-    public String build() {
+    public @NonNull String build() {
         if (!urlParams.isEmpty()) {
             StringBuilder strParams = new StringBuilder();
             if (baseUrl.contains("?")) {
@@ -55,8 +56,7 @@ public final class UrlBuilder {
         return baseUrl;
     }
 
-    @NonNull
-    public String getBaseUrl() {
+    public @NonNull String getBaseUrl() {
         return baseUrl;
     }
 
@@ -64,8 +64,7 @@ public final class UrlBuilder {
         this.baseUrl = baseUrl;
     }
 
-    @NonNull
-    public LinkedHashMap<String, String> getUrlParams() {
+    public @NonNull LinkedHashMap<String, String> getUrlParams() {
         return urlParams;
     }
 
