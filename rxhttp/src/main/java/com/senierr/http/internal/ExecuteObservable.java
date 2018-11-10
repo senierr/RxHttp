@@ -42,8 +42,17 @@ final class ExecuteObservable<T> extends Observable<Response<T>> {
 
         boolean terminated = false;
         try {
-            okhttp3.Response rawResponse = postRequest(observer, disposable);
-            T t = convertResponse(rawResponse, observer, disposable);
+            // 封装请求
+            Request rawRequest = httpRequest.generateRequest();
+            rawRequest = wrapRequest(rawRequest, observer, disposable);
+            // 请求
+            Call call = rxHttp.getOkHttpClient().newCall(rawRequest);
+            disposable.call = call;
+            okhttp3.Response rawResponse = call.execute();
+            // 封装返回
+            rawResponse = wrapResponse(rawResponse, observer, disposable);
+            // 解析结果
+            T t = converter.convertResponse(rawResponse);
 
             if (!disposable.isDisposed()) {
                 Response<T> response = new Response<>(rawResponse, t);
@@ -69,52 +78,43 @@ final class ExecuteObservable<T> extends Observable<Response<T>> {
     }
 
     /**
-     * 发送请求
+     * 封装请求
      */
-    private okhttp3.Response postRequest(final Observer observer,
-                                         final CallDisposable disposable) throws IOException {
-        Request rawRequest = httpRequest.generateRequest();
-        String method = rawRequest.method();
+    private Request wrapRequest(Request rawRequest, final Observer observer, final CallDisposable disposable) {
         RequestBody requestBody = rawRequest.body();
         if (requestBody != null && observer instanceof ProgressObserver) {
             requestBody = new ProgressRequestBody(requestBody, new OnProgressListener() {
                 @Override
-                public void onProgress(@NonNull Progress progress) {
+                public void onProgress(long totalSize, long currentSize, int percent) {
                     if (!disposable.isDisposed()) {
-                        ((ProgressObserver) observer).onUpload(progress);
+                        ((ProgressObserver) observer).onUpload(totalSize, currentSize, percent);
                     }
                 }
             });
         }
-        Request request = rawRequest.newBuilder()
-                .method(method, requestBody)
+        return rawRequest.newBuilder()
+                .method(rawRequest.method(), requestBody)
                 .build();
-
-        Call call = rxHttp.getOkHttpClient().newCall(request);
-        disposable.call = call;
-        return call.execute();
     }
 
     /**
-     * 解析结果
+     * 封装返回
      */
-    private T convertResponse(okhttp3.Response rawResponse,
-                              final Observer observer,
-                              final CallDisposable disposable) throws Throwable {
+    private okhttp3.Response wrapResponse(okhttp3.Response rawResponse, final Observer observer, final CallDisposable disposable) {
         ResponseBody responseBody = rawResponse.body();
         if (responseBody != null && observer instanceof ProgressObserver) {
-            rawResponse = rawResponse.newBuilder()
-                    .body(new ProgressResponseBody(responseBody, new OnProgressListener() {
-                        @Override
-                        public void onProgress(@NonNull Progress progress) {
-                            if (!disposable.isDisposed()) {
-                                ((ProgressObserver) observer).onDownload(progress);
-                            }
-                        }
-                    }))
-                    .build();
+            responseBody = new ProgressResponseBody(responseBody, new OnProgressListener() {
+                @Override
+                public void onProgress(long totalSize, long currentSize, int percent) {
+                    if (!disposable.isDisposed()) {
+                        ((ProgressObserver) observer).onDownload(totalSize, currentSize, percent);
+                    }
+                }
+            });
         }
-        return converter.convertResponse(rawResponse);
+        return rawResponse.newBuilder()
+                .body(responseBody)
+                .build();
     }
 
     private static final class CallDisposable implements Disposable {

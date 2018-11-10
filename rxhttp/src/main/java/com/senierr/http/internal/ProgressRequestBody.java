@@ -74,7 +74,7 @@ public final class ProgressRequestBody extends RequestBody {
                 } else {
                     percent = (int) (bytesWritten * 100 / contentLength);
                 }
-                listener.onProgress(new Progress(Progress.TYPE_UPLOAD, contentLength, bytesWritten, percent));
+                listener.onProgress(contentLength, bytesWritten, percent);
                 lastRefreshTime = System.currentTimeMillis();
             }
         }

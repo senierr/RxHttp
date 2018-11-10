@@ -11,7 +11,7 @@ import io.reactivex.annotations.NonNull;
  */
 public interface ProgressObserver<T> extends Observer<T> {
 
-    void onUpload(@NonNull Progress progress);
+    void onUpload(long totalSize, long currentSize, int percent);
 
-    void onDownload(@NonNull Progress progress);
+    void onDownload(long totalSize, long currentSize, int percent);
 }

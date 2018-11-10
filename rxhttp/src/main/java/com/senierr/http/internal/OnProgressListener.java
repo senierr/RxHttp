@@ -1,7 +1,5 @@
 package com.senierr.http.internal;
 
-import android.support.annotation.NonNull;
-
 /**
  * 进度回调
  *
@@ -10,5 +8,5 @@ import android.support.annotation.NonNull;
  */
 public interface OnProgressListener {
 
-    void onProgress(@NonNull Progress progress);
+    void onProgress(long totalSize, long currentSize, int percent);
 }

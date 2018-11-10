@@ -77,7 +77,7 @@ public final class ProgressResponseBody extends ResponseBody {
                 } else {
                     percent = (int) (totalBytesRead * 100 / contentLength);
                 }
-                listener.onProgress(new Progress(Progress.TYPE_DOWNLOAD, contentLength, totalBytesRead, percent));
+                listener.onProgress(contentLength, totalBytesRead, percent);
                 lastRefreshTime = System.currentTimeMillis();
             }
             return bytesRead;
