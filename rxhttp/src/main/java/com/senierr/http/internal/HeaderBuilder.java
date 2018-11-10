@@ -8,12 +8,12 @@ import java.util.LinkedHashMap;
 import okhttp3.Headers;
 
 /**
- * Http请求头
+ * Http请求头构建器
  *
  * @author zhouchunjie
  * @date 2018/8/29
  */
-public final class HttpHeaders {
+public final class HeaderBuilder {
 
     private LinkedHashMap<String, String> httpHeaders = new LinkedHashMap<>();
 
@@ -27,7 +27,7 @@ public final class HttpHeaders {
         }
     }
 
-    public @NonNull Headers generateHeaders(){
+    public @NonNull Headers build(){
         Headers.Builder builder = new Headers.Builder();
         for (String key: httpHeaders.keySet()) {
             String value = httpHeaders.get(key);

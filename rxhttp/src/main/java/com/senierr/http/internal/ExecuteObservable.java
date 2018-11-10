@@ -18,22 +18,22 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 
-final class ExecuteObservable<T> extends Observable<Response<T>> {
+final class ExecuteObservable<T> extends Observable<T> {
 
     private @NonNull RxHttp rxHttp;
-    private @NonNull HttpRequest httpRequest;
+    private @NonNull Request rawRequest;
     private @NonNull Converter<T> converter;
 
     ExecuteObservable(@NonNull RxHttp rxHttp,
-                      @NonNull HttpRequest httpRequest,
+                      @NonNull Request request,
                       @NonNull Converter<T> converter) {
         this.rxHttp = rxHttp;
-        this.httpRequest = httpRequest;
+        this.rawRequest = request;
         this.converter = converter;
     }
 
     @Override
-    protected void subscribeActual(final Observer<? super Response<T>> observer) {
+    protected void subscribeActual(final Observer<? super T> observer) {
         final CallDisposable disposable = new CallDisposable();
         observer.onSubscribe(disposable);
         if (disposable.isDisposed()) {
@@ -43,20 +43,17 @@ final class ExecuteObservable<T> extends Observable<Response<T>> {
         boolean terminated = false;
         try {
             // 封装请求
-            Request rawRequest = httpRequest.generateRequest();
-            rawRequest = wrapRequest(rawRequest, observer, disposable);
+            Request request = wrapRequest(rawRequest, observer, disposable);
             // 请求
-            Call call = rxHttp.getOkHttpClient().newCall(rawRequest);
+            Call call = rxHttp.getOkHttpClient().newCall(request);
             disposable.call = call;
             okhttp3.Response rawResponse = call.execute();
             // 封装返回
             rawResponse = wrapResponse(rawResponse, observer, disposable);
             // 解析结果
             T t = converter.convertResponse(rawResponse);
-
             if (!disposable.isDisposed()) {
-                Response<T> response = new Response<>(rawResponse, t);
-                observer.onNext(response);
+                observer.onNext(t);
             }
             if (!disposable.isDisposed()) {
                 terminated = true;

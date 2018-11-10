@@ -14,12 +14,12 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 /**
- * Http请求体
+ * Http请求体构建器
  *
  * @author zhouchunjie
  * @date 2018/8/29
  */
-public final class HttpRequestBody {
+public final class RequestBodyBuilder {
 
     private static final String MEDIA_TYPE_PLAIN = "text/plain; charset=utf-8";
     private static final String MEDIA_TYPE_XML = "text/xml; charset=utf-8";
@@ -90,7 +90,7 @@ public final class HttpRequestBody {
         }
     }
 
-    public @Nullable RequestBody generateRequestBody() {
+    public @Nullable RequestBody build() {
         if (requestBody != null) {
             // 自定义
             return requestBody;
@@ -108,13 +108,17 @@ public final class HttpRequestBody {
             MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
             for (String key: fileParams.keySet()) {
                 File value = fileParams.get(key);
-                RequestBody fileBody = RequestBody.create(guessMimeType(value.getPath()), value);
-                multipartBodybuilder.addFormDataPart(key, value.getName(), fileBody);
+                if (value != null) {
+                    RequestBody fileBody = RequestBody.create(guessMimeType(value.getPath()), value);
+                    multipartBodybuilder.addFormDataPart(key, value.getName(), fileBody);
+                }
             }
             if (!stringParams.isEmpty()) {
                 for (String key: stringParams.keySet()) {
                     String value = stringParams.get(key);
-                    multipartBodybuilder.addFormDataPart(key, value);
+                    if (value != null) {
+                        multipartBodybuilder.addFormDataPart(key, value);
+                    }
                 }
             }
             return multipartBodybuilder.build();
@@ -124,7 +128,9 @@ public final class HttpRequestBody {
                 MultipartBody.Builder multipartBodybuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
                 for (String key: stringParams.keySet()) {
                     String value = stringParams.get(key);
-                    multipartBodybuilder.addFormDataPart(key, value);
+                    if (value != null) {
+                        multipartBodybuilder.addFormDataPart(key, value);
+                    }
                 }
                 return multipartBodybuilder.build();
             } else {
@@ -132,7 +138,9 @@ public final class HttpRequestBody {
                 FormBody.Builder bodyBuilder = new FormBody.Builder();
                 for (String key : stringParams.keySet()) {
                     String value = stringParams.get(key);
-                    bodyBuilder.add(key, value);
+                    if (value != null) {
+                        bodyBuilder.add(key, value);
+                    }
                 }
                 return bodyBuilder.build();
             }

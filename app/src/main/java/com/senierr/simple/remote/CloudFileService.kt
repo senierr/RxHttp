@@ -3,7 +3,6 @@ package com.senierr.simple.remote
 import com.google.gson.Gson
 import com.senierr.http.converter.FileConverter
 import com.senierr.http.internal.OnProgressListener
-import com.senierr.http.internal.Response
 import com.senierr.simple.app.SessionApplication
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers

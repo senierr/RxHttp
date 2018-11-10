@@ -2,9 +2,10 @@ package com.senierr.http;
 
 import android.support.annotation.NonNull;
 
-import com.senierr.http.internal.HttpMethod;
-import com.senierr.http.internal.HttpRequest;
 import com.senierr.http.internal.LogInterceptor;
+import com.senierr.http.internal.MethodBuilder;
+import com.senierr.http.internal.RequestBuilder;
+import com.senierr.http.internal.UrlBuilder;
 
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -42,48 +43,48 @@ public final class RxHttp {
     }
 
     /** get请求 */
-    public @NonNull HttpRequest get(@NonNull String urlStr) {
-        return method(HttpMethod.GET, urlStr);
+    public @NonNull RequestBuilder get(@NonNull String urlStr) {
+        return method(MethodBuilder.get(), urlStr);
     }
 
     /** post请求 */
-    public @NonNull HttpRequest post(@NonNull String urlStr) {
-        return method(HttpMethod.POST, urlStr);
+    public @NonNull RequestBuilder post(@NonNull String urlStr) {
+        return method(MethodBuilder.post(), urlStr);
     }
 
     /** head请求 */
-    public @NonNull HttpRequest head(@NonNull String urlStr) {
-        return method(HttpMethod.HEAD, urlStr);
+    public @NonNull RequestBuilder head(@NonNull String urlStr) {
+        return method(MethodBuilder.head(), urlStr);
     }
 
     /** delete请求 */
-    public @NonNull HttpRequest delete(@NonNull String urlStr) {
-        return method(HttpMethod.DELETE, urlStr);
+    public @NonNull RequestBuilder delete(@NonNull String urlStr) {
+        return method(MethodBuilder.delete(), urlStr);
     }
 
     /** put请求 */
-    public @NonNull HttpRequest put(@NonNull String urlStr) {
-        return method(HttpMethod.PUT, urlStr);
+    public @NonNull RequestBuilder put(@NonNull String urlStr) {
+        return method(MethodBuilder.put(), urlStr);
     }
 
     /** patch请求 */
-    public @NonNull HttpRequest patch(@NonNull String urlStr) {
-        return method(HttpMethod.PATCH, urlStr);
+    public @NonNull RequestBuilder patch(@NonNull String urlStr) {
+        return method(MethodBuilder.patch(), urlStr);
     }
 
     /** options请求 */
-    public @NonNull HttpRequest options(@NonNull String urlStr) {
-        return method(HttpMethod.OPTIONS, urlStr);
+    public @NonNull RequestBuilder options(@NonNull String urlStr) {
+        return method(MethodBuilder.options(), urlStr);
     }
 
     /** trace请求 */
-    public @NonNull HttpRequest trace(@NonNull String urlStr) {
-        return method(HttpMethod.TRACE, urlStr);
+    public @NonNull RequestBuilder trace(@NonNull String urlStr) {
+        return method(MethodBuilder.trace(), urlStr);
     }
 
-    /** 自定义请求 **/
-    public @NonNull HttpRequest method(@NonNull HttpMethod method, @NonNull String urlStr) {
-        return HttpRequest.newHttpRequest(this, method, urlStr);
+    /** 自定义请求 */
+    public @NonNull RequestBuilder method(@NonNull MethodBuilder methodBuilder, @NonNull String urlStr) {
+        return RequestBuilder.newRequestBuilder(this, methodBuilder, new UrlBuilder(urlStr));
     }
 
     public @NonNull LinkedHashMap<String, String> getBaseUrlParams() {
@@ -115,7 +116,7 @@ public final class RxHttp {
             return new RxHttp(this);
         }
 
-        /** 自定义配置 **/
+        /** 自定义配置 */
         public @NonNull Builder addBaseUrlParam(@NonNull String key, @NonNull String value) {
             baseUrlParams.put(key, value);
             return this;
@@ -136,7 +137,7 @@ public final class RxHttp {
             return this;
         }
 
-        /** OkHttp常用配置 **/
+        /** OkHttp常用配置 */
         public @NonNull Builder debug(@NonNull String tag, @NonNull LogInterceptor.LogLevel logLevel) {
             LogInterceptor logInterceptor = new LogInterceptor(tag, logLevel);
             okHttpClientBuilder.addInterceptor(logInterceptor);
@@ -164,7 +165,7 @@ public final class RxHttp {
         }
 
         public @NonNull Builder sslSocketFactory(@NonNull SSLSocketFactory sslSocketFactory,
-                                           @NonNull X509TrustManager trustManager) {
+                                                 @NonNull X509TrustManager trustManager) {
             okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager);
             return this;
         }
