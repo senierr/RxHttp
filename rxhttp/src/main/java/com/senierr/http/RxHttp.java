@@ -2,6 +2,7 @@ package com.senierr.http;
 
 import android.support.annotation.NonNull;
 
+import com.senierr.http.converter.Converter;
 import com.senierr.http.internal.LogInterceptor;
 import com.senierr.http.internal.MethodBuilder;
 import com.senierr.http.internal.RequestBuilder;
@@ -32,12 +33,15 @@ public final class RxHttp {
     private @NonNull LinkedHashMap<String, String> baseUrlParams;
     // 基础请求头
     private @NonNull LinkedHashMap<String, String> baseHeaders;
+    // 数据转换器
+    private @NonNull Converter<?> converter;
     // 网络请求器
     private @NonNull OkHttpClient okHttpClient;
 
     private RxHttp(Builder builder) {
         this.baseUrlParams = builder.baseUrlParams;
         this.baseHeaders = builder.baseHeaders;
+        this.converter = builder.converter;
         okHttpClient = builder.okHttpClientBuilder.build();
     }
 
@@ -94,6 +98,10 @@ public final class RxHttp {
         return baseHeaders;
     }
 
+    public @NonNull Converter<?> getConverter() {
+        return converter;
+    }
+
     public @NonNull OkHttpClient getOkHttpClient() {
         return okHttpClient;
     }
@@ -101,6 +109,7 @@ public final class RxHttp {
     public static final class Builder {
         private @NonNull LinkedHashMap<String, String> baseUrlParams = new LinkedHashMap<>();
         private @NonNull LinkedHashMap<String, String> baseHeaders = new LinkedHashMap<>();
+        private @NonNull Converter<?> converter;
         private @NonNull OkHttpClient.Builder okHttpClientBuilder;
 
         public Builder() {
@@ -133,6 +142,11 @@ public final class RxHttp {
 
         public @NonNull Builder addBaseHeaders(@NonNull LinkedHashMap<String, String> headers) {
             baseHeaders.putAll(headers);
+            return this;
+        }
+
+        public @NonNull Builder setConverter(@NonNull Converter<?> converter) {
+            this.converter = converter;
             return this;
         }
 

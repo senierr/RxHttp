@@ -5,8 +5,6 @@ import android.support.annotation.NonNull;
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 
-import java.io.IOException;
-
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -22,16 +20,17 @@ final class ExecuteObservable<T> extends Observable<T> {
 
     private @NonNull RxHttp rxHttp;
     private @NonNull Request rawRequest;
-    private @NonNull Converter<T> converter;
+    private @NonNull Converter<?> converter;
 
     ExecuteObservable(@NonNull RxHttp rxHttp,
                       @NonNull Request request,
-                      @NonNull Converter<T> converter) {
+                      @NonNull Converter<?> converter) {
         this.rxHttp = rxHttp;
         this.rawRequest = request;
         this.converter = converter;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void subscribeActual(final Observer<? super T> observer) {
         final CallDisposable disposable = new CallDisposable();
@@ -51,7 +50,7 @@ final class ExecuteObservable<T> extends Observable<T> {
             // 封装返回
             rawResponse = wrapResponse(rawResponse, observer, disposable);
             // 解析结果
-            T t = converter.convertResponse(rawResponse);
+            T t = (T) converter.convertResponse(rawResponse);
             if (!disposable.isDisposed()) {
                 observer.onNext(t);
             }

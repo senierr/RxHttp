@@ -21,10 +21,13 @@ import okhttp3.RequestBody;
 public final class RequestBuilder {
 
     private @NonNull RxHttp rxHttp;
+
     private @NonNull MethodBuilder methodBuilder;           // 请求方法构建器
     private @NonNull UrlBuilder urlBuilder;                 // 请求行构建器
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
+
+    private @NonNull Converter<?> converter;
 
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
@@ -36,6 +39,8 @@ public final class RequestBuilder {
         addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
         addHeaders(rxHttp.getBaseHeaders());
+        // 设置数据转换器
+        setConverter(rxHttp.getConverter());
     }
 
     /** 添加请求参数 */
@@ -128,6 +133,12 @@ public final class RequestBuilder {
         return this;
     }
 
+    /** 设置数据转换器 */
+    public @NonNull RequestBuilder setConverter(@NonNull Converter<?> converter) {
+        this.converter = converter;
+        return this;
+    }
+
     /** 创建OkHttp请求 */
     public @NonNull Request build() {
         return new Request.Builder()
@@ -138,7 +149,7 @@ public final class RequestBuilder {
     }
 
     /** 执行请求 */
-    public @NonNull <T> Observable<T> execute(@NonNull Converter<T> converter) {
+    public @NonNull <T> Observable<T> execute() {
         return new ExecuteObservable<>(rxHttp, build(), converter);
     }
 }
