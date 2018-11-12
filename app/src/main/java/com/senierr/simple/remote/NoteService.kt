@@ -20,9 +20,6 @@ class NoteService {
         return SessionApplication.application.dataHttp
                 .get("$API_NOTE/$objectId")
                 .execute(BmobObjectConverter(Note::class.java))
-                .map {
-                    it.body()
-                }
     }
 
     fun getAll(): Observable<MutableList<Note>> {
@@ -31,7 +28,7 @@ class NoteService {
                 .addUrlParam("order", "updatedAt")
                 .execute(BmobArrayConverter(Note::class.java))
                 .map {
-                    it.body().results
+                    it.results
                 }
     }
 
@@ -41,9 +38,6 @@ class NoteService {
                 .post(API_NOTE)
                 .setRequestBody4JSon(Gson().toJson(param))
                 .execute(BmobObjectConverter(BmobInsert::class.java))
-                .map {
-                    it.body()
-                }
     }
 
     fun update(note: Note): Observable<BmobUpdate> {
@@ -52,17 +46,11 @@ class NoteService {
                 .put("$API_NOTE/${note.objectId}")
                 .setRequestBody4JSon(Gson().toJson(param))
                 .execute(BmobObjectConverter(BmobUpdate::class.java))
-                .map {
-                    it.body()
-                }
     }
 
     fun delete(objectId: String): Observable<BmobDelete> {
         return SessionApplication.application.dataHttp
                 .delete("$API_NOTE/$objectId")
                 .execute(BmobObjectConverter(BmobDelete::class.java))
-                .map {
-                    it.body()
-                }
     }
 }

@@ -1,6 +1,7 @@
 package com.senierr.http.internal;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
@@ -28,6 +29,9 @@ public final class RequestBuilder {
     private @NonNull UrlBuilder urlBuilder;                 // 请求行构建器
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
+
+    private @Nullable OnProgressListener onUploadListener;
+    private @Nullable OnProgressListener onDownloadListener;
 
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
@@ -131,6 +135,18 @@ public final class RequestBuilder {
         return this;
     }
 
+    /** 设置上传进度监听 */
+    public @NonNull RequestBuilder setOnUploadListener(@NonNull OnProgressListener onUploadListener) {
+        this.onUploadListener = onUploadListener;
+        return this;
+    }
+
+    /** 设置下载进度监听 */
+    public @NonNull RequestBuilder setOnDownloadListener(@NonNull OnProgressListener onDownloadListener) {
+        this.onDownloadListener = onDownloadListener;
+        return this;
+    }
+
     /** 创建OkHttp请求 */
     public @NonNull Request build() {
         return new Request.Builder()
@@ -142,11 +158,17 @@ public final class RequestBuilder {
 
     /** 执行请求 */
     public @NonNull <T> Observable<T> execute(@NonNull Converter<T> converter) {
-        return new ExecuteObservable<>(rxHttp, build(), converter);
+        ExecuteObservable<T> observable = new ExecuteObservable<>(rxHttp, build(), converter);
+        observable.setOnUploadListener(onUploadListener);
+        observable.setOnDownloadListener(onDownloadListener);
+        return observable;
     }
 
     /** 执行请求 */
     public @NonNull Observable<Response> execute() {
-        return new ExecuteObservable<>(rxHttp, build(), new DefaultConverter());
+        ExecuteObservable<Response> observable = new ExecuteObservable<>(rxHttp, build(), new DefaultConverter());
+        observable.setOnUploadListener(onUploadListener);
+        observable.setOnDownloadListener(onDownloadListener);
+        return observable;
     }
 }

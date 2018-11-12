@@ -124,7 +124,8 @@ class CloudFileActivity : BaseActivity() {
         }
         uploadDialog.show()
         cloudFileService.upload(File(path), OnProgressListener {
-            uploadDialog.updateProgress(it.percent())
+            _, _, percent ->
+            uploadDialog.updateProgress(percent)
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -153,10 +154,11 @@ class CloudFileActivity : BaseActivity() {
         val destFile = File(externalCacheDir, cloudFile.filename)
 
         cloudFileService.download(cloudFile.url, destFile, OnProgressListener {
+            totalSize, currentSize, percent ->
             val downloadProgress = cloudFileWrapper.statusMap[position]
-            downloadProgress?.currentSize = it.currentSize()
-            downloadProgress?.totalSize = it.totalSize()
-            downloadProgress?.percent = it.percent()
+            downloadProgress?.currentSize =currentSize
+            downloadProgress?.totalSize = totalSize
+            downloadProgress?.percent = percent
             downloadProgress?.status = DownloadProgress.STATUS_DOWNLOADING
             multiTypeAdapter.notifyItemChanged(position)
         })
