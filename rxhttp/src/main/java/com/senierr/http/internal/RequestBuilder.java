@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
+import com.senierr.http.converter.DefaultConverter;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -11,6 +12,7 @@ import java.util.LinkedHashMap;
 import io.reactivex.Observable;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * HTTP请求构建器
@@ -27,8 +29,6 @@ public final class RequestBuilder {
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
 
-    private @NonNull Converter<?> converter;
-
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
         this.methodBuilder = new MethodBuilder(method);
@@ -39,8 +39,6 @@ public final class RequestBuilder {
         addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
         addHeaders(rxHttp.getBaseHeaders());
-        // 设置数据转换器
-        setConverter(rxHttp.getConverter());
     }
 
     /** 添加请求参数 */
@@ -133,12 +131,6 @@ public final class RequestBuilder {
         return this;
     }
 
-    /** 设置数据转换器 */
-    public @NonNull RequestBuilder setConverter(@NonNull Converter<?> converter) {
-        this.converter = converter;
-        return this;
-    }
-
     /** 创建OkHttp请求 */
     public @NonNull Request build() {
         return new Request.Builder()
@@ -149,7 +141,12 @@ public final class RequestBuilder {
     }
 
     /** 执行请求 */
-    public @NonNull <T> Observable<T> execute() {
+    public @NonNull <T> Observable<T> execute(@NonNull Converter<T> converter) {
         return new ExecuteObservable<>(rxHttp, build(), converter);
+    }
+
+    /** 执行请求 */
+    public @NonNull Observable<Response> execute() {
+        return new ExecuteObservable<>(rxHttp, build(), new DefaultConverter());
     }
 }

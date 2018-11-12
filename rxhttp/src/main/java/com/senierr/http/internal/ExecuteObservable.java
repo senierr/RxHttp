@@ -20,17 +20,16 @@ final class ExecuteObservable<T> extends Observable<T> {
 
     private @NonNull RxHttp rxHttp;
     private @NonNull Request rawRequest;
-    private @NonNull Converter<?> converter;
+    private @NonNull Converter<T> converter;
 
     ExecuteObservable(@NonNull RxHttp rxHttp,
                       @NonNull Request request,
-                      @NonNull Converter<?> converter) {
+                      @NonNull Converter<T> converter) {
         this.rxHttp = rxHttp;
         this.rawRequest = request;
         this.converter = converter;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void subscribeActual(final Observer<? super T> observer) {
         final CallDisposable disposable = new CallDisposable();
@@ -50,7 +49,7 @@ final class ExecuteObservable<T> extends Observable<T> {
             // 封装返回
             rawResponse = wrapResponse(rawResponse, observer, disposable);
             // 解析结果
-            T t = (T) converter.convertResponse(rawResponse);
+            T t = converter.convertResponse(rawResponse);
             if (!disposable.isDisposed()) {
                 observer.onNext(t);
             }

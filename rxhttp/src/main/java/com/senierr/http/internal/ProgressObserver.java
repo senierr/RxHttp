@@ -1,7 +1,6 @@
 package com.senierr.http.internal;
 
 import io.reactivex.Observer;
-import io.reactivex.annotations.NonNull;
 
 /**
  * 带进度回调的观察者
