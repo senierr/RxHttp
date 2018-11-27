@@ -2,10 +2,7 @@
 
 [![](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
-
-在实际的网络请求中**okhttp**使用复杂，**retrofit**约束太大，这就有了**RxHttp**。
-
-其目标是: **简洁**、**易用**、**可扩展**
+[![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
@@ -212,7 +209,7 @@ public SSLFactory(InputStream bksFile, String password, X509TrustManager trustMa
 -keep class okio.**{*;}
 ```
 
-## 11. License
+## License
 
 ```
 Copyright 2018 senierr
