@@ -1,67 +1,68 @@
 # RxHttp
 
-[![](https://jitpack.io/v/senierr/RxHttp.svg)](https://jitpack.io/#senierr/RxHttp)
-[![](https://img.shields.io/travis/rust-lang/rust.svg)](https://github.com/senierr/RxHttp)
-[![](https://img.shields.io/badge/dependencies-okhttp-green.svg)](https://github.com/square/okhttp)
-[![](https://img.shields.io/badge/dependencies-okio-green.svg)](https://github.com/square/okio)
+[![](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/senierr/RxHttp)
+[![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 
-> 此库主要用于探索**retrofit**、**okhttp**等一系列网络请求库，在使用方面的不足和遗憾。  
-> 主要工作流程：**构造** -> **请求** -> **解析** -> **返回**
+在实际的网络请求中**okhttp**使用复杂，**retrofit**约束太大，这就有了**RxHttp**。
+
+其目标是: **简洁**、**易用**、**可扩展**
 
 ## 目前支持
 * 普通get, post, put, delete, head, options, patch请求
 * 自定义请求
-* 自定义公共请求参数、请求头
+* 自定义基础请求参数、请求头
 * 自定义请求参数、请求头、请求体
-* 请求进度监听，包括但不仅限于：上传、下载
+* 任意请求进度监听
 * 多种HTTPS验证
 * 可扩展Cookie管理
 * 多级别日志打印
-* 请求重定向
 * 可扩展数据解析
-* 链式调用
-* 支持RxJava2
+* 简洁的链式调用
+* 同步支持RxJava2
 
-## 1. 基本使用
+## 1. 导入仓库
 
-#### 1.1. 导入仓库：
-
-```java
-maven { url 'https://jitpack.io' }
+#### Maven
+```
+<dependency>
+    <groupId>com.senierr.http</groupId>
+    <artifactId>rxhttp</artifactId>
+    <version>1.0.0</version>
+    <type>pom</type>
+</dependency>
 ```
 
-#### 1.2. 添加依赖
-
-```java
-implementation 'com.github.senierr:RxHttp:<release_version>'
+#### Gradle
+```
+implementation 'com.senierr.http:rxhttp:1.0.0'
 ```
 
 **注：`RxHttp`内部关联依赖：**
 
 ```java
--- 'com.android.support:support-annotations:27.1.1'
+-- 'com.android.support:support-annotations:28.0.0'
 -- 'com.squareup.okhttp3:okhttp:3.11.0'
 -- 'io.reactivex.rxjava2:rxjava:2.1.10'
 ```
 
-#### 1.3. 添加权限
+## 2. 添加权限
 
-```java
+```
 <uses-permission android:name="android.permission.INTERNET"/>
 // 文件上传下载需要以下权限
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-#### 1.4. 实例化
+## 3. 实例化
 
 ```java
 val rxHttp = RxHttp.Builder()
         .debug(...)                 // 开启Debug模式
-        .addCommonHeader(...)       // 增加单个公共头
-        .addCommonHeaders(...)      // 增加多个公共头
-        .addCommonUrlParam(...)     // 增加单个公共URL参数
-        .addCommonUrlParams(...)    // 增加多个公共URL参数
+        .addBaseHeader(...)         // 增加单个基础头
+        .addBaseHeaders(...)        // 增加多个基础头
+        .addBaseUrlParam(...)       // 增加单个基础URL参数
+        .addBaseUrlParams(...)      // 增加多个基础URL参数
         .connectTimeout(...)        // 设置连接超时(ms)
         .readTimeout(...)           // 设置读超时(ms)
         .writeTimeout(...)          // 设置写超时(ms)
@@ -73,7 +74,7 @@ val rxHttp = RxHttp.Builder()
         .build()
 ```
 
-#### 1.5. 发起请求
+## 4. 构建请求
 
 ```java
 // 通过RxHttp实例发起请求
@@ -94,97 +95,97 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .isMultipart(...)               // 是否分片表单
         .setOnUploadListener(...)       // 设置上传进度监听
         .setOnDownloadListener(...)     // 设置下载进度监听
-        .generateRequest()              // 创建Okhttp请求
         .execute(...)                   // 发起请求
 ```
 
-## 2. 数据解析
+## 5. 数据解析
 
 ``RxHttp``在发起请求``execute(...)``时需要传入数据解析器：``Converter<T>``，以便返回所需的正确结果。
 
 ``RxHttp``内置了两种``Converter``: ``StringConverter(字符串结果)``和``FileConverter(文件存储)``
 
-当然，你也可以自定义``Converter<T>``，并返回自己需要的数据类型：
-```java
+当然，你也可以根据实际业务自定义``Converter<T>``，返回自己需要的数据类型：
+
+```
 public interface Converter<T> {
     @NonNull T convertResponse(@NonNull Response response) throws Throwable;
 }
 ```
 
-## 3. 请求结果
+## 6. 返回结果
 
-返回结果的类型为``Observable<Response<T>>``，其中泛型``<T>``就是解析的结果类型。
+返回结果的类型为``Observable<T>``，其中泛型``<T>``就是解析的结果类型。
 
-## 4. 进度监听
+## 7. 进度监听
 
-``RxHttp``将``进度监听``和``返回结果``进行了剥离，并使其适用于**任意请求**。
+``RxHttp``将``上传进度监听``和``下载进度监听``进行了剥离，并使其适用于**任意请求**。
 
-```java
+**注：``onProgress``执行在UI线程**
+
+在发起请求时，可以分别设置：
+```
+-- setOnUploadListener(...)       // 设置上传进度监听
+-- setOnDownloadListener(...)     // 设置下载进度监听
+
 public interface OnProgressListener {
     // 注：UI线程回调
-    void onProgress(@NonNull Progress progress);
+    void onProgress(long totalSize, long currentSize, int percent);
 }
-
-// 在发起请求时，可以分别设置：
--- setOnUploadListener(...)       // 设置上传数据进度监听
--- setOnDownloadListener(...)     // 设置下载数据进度监听
 ```
 
-## 5. Cookie
+## 8. Cookie
 
 ``RxHttp``提供以下方式持久化管理``Cookie``：
-```java
+```
 -- SPCookieJar      // SharedPreferences
 ```
-#### 5.1. 配置
 
-```java
-// 实例化时配置Cookie管理
+#### 8.1. 配置
+
+```
+// 1. 实例化
+SPCookieStore cookieStore = new SPCookieStore(context);
+// 2. 配置
 new RxHttp.Builder()
-        .cookieJar(new SPCookieJar(this))
+        .cookieJar(cookieStore.getCookieJar())
         .build();
 ```
 
-#### 5.2. 管理
-
-```java
-ClearableCookieJar cookieJar = rxHttp.getCookieJar();   // 获取管理器
-
-cookieJar.saveCookie(httpUrl, cookie);      // 保存单个URL对应Cookie
-cookieJar.saveCookies(httpUrl, cookies);    // 保存多个URL对应Cookie
-cookieJar.getAllCookie();                   // 获取所有Cookie
-cookieJar.getCookies(httpUrl);              // 获取URL对应所有Cookie
-cookieJar.removeCookie(httpUrl, cookie);    // 移除单个URL对应Cookie
-cookieJar.removeCookies(httpUrl);           // 移除URL对应所有Cookie
-cookieJar.clear();                          // 移除所有Cookie
+#### 8.2. 接口说明
+```
+// 获取Okhttp3的CookieJar
+CookieJar getCookieJar();
+// 是否过期
+boolean isExpired(Cookie cookie);
+// 保存多个Cookie
+void saveCookies(HttpUrl url, List<Cookie> cookies);
+// 保存单个Cookie
+void saveCookie(HttpUrl url, Cookie cookie);
+// 获取URL对应所有Cookie
+List<Cookie> getCookies(HttpUrl url);
+// 获取所有Cookie
+List<Cookie> getAllCookie();
+// 移除单个URL对应Cookie
+void removeCookie(HttpUrl url, Cookie cookie);
+// 移除URL对应所有Cookie
+void removeCookies(HttpUrl url);
+// 移除所有Cookie
+void clear();
 ```
 
-#### 5.3. 自定义管理
+#### 8.3. 自定义
 
-通过继承``ClearableCookieJar``，并实现其抽象方法，在实例化时设置给``RxHttp``，自定义Cookie管理方式。
+通过实现``CookieStore``接口，自定义Cookie管理方式。
 
-```java
-public abstract void saveCookies(HttpUrl url, List<Cookie> cookies);
+## 9. HTTPS
 
-public abstract void saveCookie(HttpUrl url, Cookie cookie);
-
-public abstract List<Cookie> getCookies(HttpUrl url);
-
-public abstract List<Cookie> getAllCookie();
-
-public abstract boolean removeCookie(HttpUrl url, Cookie cookie);
-
-public abstract boolean removeCookies(HttpUrl url);
-
-public abstract boolean clear();
 ```
-
-## 6. HTTPS
-
-```java
-// 实例化时设置SSL验证
+// 1. 实例化
+SSLFactory sslFactory = new SSLFactory(...);
+// 2. 配置
 new RxHttp.Builder()
-        .sslFactory(new SSLFactory(...))
+        .sslSocketFactory(sslFactory.getsSLSocketFactory(),
+                          sslFactory.getTrustManager())
         .build();
 
 // 默认信任所有证书
@@ -199,9 +200,9 @@ public SSLFactory(InputStream bksFile, String password, InputStream... certifica
 public SSLFactory(InputStream bksFile, String password, X509TrustManager trustManager)
 ```
 
-## 7. 混淆
+## 10. 混淆
 
-```java
+```
 #okhttp
 -dontwarn okhttp3.**
 -keep class okhttp3.**{*;}
@@ -211,7 +212,7 @@ public SSLFactory(InputStream bksFile, String password, X509TrustManager trustMa
 -keep class okio.**{*;}
 ```
 
-## 8. License
+## 11. License
 
 ```
 Copyright 2018 senierr
