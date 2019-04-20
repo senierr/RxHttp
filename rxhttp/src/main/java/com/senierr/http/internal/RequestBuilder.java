@@ -158,17 +158,17 @@ public final class RequestBuilder {
 
     /** 执行请求 */
     public @NonNull <T> Observable<T> execute(@NonNull Converter<T> converter) {
-        ExecuteObservable<T> observable = new ExecuteObservable<>(rxHttp, build(), converter);
-        observable.setOnUploadListener(onUploadListener);
-        observable.setOnDownloadListener(onDownloadListener);
-        return observable;
+        return new ExecuteObservable<>(rxHttp, build(), converter)
+                .setOnUploadListener(onUploadListener)
+                .setOnDownloadListener(onDownloadListener)
+                .onTerminateDetach();
     }
 
     /** 执行请求 */
     public @NonNull Observable<Response> execute() {
-        ExecuteObservable<Response> observable = new ExecuteObservable<>(rxHttp, build(), new DefaultConverter());
-        observable.setOnUploadListener(onUploadListener);
-        observable.setOnDownloadListener(onDownloadListener);
-        return observable;
+        return new ExecuteObservable<>(rxHttp, build(), new DefaultConverter())
+                .setOnUploadListener(onUploadListener)
+                .setOnDownloadListener(onDownloadListener)
+                .onTerminateDetach();
     }
 }

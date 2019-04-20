@@ -135,16 +135,18 @@ final class ExecuteObservable<T> extends Observable<T> {
         return onUploadListener;
     }
 
-    public void setOnUploadListener(@Nullable OnProgressListener onUploadListener) {
+    public @NonNull ExecuteObservable<T> setOnUploadListener(@Nullable OnProgressListener onUploadListener) {
         this.onUploadListener = onUploadListener;
+        return this;
     }
 
     public @Nullable OnProgressListener getOnDownloadListener() {
         return onDownloadListener;
     }
 
-    public void setOnDownloadListener(@Nullable OnProgressListener onDownloadListener) {
+    public @NonNull ExecuteObservable<T> setOnDownloadListener(@Nullable OnProgressListener onDownloadListener) {
         this.onDownloadListener = onDownloadListener;
+        return this;
     }
 
     private static final class CallDisposable implements Disposable {
