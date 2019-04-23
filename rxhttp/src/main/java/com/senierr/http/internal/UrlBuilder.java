@@ -1,6 +1,8 @@
 package com.senierr.http.internal;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import java.util.LinkedHashMap;
 
@@ -12,12 +14,20 @@ import java.util.LinkedHashMap;
  */
 public final class UrlBuilder {
 
-    private @NonNull String baseUrl;
+    private @Nullable String baseUrl;
+    private @NonNull String url;
     private @NonNull LinkedHashMap<String, String> urlParams;
+    private boolean ignoreBaseUrl;
 
-    public UrlBuilder(@NonNull String baseUrl) {
-        this.baseUrl = baseUrl;
+    public UrlBuilder(@NonNull String url) {
+        this.url = url;
         urlParams = new LinkedHashMap<>();
+        ignoreBaseUrl = false;
+    }
+
+    public @NonNull UrlBuilder setBaseUrl(@NonNull String baseUrl) {
+        this.baseUrl = baseUrl;
+        return this;
     }
 
     public @NonNull UrlBuilder addUrlParam(@NonNull String key, @NonNull String value) {
@@ -32,10 +42,20 @@ public final class UrlBuilder {
         return this;
     }
 
+    public @NonNull UrlBuilder setIgnoreBaseUrl(boolean ignoreBaseUrl) {
+        this.ignoreBaseUrl = ignoreBaseUrl;
+        return this;
+    }
+
     public @NonNull String build() {
+        String actualUrl = url;
+        if (!TextUtils.isEmpty(baseUrl) && !ignoreBaseUrl) {
+            actualUrl = baseUrl + url;
+        }
+
         if (!urlParams.isEmpty()) {
             StringBuilder strParams = new StringBuilder();
-            if (baseUrl.contains("?")) {
+            if (actualUrl.contains("?")) {
                 strParams.append("&");
             } else {
                 strParams.append("?");
@@ -46,29 +66,13 @@ public final class UrlBuilder {
             }
 
             strParams.deleteCharAt(1);
-            if (baseUrl.indexOf("?") == baseUrl.length() - 1) {
+            if (actualUrl.indexOf("?") == actualUrl.length() - 1) {
                 strParams.deleteCharAt(0);
             }
 
-            strParams.insert(0, baseUrl);
-            baseUrl = strParams.toString();
+            strParams.insert(0, actualUrl);
+            actualUrl = strParams.toString();
         }
-        return baseUrl;
-    }
-
-    public @NonNull String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(@NonNull String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    public @NonNull LinkedHashMap<String, String> getUrlParams() {
-        return urlParams;
-    }
-
-    public void setUrlParams(@NonNull LinkedHashMap<String, String> urlParams) {
-        this.urlParams = urlParams;
+        return actualUrl;
     }
 }
