@@ -25,7 +25,7 @@ public final class UrlBuilder {
         ignoreBaseUrl = false;
     }
 
-    public @NonNull UrlBuilder setBaseUrl(@NonNull String baseUrl) {
+    public @NonNull UrlBuilder setBaseUrl(@Nullable String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
     }
