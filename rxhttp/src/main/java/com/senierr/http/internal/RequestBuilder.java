@@ -39,10 +39,24 @@ public final class RequestBuilder {
         this.urlBuilder = new UrlBuilder(url);
         this.headerBuilder = new HeaderBuilder();
         this.requestBodyBuilder = new RequestBodyBuilder();
+        // 设置基础请求地址
+        urlBuilder.setBaseUrl(rxHttp.getBaseUrl());
         // 添加公共URL参数
         addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
         addHeaders(rxHttp.getBaseHeaders());
+    }
+
+    /** 设置基础请求地址 */
+    public @NonNull RequestBuilder setBaseUrl(@Nullable String baseUrl) {
+        urlBuilder.setBaseUrl(baseUrl);
+        return this;
+    }
+
+    /** 忽略基础请求 */
+    public @NonNull RequestBuilder ignoreBaseUrl() {
+        urlBuilder.setIgnoreBaseUrl(true);
+        return this;
     }
 
     /** 添加请求参数 */

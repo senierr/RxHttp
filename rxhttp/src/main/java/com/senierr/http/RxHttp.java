@@ -1,6 +1,7 @@
 package com.senierr.http;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.senierr.http.internal.LogInterceptor;
 import com.senierr.http.internal.MethodBuilder;
@@ -28,6 +29,8 @@ public final class RxHttp {
     // 进度回调最小间隔时长(ms)
     public static final long REFRESH_MIN_INTERVAL = 100;
 
+    // 基础请求地址
+    private @Nullable String baseUrl;
     // 基础请求参数
     private @NonNull LinkedHashMap<String, String> baseUrlParams;
     // 基础请求头
@@ -36,6 +39,7 @@ public final class RxHttp {
     private @NonNull OkHttpClient okHttpClient;
 
     private RxHttp(Builder builder) {
+        this.baseUrl = builder.baseUrl;
         this.baseUrlParams = builder.baseUrlParams;
         this.baseHeaders = builder.baseHeaders;
         okHttpClient = builder.okHttpClientBuilder.build();
@@ -86,6 +90,10 @@ public final class RxHttp {
         return new RequestBuilder(this, method, url);
     }
 
+    public @Nullable String getBaseUrl() {
+        return baseUrl;
+    }
+
     public @NonNull LinkedHashMap<String, String> getBaseUrlParams() {
         return baseUrlParams;
     }
@@ -99,6 +107,7 @@ public final class RxHttp {
     }
 
     public static final class Builder {
+        private @Nullable String baseUrl;
         private @NonNull LinkedHashMap<String, String> baseUrlParams = new LinkedHashMap<>();
         private @NonNull LinkedHashMap<String, String> baseHeaders = new LinkedHashMap<>();
         private @NonNull OkHttpClient.Builder okHttpClientBuilder;
@@ -116,6 +125,11 @@ public final class RxHttp {
         }
 
         /** 自定义配置 */
+        public @NonNull Builder setBaseUrl(@NonNull String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
         public @NonNull Builder addBaseUrlParam(@NonNull String key, @NonNull String value) {
             baseUrlParams.put(key, value);
             return this;

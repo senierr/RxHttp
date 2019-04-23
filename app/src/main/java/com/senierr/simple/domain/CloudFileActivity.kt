@@ -7,8 +7,8 @@ import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import com.senierr.adapter.internal.MultiTypeAdapter
 import com.senierr.http.internal.OnProgressListener
-import com.senierr.permission.CheckCallback
 import com.senierr.permission.PermissionManager
+import com.senierr.permission.RequestCallback
 import com.senierr.simple.R
 import com.senierr.simple.remote.BmobError
 import com.senierr.simple.remote.CloudFile
@@ -44,7 +44,7 @@ class CloudFileActivity : BaseActivity() {
                 .permissions(
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE)
-                .request(object : CheckCallback() {
+                .request(object : RequestCallback() {
                     override fun onAllGranted() {
                         initView()
                         loadData()

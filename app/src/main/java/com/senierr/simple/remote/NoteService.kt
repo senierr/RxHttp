@@ -13,18 +13,21 @@ import io.reactivex.Observable
 class NoteService {
 
     companion object {
-        private const val API_NOTE = "https://api.bmob.cn/1/classes/note"
+        private const val API_NOTE_BASE = "https://api.bmob.cn/1/classes"
+        private const val API_NOTE = "/note"
     }
 
     fun get(objectId: String): Observable<Note> {
         return SessionApplication.application.dataHttp
                 .get("$API_NOTE/$objectId")
+                .setBaseUrl(API_NOTE_BASE)
                 .execute(BmobObjectConverter(Note::class.java))
     }
 
     fun getAll(): Observable<MutableList<Note>> {
         return SessionApplication.application.dataHttp
                 .get(API_NOTE)
+                .setBaseUrl(API_NOTE_BASE)
                 .addUrlParam("order", "updatedAt")
                 .execute(BmobArrayConverter(Note::class.java))
                 .map {
@@ -36,6 +39,7 @@ class NoteService {
         val param = mapOf(Pair("content", content))
         return SessionApplication.application.dataHttp
                 .post(API_NOTE)
+                .setBaseUrl(API_NOTE_BASE)
                 .setRequestBody4JSon(Gson().toJson(param))
                 .execute(BmobObjectConverter(BmobInsert::class.java))
     }
@@ -44,6 +48,7 @@ class NoteService {
         val param = mapOf(Pair("content", note.content))
         return SessionApplication.application.dataHttp
                 .put("$API_NOTE/${note.objectId}")
+                .setBaseUrl(API_NOTE_BASE)
                 .setRequestBody4JSon(Gson().toJson(param))
                 .execute(BmobObjectConverter(BmobUpdate::class.java))
     }
@@ -51,6 +56,7 @@ class NoteService {
     fun delete(objectId: String): Observable<BmobDelete> {
         return SessionApplication.application.dataHttp
                 .delete("$API_NOTE/$objectId")
+                .setBaseUrl(API_NOTE_BASE)
                 .execute(BmobObjectConverter(BmobDelete::class.java))
     }
 }
