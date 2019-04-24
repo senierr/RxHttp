@@ -125,7 +125,7 @@ public final class RxHttp {
         }
 
         /** 自定义配置 */
-        public @NonNull Builder setBaseUrl(@NonNull String baseUrl) {
+        public @NonNull Builder baseUrl(@NonNull String baseUrl) {
             this.baseUrl = baseUrl;
             return this;
         }

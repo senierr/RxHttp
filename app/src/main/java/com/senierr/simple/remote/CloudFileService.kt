@@ -18,7 +18,7 @@ class CloudFileService {
 
     companion object {
         private const val API_FILE_SERVICE = "https://api.bmob.cn/2/files"
-        private const val API_FILE = "https://api.bmob.cn/1/classes/file"
+        private const val API_FILE = "1/classes/file"
     }
 
     fun getAll(): Observable<MutableList<CloudFile>> {
@@ -52,6 +52,7 @@ class CloudFileService {
     fun upload(file: File, onUploadListener: OnProgressListener): Observable<BmobInsert> {
         return SessionApplication.application.dataHttp
                 .post("$API_FILE_SERVICE/${file.name}")
+                .ignoreBaseUrl()
                 .setRequestBody4File(file)
                 .setOnUploadListener(onUploadListener)
                 .execute(BmobObjectConverter(BmobFile::class.java))
@@ -63,6 +64,7 @@ class CloudFileService {
     fun download(url: String, destFile: File, onDownloadListener: OnProgressListener): Observable<File> {
         return SessionApplication.application.dataHttp
                 .get(url)
+                .ignoreBaseUrl()
                 .setOnDownloadListener(onDownloadListener)
                 .execute(FileConverter(destFile))
     }

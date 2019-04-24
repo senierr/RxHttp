@@ -13,6 +13,8 @@ class SessionApplication : Application() {
         private const val REST_API_KEY = "X-Bmob-REST-API-Key"
         private const val REST_API_VALUE = "5007a55d8fb84f92835172f8abc20cc4"
 
+        private const val API_BMOB_BASE = "https://api.bmob.cn/"
+
         private const val DEBUG_TAG = "Repository"
         private const val TIMEOUT = 15 * 1000L
 
@@ -28,6 +30,7 @@ class SessionApplication : Application() {
 
         dataHttp = RxHttp.Builder()
                 .debug(DEBUG_TAG, LogInterceptor.LogLevel.BODY)
+                .baseUrl(API_BMOB_BASE)
                 .addBaseHeader(APP_ID_KEY, APP_ID_VALUE)
                 .addBaseHeader(REST_API_KEY, REST_API_VALUE)
                 .connectTimeout(TIMEOUT)
