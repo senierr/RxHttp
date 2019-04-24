@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
+import com.senierr.http.converter.ProgressConverter;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -27,16 +28,33 @@ final class ExecuteObservable<T> extends Observable<T> {
 
     private Handler handler;
 
+    private boolean openUploadListener;
+    private boolean openDownloadListener;
+
     private @Nullable OnProgressListener onUploadListener;
     private @Nullable OnProgressListener onDownloadListener;
 
-    ExecuteObservable(@NonNull RxHttp rxHttp,
-                      @NonNull Request request,
-                      @NonNull Converter<T> converter) {
+    private ExecuteObservable(@NonNull RxHttp rxHttp,
+                              @NonNull Request request,
+                              boolean openUploadListener,
+                              boolean openDownloadListener,
+                              @NonNull Converter<T> converter) {
         this.rxHttp = rxHttp;
         this.rawRequest = request;
         this.converter = converter;
+        this.openUploadListener = openUploadListener;
+        this.openDownloadListener = openDownloadListener;
         handler = new Handler(Looper.getMainLooper());
+    }
+
+    public static <T> Observable<T> createObservable(
+            @NonNull RxHttp rxHttp,
+            @NonNull Request request,
+            boolean openUploadListener,
+            boolean openDownloadListener,
+            @NonNull Converter<T> converter) {
+        return new ExecuteObservable<>(rxHttp, request, openUploadListener, openDownloadListener, converter)
+                .onTerminateDetach();
     }
 
     @Override
@@ -50,7 +68,15 @@ final class ExecuteObservable<T> extends Observable<T> {
         boolean terminated = false;
         try {
             // 封装请求
-            Request request = wrapRequest(rawRequest, disposable);
+            Request request = wrapRequest(rawRequest, new OnProgressListener() {
+                @Override
+                public void onProgress(long totalSize, long currentSize, int percent) {
+//                    if (!disposable.isDisposed()) {
+//                        observer.onNext(new ProgressResponse<T>(ProgressResponse.TYPE_UPLOAD, totalSize, currentSize, percent, null));
+//                    }
+                    // TODO: 2019/4/24 发送进度
+                }
+            });
             // 请求
             Call call = rxHttp.getOkHttpClient().newCall(request);
             disposable.call = call;
@@ -79,6 +105,19 @@ final class ExecuteObservable<T> extends Observable<T> {
                 }
             }
         }
+    }
+
+    /**
+     * 封装请求
+     */
+    private Request wrapRequest(Request rawRequest, OnProgressListener onUploadListener) {
+        RequestBody requestBody = rawRequest.body();
+        if (requestBody != null && onUploadListener != null) {
+            requestBody = new ProgressRequestBody(requestBody, onUploadListener);
+        }
+        return rawRequest.newBuilder()
+                .method(rawRequest.method(), requestBody)
+                .build();
     }
 
     /**
@@ -129,24 +168,6 @@ final class ExecuteObservable<T> extends Observable<T> {
         return rawResponse.newBuilder()
                 .body(responseBody)
                 .build();
-    }
-
-    public @Nullable OnProgressListener getOnUploadListener() {
-        return onUploadListener;
-    }
-
-    public @NonNull ExecuteObservable<T> setOnUploadListener(@Nullable OnProgressListener onUploadListener) {
-        this.onUploadListener = onUploadListener;
-        return this;
-    }
-
-    public @Nullable OnProgressListener getOnDownloadListener() {
-        return onDownloadListener;
-    }
-
-    public @NonNull ExecuteObservable<T> setOnDownloadListener(@Nullable OnProgressListener onDownloadListener) {
-        this.onDownloadListener = onDownloadListener;
-        return this;
     }
 
     private static final class CallDisposable implements Disposable {

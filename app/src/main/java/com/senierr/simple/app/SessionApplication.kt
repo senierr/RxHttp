@@ -3,7 +3,7 @@ package com.senierr.simple.app
 import android.app.Application
 import com.senierr.http.RxHttp
 import com.senierr.http.cookie.SPCookieStore
-import com.senierr.http.internal.LogInterceptor
+import com.senierr.http.interceptor.LogInterceptor
 
 class SessionApplication : Application() {
 

@@ -1,4 +1,4 @@
-package com.senierr.http.internal;
+package com.senierr.http.interceptor;
 
 import android.support.annotation.NonNull;
 import android.util.Log;

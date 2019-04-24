@@ -33,12 +33,17 @@ public final class RequestBuilder {
     private @Nullable OnProgressListener onUploadListener;
     private @Nullable OnProgressListener onDownloadListener;
 
+    private boolean openUploadListener;
+    private boolean openDownloadListener;
+
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
         this.methodBuilder = new MethodBuilder(method);
         this.urlBuilder = new UrlBuilder(url);
         this.headerBuilder = new HeaderBuilder();
         this.requestBodyBuilder = new RequestBodyBuilder();
+        this.openUploadListener = false;
+        this.openDownloadListener = false;
         // 设置基础请求地址
         urlBuilder.setBaseUrl(rxHttp.getBaseUrl());
         // 添加公共URL参数
@@ -171,18 +176,7 @@ public final class RequestBuilder {
     }
 
     /** 执行请求 */
-    public @NonNull <T> Observable<T> execute(@NonNull Converter<T> converter) {
-        return new ExecuteObservable<>(rxHttp, build(), converter)
-                .setOnUploadListener(onUploadListener)
-                .setOnDownloadListener(onDownloadListener)
-                .onTerminateDetach();
-    }
-
-    /** 执行请求 */
-    public @NonNull Observable<Response> execute() {
-        return new ExecuteObservable<>(rxHttp, build(), new DefaultConverter())
-                .setOnUploadListener(onUploadListener)
-                .setOnDownloadListener(onDownloadListener)
-                .onTerminateDetach();
+    public @NonNull <T> Observable<ProgressResponse<T>> execute(@NonNull Converter<ProgressResponse<T>> converter) {
+        return ExecuteObservable.createObservable(rxHttp, build(), openUploadListener, openDownloadListener, converter);
     }
 }

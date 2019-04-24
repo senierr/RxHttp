@@ -3,7 +3,7 @@ package com.senierr.http;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.senierr.http.internal.LogInterceptor;
+import com.senierr.http.interceptor.LogInterceptor;
 import com.senierr.http.internal.MethodBuilder;
 import com.senierr.http.internal.RequestBuilder;
 
