@@ -20,12 +20,24 @@ public final class ProgressResponse<T> {
     private final int percent;
     private final @Nullable T result;
 
-    public ProgressResponse(int type, long totalSize, long currentSize, int percent, @Nullable T result) {
+    private ProgressResponse(int type, long totalSize, long currentSize, int percent, @Nullable T result) {
         this.type = type;
         this.totalSize = totalSize;
         this.currentSize = currentSize;
         this.percent = percent;
         this.result = result;
+    }
+
+    public static <T> ProgressResponse<T> upload(long totalSize, long currentSize, int percent) {
+        return new ProgressResponse<>(TYPE_UPLOAD, totalSize, currentSize, percent, null);
+    }
+
+    public static <T> ProgressResponse<T> download(long totalSize, long currentSize, int percent) {
+        return new ProgressResponse<>(TYPE_DOWNLOAD, totalSize, currentSize, percent, null);
+    }
+
+    public static <T> ProgressResponse<T> result(T t) {
+        return new ProgressResponse<>(TYPE_RESULT, 0, 0, 0, t);
     }
 
     public int type() {

@@ -21,7 +21,7 @@ import okhttp3.Response;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public final class RequestBuilder {
+public final class RequestBuilder<T> {
 
     private @NonNull RxHttp rxHttp;
 
@@ -166,6 +166,16 @@ public final class RequestBuilder {
         return this;
     }
 
+    public @NonNull RequestBuilder openUploadListener() {
+        this.openUploadListener = true;
+        return this;
+    }
+
+    public @NonNull RequestBuilder openDownloadListener() {
+        this.openDownloadListener = true;
+        return this;
+    }
+
     /** 创建OkHttp请求 */
     public @NonNull Request build() {
         return new Request.Builder()
@@ -175,8 +185,19 @@ public final class RequestBuilder {
                 .build();
     }
 
+    Converter<T> converter;
+
     /** 执行请求 */
-    public @NonNull <T> Observable<ProgressResponse<T>> execute(@NonNull Converter<ProgressResponse<T>> converter) {
-        return ExecuteObservable.createObservable(rxHttp, build(), openUploadListener, openDownloadListener, converter);
+    public @NonNull <R> Observable<R> execute(Class<R> clz) {
+        if (openUploadListener) {
+            return executeProgress(converter);
+        }
+        return new ExecuteObservable<>(rxHttp, build(), converter).onTerminateDetach();
+    }
+
+    /** 执行请求 */
+    public @NonNull <T> Observable<ProgressResponse<T>> executeProgress(@NonNull Converter<T> converter) {
+        return new ProgressObservable<>(rxHttp, build(), openUploadListener, openDownloadListener, converter)
+                .onTerminateDetach();
     }
 }
