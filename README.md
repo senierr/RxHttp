@@ -4,58 +4,50 @@
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-## 目前支持
-* 普通get, post, put, delete, head, options, patch请求
-* 自定义请求
-* 自定义基础请求参数、请求头
-* 自定义请求参数、请求头、请求体
-* 任意请求进度监听
-* 多种HTTPS验证
-* 可扩展Cookie管理
-* 多级别日志打印
-* 可扩展数据解析
-* 简洁的链式调用
-* 同步支持RxJava2
+### 目前支持
 
-## 1. 导入仓库
+* **普通get, post, put, delete, head, options, patch请求**
+* **自定义请求**
+* **自定义基础请求参数、请求头**
+* **自定义请求参数、请求头、请求体**
+* **任意请求进度监听**
+* **多种HTTPS验证**
+* **可扩展Cookie管理**
+* **多级别日志打印**
+* **可扩展数据解析**
+* **简洁的链式调用**
+* **同步支持RxJava2**
 
-#### Maven
+### 1.仓库导入
+
 ```
-<dependency>
-    <groupId>com.senierr.http</groupId>
-    <artifactId>rxhttp</artifactId>
-    <version>1.0.0</version>
-    <type>pom</type>
-</dependency>
+implementation 'com.senierr.http:rxhttp:最新版本'
 ```
 
-#### Gradle
-```
-implementation 'com.senierr.http:rxhttp:1.0.0'
-```
+**`RxHttp`内部关联依赖：**
 
-**注：`RxHttp`内部关联依赖：**
-
-```java
+```
 -- 'com.android.support:support-annotations:28.0.0'
 -- 'com.squareup.okhttp3:okhttp:3.11.0'
 -- 'io.reactivex.rxjava2:rxjava:2.1.10'
 ```
 
-## 2. 添加权限
+### 2.权限
 
 ```
 <uses-permission android:name="android.permission.INTERNET"/>
+
 // 文件上传下载需要以下权限
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-## 3. 实例化
+### 3.实例化
 
-```java
+```
 val rxHttp = RxHttp.Builder()
         .debug(...)                 // 开启Debug模式
+        .baseUrl(...)               // 设置基础请求地址
         .addBaseHeader(...)         // 增加单个基础头
         .addBaseHeaders(...)        // 增加多个基础头
         .addBaseUrlParam(...)       // 增加单个基础URL参数
@@ -71,11 +63,13 @@ val rxHttp = RxHttp.Builder()
         .build()
 ```
 
-## 4. 构建请求
+### 4.构建请求
 
-```java
+```
 // 通过RxHttp实例发起请求
 rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、method(自定义请求)
+        .setBaseUrl(...)                // 设置基础请求地址（只作用于当前请求，不会改变公共设置）
+        .ignoreBaseUrl()                // 忽略基础请求地址（只作用于当前请求，不会改变公共设置）
         .addHeader(...)                 // 增加单个头
         .addHeaders(...)                // 增加多个头
         .addUrlParam(...)               // 增加单个URL参数
@@ -95,7 +89,7 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .execute(...)                   // 发起请求
 ```
 
-## 5. 数据解析
+### 5.数据解析
 
 ``RxHttp``在发起请求``execute(...)``时需要传入数据解析器：``Converter<T>``，以便返回所需的正确结果。
 
@@ -109,11 +103,11 @@ public interface Converter<T> {
 }
 ```
 
-## 6. 返回结果
+### 6.结果返回
 
 返回结果的类型为``Observable<T>``，其中泛型``<T>``就是解析的结果类型。
 
-## 7. 进度监听
+### 7.进度监听
 
 ``RxHttp``将``上传进度监听``和``下载进度监听``进行了剥离，并使其适用于**任意请求**。
 
@@ -130,14 +124,14 @@ public interface OnProgressListener {
 }
 ```
 
-## 8. Cookie
+### 8.Cookie
 
 ``RxHttp``提供以下方式持久化管理``Cookie``：
 ```
 -- SPCookieJar      // SharedPreferences
 ```
 
-#### 8.1. 配置
+#### 8.1.配置
 
 ```
 // 1. 实例化
@@ -148,7 +142,7 @@ new RxHttp.Builder()
         .build();
 ```
 
-#### 8.2. 接口说明
+#### 8.2.接口说明
 ```
 // 获取Okhttp3的CookieJar
 CookieJar getCookieJar();
@@ -170,11 +164,11 @@ void removeCookies(HttpUrl url);
 void clear();
 ```
 
-#### 8.3. 自定义
+#### 8.3.自定义
 
 通过实现``CookieStore``接口，自定义Cookie管理方式。
 
-## 9. HTTPS
+### 9.HTTPS
 
 ```
 // 1. 实例化
@@ -197,7 +191,7 @@ public SSLFactory(InputStream bksFile, String password, InputStream... certifica
 public SSLFactory(InputStream bksFile, String password, X509TrustManager trustManager)
 ```
 
-## 10. 混淆
+### 10.混淆
 
 ```
 #okhttp
@@ -209,7 +203,7 @@ public SSLFactory(InputStream bksFile, String password, X509TrustManager trustMa
 -keep class okio.**{*;}
 ```
 
-## License
+### License
 
 ```
 Copyright 2018 senierr
