@@ -10,8 +10,7 @@ import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.SPCookieStore
 import com.senierr.http.interceptor.LogInterceptor
-import com.senierr.http.model.ProgressResponse
-import com.senierr.http.operator.DownloadListener
+import com.senierr.http.listener.OnDownloadListener
 import com.senierr.permission.PermissionManager
 import com.senierr.permission.RequestCallback
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -203,16 +202,15 @@ class MainActivity : AppCompatActivity() {
                 .ignoreBaseUrl()
                 .addConverter(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
                 .toDownloadObservable()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .filter {  }
-                .lift(object : DownloadListener<File>() {
+                .compose(object : OnDownloadListener<File>() {
                     override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
-                        Log.e(DEBUG_TAG, "$totalSize $currentSize $percent")
+                        Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
                     }
                 })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.e(DEBUG_TAG, "percent: ${it}")
+                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: percent: ${it.path}")
                 }, {
                     Log.e(DEBUG_TAG, it.message)
                 })
