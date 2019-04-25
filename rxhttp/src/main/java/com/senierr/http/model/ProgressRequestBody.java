@@ -1,8 +1,9 @@
-package com.senierr.http.internal;
+package com.senierr.http.model;
 
 import android.support.annotation.NonNull;
 
 import com.senierr.http.RxHttp;
+import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 

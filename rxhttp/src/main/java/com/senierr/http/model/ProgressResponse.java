@@ -1,5 +1,6 @@
-package com.senierr.http.internal;
+package com.senierr.http.model;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
@@ -28,15 +29,15 @@ public final class ProgressResponse<T> {
         this.result = result;
     }
 
-    public static <T> ProgressResponse<T> upload(long totalSize, long currentSize, int percent) {
+    public static @NonNull <T> ProgressResponse<T> upload(long totalSize, long currentSize, int percent) {
         return new ProgressResponse<>(TYPE_UPLOAD, totalSize, currentSize, percent, null);
     }
 
-    public static <T> ProgressResponse<T> download(long totalSize, long currentSize, int percent) {
+    public static @NonNull <T> ProgressResponse<T> download(long totalSize, long currentSize, int percent) {
         return new ProgressResponse<>(TYPE_DOWNLOAD, totalSize, currentSize, percent, null);
     }
 
-    public static <T> ProgressResponse<T> result(T t) {
+    public static @NonNull <T> ProgressResponse<T> result(T t) {
         return new ProgressResponse<>(TYPE_RESULT, 0, 0, 0, t);
     }
 
@@ -58,5 +59,16 @@ public final class ProgressResponse<T> {
 
     public @Nullable T result() {
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ProgressResponse{" +
+                "type=" + type +
+                ", totalSize=" + totalSize +
+                ", currentSize=" + currentSize +
+                ", percent=" + percent +
+                ", result=" + result +
+                '}';
     }
 }

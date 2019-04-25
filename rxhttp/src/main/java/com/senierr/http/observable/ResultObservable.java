@@ -1,12 +1,11 @@
-package com.senierr.http.internal;
-
-import android.support.annotation.NonNull;
+package com.senierr.http.observable;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
@@ -14,18 +13,25 @@ import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.Call;
 import okhttp3.Request;
 
-final class ExecuteObservable<T> extends Observable<T> {
+public final class ResultObservable<T> extends Observable<T> {
 
     private @NonNull RxHttp rxHttp;
     private @NonNull Request rawRequest;
     private @NonNull Converter<T> converter;
 
-    private ExecuteObservable(@NonNull RxHttp rxHttp,
-                              @NonNull Request request,
-                              @NonNull Converter<T> converter) {
+    private ResultObservable(@NonNull RxHttp rxHttp,
+                             @NonNull Request request,
+                             @NonNull Converter<T> converter) {
         this.rxHttp = rxHttp;
         this.rawRequest = request;
         this.converter = converter;
+    }
+
+    @NonNull
+    public static <T> Observable<T> result(@NonNull RxHttp rxHttp,
+                                           @NonNull Request request,
+                                           @NonNull Converter<T> converter) {
+        return new ResultObservable<>(rxHttp, request, converter);
     }
 
     @Override

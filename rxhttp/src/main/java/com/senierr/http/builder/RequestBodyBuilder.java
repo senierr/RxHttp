@@ -1,4 +1,4 @@
-package com.senierr.http.internal;
+package com.senierr.http.builder;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

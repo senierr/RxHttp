@@ -1,59 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_48"
-        android:background="@color/colorPrimaryDark">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/btn_left"
-            android:layout_marginStart="@dimen/dp_16"
-            android:layout_centerVertical="true"
-            android:text="@string/app_name"
-            android:textColor="@color/text_white"
-            android:textSize="@dimen/sp_18"/>
+        <Button
+            android:id="@+id/btn_get"
+            android:text="普通GET请求"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <ImageButton
-            android:id="@+id/btn_add"
-            android:src="@drawable/ic_add_black_24dp"
-            android:background="@color/white"
-            android:backgroundTint="@color/color_button_transparent"
-            android:layout_alignParentEnd="true"
-            android:paddingStart="@dimen/dp_16"
-            android:paddingEnd="@dimen/dp_16"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
+        <Button
+            android:id="@+id/btn_get_replace_base_url"
+            android:text="重载基础请求地址"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <ImageButton
-            android:id="@+id/btn_folder"
-            android:src="@drawable/ic_folder_black_24dp"
-            android:background="@color/white"
-            android:backgroundTint="@color/color_button_transparent"
-            android:paddingStart="@dimen/dp_16"
-            android:paddingEnd="@dimen/dp_16"
-            android:layout_toStartOf="@id/btn_add"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-    </RelativeLayout>
+        <Button
+            android:id="@+id/btn_get_ignore_base_url"
+            android:text="忽略基础请求地址"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <TextView
-        android:text="@string/tips"
-        android:textColor="@color/text_error"
-        android:textSize="@dimen/sp_12"
-        android:padding="@dimen/dp_8"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/btn_post_form"
+            android:text="POST表单请求"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_notes"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_post_json"
+            android:text="POST Json请求"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_post_text"
+            android:text="POST Text请求"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_upload"
+            android:text="上传文件"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_download"
+            android:text="下载文件"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>

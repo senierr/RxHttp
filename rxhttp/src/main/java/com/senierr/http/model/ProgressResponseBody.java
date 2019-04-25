@@ -1,9 +1,10 @@
-package com.senierr.http.internal;
+package com.senierr.http.model;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.senierr.http.RxHttp;
+import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 
@@ -25,7 +26,8 @@ public final class ProgressResponseBody extends ResponseBody {
 
     private @NonNull ResponseBody delegate;
     private @Nullable BufferedSource bufferedSource;
-    private @NonNull OnProgressListener listener;
+    private @NonNull
+    OnProgressListener listener;
 
     public ProgressResponseBody(@NonNull ResponseBody responseBody,
                                 @NonNull OnProgressListener listener) {
