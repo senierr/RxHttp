@@ -105,7 +105,6 @@ class MainActivity : AppCompatActivity() {
      */
     private fun replaceBaseUrl() {
         rxHttp.get<String>("/getInfo")
-                .setBaseUrl("https://api.test.replace.cn")
                 .addUrlParam("name", "tom")
                 .addConverter(StringConverter())
                 .toResultObservable()

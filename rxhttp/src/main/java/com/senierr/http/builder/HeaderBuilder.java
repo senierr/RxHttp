@@ -1,7 +1,5 @@
 package com.senierr.http.builder;
 
-import android.text.TextUtils;
-
 import java.util.LinkedHashMap;
 
 import io.reactivex.annotations.NonNull;
@@ -15,23 +13,25 @@ import okhttp3.Headers;
  */
 public final class HeaderBuilder {
 
-    private LinkedHashMap<String, String> httpHeaders = new LinkedHashMap<>();
+    private LinkedHashMap<String, String> headers = new LinkedHashMap<>();
 
     public void addHeader(@NonNull String key, @NonNull String value) {
-        httpHeaders.put(key, value);
+        headers.put(key, value);
     }
 
     public void addHeaders(@NonNull LinkedHashMap<String, String> headers) {
-        for (String key: headers.keySet()) {
-            httpHeaders.put(key, headers.get(key));
-        }
+        this.headers.putAll(headers);
+    }
+
+    public @NonNull LinkedHashMap<String, String> getHeaders() {
+        return headers;
     }
 
     public @NonNull Headers build(){
         Headers.Builder builder = new Headers.Builder();
-        for (String key: httpHeaders.keySet()) {
-            String value = httpHeaders.get(key);
-            if (!TextUtils.isEmpty(value)) {
+        for (String key: headers.keySet()) {
+            String value = headers.get(key);
+            if (value != null && value.length() > 0) {
                 builder.add(key, value);
             }
         }

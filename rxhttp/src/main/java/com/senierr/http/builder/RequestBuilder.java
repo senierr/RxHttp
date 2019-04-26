@@ -1,5 +1,7 @@
 package com.senierr.http.builder;
 
+import android.text.TextUtils;
+
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 import com.senierr.http.model.ProgressResponse;
@@ -33,6 +35,10 @@ public final class RequestBuilder<T> {
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
 
+    private boolean ignoreBaseUrl = false;
+    private boolean ignoreBaseUrlParams = false;
+    private boolean ignoreBaseHeaders = false;
+
     private @NonNull Converter<T> converter;
 
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
@@ -41,23 +47,23 @@ public final class RequestBuilder<T> {
         this.urlBuilder = new UrlBuilder(url);
         this.headerBuilder = new HeaderBuilder();
         this.requestBodyBuilder = new RequestBodyBuilder();
-        // 设置基础请求地址
-        setBaseUrl(rxHttp.getBaseUrl());
-        // 添加公共URL参数
-        addUrlParams(rxHttp.getBaseUrlParams());
-        // 添加公共请求头
-        addHeaders(rxHttp.getBaseHeaders());
     }
 
-    /** 设置基础请求地址 */
-    public @NonNull RequestBuilder<T> setBaseUrl(@Nullable String baseUrl) {
-        urlBuilder.setBaseUrl(baseUrl);
+    /** 忽略基础请求地址 */
+    public @NonNull RequestBuilder<T> ignoreBaseUrl() {
+        ignoreBaseUrl = true;
         return this;
     }
 
-    /** 忽略基础请求 */
-    public @NonNull RequestBuilder<T> ignoreBaseUrl() {
-        urlBuilder.setIgnoreBaseUrl(true);
+    /** 忽略基础请求参数 */
+    public @NonNull RequestBuilder<T> ignoreBaseUrlParams() {
+        ignoreBaseUrlParams = true;
+        return this;
+    }
+
+    /** 忽略基础请求头 */
+    public @NonNull RequestBuilder<T> ignoreBaseHeaders() {
+        ignoreBaseHeaders = true;
         return this;
     }
 
@@ -158,6 +164,31 @@ public final class RequestBuilder<T> {
 
     /** 创建OkHttp请求 */
     public @NonNull Request build() {
+        // 若设置了基础请求地址，且未忽略，拼接基础请求地址
+        String actualUrl = urlBuilder.getUrl();
+        if (!TextUtils.isEmpty(rxHttp.getBaseUrl()) && !ignoreBaseUrl) {
+            actualUrl = rxHttp.getBaseUrl() + urlBuilder.getUrl();
+        }
+        urlBuilder.setUrl(actualUrl);
+
+        // 若设置了基础参数，且未忽略，添加基础参数（注意添加顺序）
+        LinkedHashMap<String, String> actualUrlParams = new LinkedHashMap<>();
+        if (!rxHttp.getBaseUrlParams().isEmpty() && !ignoreBaseUrlParams) {
+            actualUrlParams.putAll(rxHttp.getBaseUrlParams());
+        }
+        actualUrlParams.putAll(urlBuilder.getUrlParams());
+        urlBuilder.getUrlParams().clear();
+        urlBuilder.addUrlParams(actualUrlParams);
+
+        // 若设置了基础头，且未忽略，添加基础头（注意添加顺序）
+        LinkedHashMap<String, String> actualHeaders = new LinkedHashMap<>();
+        if (!rxHttp.getBaseHeaders().isEmpty() && !ignoreBaseHeaders) {
+            actualHeaders.putAll(rxHttp.getBaseHeaders());
+        }
+        actualHeaders.putAll(headerBuilder.getHeaders());
+        headerBuilder.getHeaders().clear();
+        headerBuilder.addHeaders(actualHeaders);
+
         return new Request.Builder()
                 .method(methodBuilder.build(), requestBodyBuilder.build())
                 .url(urlBuilder.build())
