@@ -8,5 +8,8 @@ package com.senierr.http.listener;
  */
 public interface OnProgressListener {
 
+    // 进度回调最小间隔时长(ms)
+    long REFRESH_MIN_INTERVAL = 100;
+
     void onProgress(long totalSize, long currentSize, int percent);
 }

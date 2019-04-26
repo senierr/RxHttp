@@ -1,6 +1,5 @@
 package com.senierr.http.observable;
 
-import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 
 import io.reactivex.Observable;
@@ -11,27 +10,28 @@ import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.Call;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 public final class ResultObservable<T> extends Observable<T> {
 
-    private @NonNull RxHttp rxHttp;
+    private @NonNull OkHttpClient okHttpClient;
     private @NonNull Request rawRequest;
     private @NonNull Converter<T> converter;
 
-    private ResultObservable(@NonNull RxHttp rxHttp,
+    private ResultObservable(@NonNull OkHttpClient okHttpClient,
                              @NonNull Request request,
                              @NonNull Converter<T> converter) {
-        this.rxHttp = rxHttp;
+        this.okHttpClient = okHttpClient;
         this.rawRequest = request;
         this.converter = converter;
     }
 
     @NonNull
-    public static <T> Observable<T> result(@NonNull RxHttp rxHttp,
+    public static <T> Observable<T> result(@NonNull OkHttpClient okHttpClient,
                                            @NonNull Request request,
                                            @NonNull Converter<T> converter) {
-        return new ResultObservable<>(rxHttp, request, converter);
+        return new ResultObservable<>(okHttpClient, request, converter);
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class ResultObservable<T> extends Observable<T> {
         boolean terminated = false;
         try {
             // 请求
-            Call call = rxHttp.getOkHttpClient().newCall(rawRequest);
+            Call call = okHttpClient.newCall(rawRequest);
             disposable.call = call;
             okhttp3.Response rawResponse = call.execute();
             // 解析结果

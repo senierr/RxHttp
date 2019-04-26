@@ -1,6 +1,5 @@
 package com.senierr.http.model;
 
-import com.senierr.http.RxHttp;
 import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
@@ -67,7 +66,7 @@ public final class ProgressRequestBody extends RequestBody {
 
             bytesWritten += byteCount;
             final long curTime = System.currentTimeMillis();
-            if (curTime - lastRefreshTime >= RxHttp.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
+            if (curTime - lastRefreshTime >= OnProgressListener.REFRESH_MIN_INTERVAL || bytesWritten == contentLength) {
                 int percent;
                 if (contentLength <= 0) {
                     percent = 100;

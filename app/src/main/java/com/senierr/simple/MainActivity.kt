@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
         init()
 
         btn_get.setOnClickListener { getNormal() }
-        btn_get_replace_base_url.setOnClickListener { replaceBaseUrl() }
+        btn_get_ignore_base_url_params.setOnClickListener { ignoreBaseUrlParams() }
+        btn_get_ignore_base_headers.setOnClickListener { ignoreBaseHeaders() }
         btn_get_ignore_base_url.setOnClickListener { ignoreBaseUrl() }
         btn_post_form.setOnClickListener { postNormal() }
         btn_post_json.setOnClickListener { postJson() }
@@ -101,10 +102,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 重载基础请求地址
+     * 忽略基础请求参数
      */
-    private fun replaceBaseUrl() {
+    private fun ignoreBaseUrlParams() {
         rxHttp.get<String>("/getInfo")
+                .ignoreBaseUrlParams()
+                .addUrlParam("name", "tom")
+                .addConverter(StringConverter())
+                .toResultObservable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({}, {})
+                .bindToActivity()
+    }
+
+    /**
+     * 忽略基础请求头
+     */
+    private fun ignoreBaseHeaders() {
+        rxHttp.get<String>("/getInfo")
+                .ignoreBaseHeaders()
                 .addUrlParam("name", "tom")
                 .addConverter(StringConverter())
                 .toResultObservable()

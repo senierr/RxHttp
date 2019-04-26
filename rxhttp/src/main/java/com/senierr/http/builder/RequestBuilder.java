@@ -198,19 +198,19 @@ public final class RequestBuilder<T> {
 
     /** 转换为带上传进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toUploadObservable() {
-        return ProgressObservable.upload(rxHttp, build(), converter)
+        return ProgressObservable.upload(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为带下载进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toDownloadObservable() {
-        return ProgressObservable.download(rxHttp, build(), converter)
+        return ProgressObservable.download(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为普通被观察者 */
     public @NonNull Observable<T> toResultObservable() {
-        return ResultObservable.result(rxHttp, build(), converter)
+        return ResultObservable.result(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 

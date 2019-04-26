@@ -17,8 +17,15 @@
             android:layout_height="wrap_content" />
 
         <Button
-            android:id="@+id/btn_get_replace_base_url"
-            android:text="重载基础请求地址"
+            android:id="@+id/btn_get_ignore_base_url_params"
+            android:text="忽略基础请求参数"
+            style="@style/NormalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_get_ignore_base_headers"
+            android:text="忽略基础请求头"
             style="@style/NormalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

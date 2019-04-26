@@ -25,9 +25,6 @@ import okhttp3.OkHttpClient;
  */
 public final class RxHttp {
 
-    // 进度回调最小间隔时长(ms)
-    public static final long REFRESH_MIN_INTERVAL = 100;
-
     // 基础请求地址
     private @Nullable String baseUrl;
     // 基础请求参数

@@ -1,6 +1,5 @@
 package com.senierr.http.observable;
 
-import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
 import com.senierr.http.listener.OnProgressListener;
 import com.senierr.http.model.ProgressRequestBody;
@@ -15,6 +14,7 @@ import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.Call;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -22,19 +22,19 @@ import okhttp3.ResponseBody;
 
 public final class ProgressObservable<T> extends Observable<ProgressResponse<T>> {
 
-    private @NonNull RxHttp rxHttp;
+    private @NonNull OkHttpClient okHttpClient;
     private @NonNull Request rawRequest;
     private @NonNull Converter<T> converter;
 
     private boolean openUploadListener;
     private boolean openDownloadListener;
 
-    private ProgressObservable(@NonNull RxHttp rxHttp,
+    private ProgressObservable(@NonNull OkHttpClient okHttpClient,
                                @NonNull Request request,
                                boolean openUploadListener,
                                boolean openDownloadListener,
                                @NonNull Converter<T> converter) {
-        this.rxHttp = rxHttp;
+        this.okHttpClient = okHttpClient;
         this.rawRequest = request;
         this.converter = converter;
         this.openUploadListener = openUploadListener;
@@ -42,17 +42,17 @@ public final class ProgressObservable<T> extends Observable<ProgressResponse<T>>
     }
 
     @NonNull
-    public static <T> Observable<ProgressResponse<T>> upload(@NonNull RxHttp rxHttp,
+    public static <T> Observable<ProgressResponse<T>> upload(@NonNull OkHttpClient okHttpClient,
                                                              @NonNull Request request,
                                                              @NonNull Converter<T> converter) {
-        return new ProgressObservable<>(rxHttp, request, true, false, converter);
+        return new ProgressObservable<>(okHttpClient, request, true, false, converter);
     }
 
     @NonNull
-    public static <T> Observable<ProgressResponse<T>> download(@NonNull RxHttp rxHttp,
+    public static <T> Observable<ProgressResponse<T>> download(@NonNull OkHttpClient okHttpClient,
                                                                @NonNull Request request,
                                                                @NonNull Converter<T> converter) {
-        return new ProgressObservable<>(rxHttp, request, false, true, converter);
+        return new ProgressObservable<>(okHttpClient, request, false, true, converter);
     }
 
     @Override
@@ -81,7 +81,7 @@ public final class ProgressObservable<T> extends Observable<ProgressResponse<T>>
             }
 
             // 请求
-            Call call = rxHttp.getOkHttpClient().newCall(request);
+            Call call = okHttpClient.newCall(request);
             disposable.call = call;
             Response rawResponse = call.execute();
             Response response;
