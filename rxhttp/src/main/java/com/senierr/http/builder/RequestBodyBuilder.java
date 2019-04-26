@@ -1,13 +1,12 @@
 package com.senierr.http.builder;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import java.io.File;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;
 
+import io.reactivex.annotations.NonNull;
+import io.reactivex.annotations.Nullable;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;

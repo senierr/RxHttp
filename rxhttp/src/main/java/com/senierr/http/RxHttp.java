@@ -1,8 +1,5 @@
 package com.senierr.http;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.senierr.http.interceptor.LogInterceptor;
 import com.senierr.http.builder.MethodBuilder;
 import com.senierr.http.builder.RequestBuilder;
@@ -14,6 +11,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import io.reactivex.annotations.NonNull;
+import io.reactivex.annotations.Nullable;
 import okhttp3.CookieJar;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;

@@ -1,5 +1,6 @@
-package com.senierr.http.listener;
+package com.senierr.http.operator;
 
+import com.senierr.http.listener.OnProgressListener;
 import com.senierr.http.model.ProgressResponse;
 
 import io.reactivex.Observable;
@@ -9,19 +10,19 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 /**
- * 下载进度过滤器
+ * 上传进度过滤器
  *
  * @author zhouchunjie
  * @date 2019/4/25 17:25
  */
-public abstract class OnDownloadListener<T> implements ObservableTransformer<ProgressResponse<T>, T>, OnProgressListener {
+public abstract class UploadProgressFilter<T> implements ObservableTransformer<ProgressResponse<T>, T>, OnProgressListener {
 
     @Override
     public final ObservableSource<T> apply(Observable<ProgressResponse<T>> upstream) {
         return upstream.filter(new Predicate<ProgressResponse<T>>() {
             @Override
             public boolean test(ProgressResponse<T> t) throws Exception {
-                if (t.type() == ProgressResponse.TYPE_DOWNLOAD) {
+                if (t.type() == ProgressResponse.TYPE_UPLOAD) {
                     onProgress(t.totalSize(), t.currentSize(), t.percent());
                     return false;
                 }

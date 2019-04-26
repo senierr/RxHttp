@@ -1,12 +1,11 @@
 package com.senierr.http.model;
 
-import android.support.annotation.NonNull;
-
 import com.senierr.http.RxHttp;
 import com.senierr.http.listener.OnProgressListener;
 
 import java.io.IOException;
 
+import io.reactivex.annotations.NonNull;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;

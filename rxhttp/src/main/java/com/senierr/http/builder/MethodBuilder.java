@@ -1,6 +1,6 @@
 package com.senierr.http.builder;
 
-import android.support.annotation.NonNull;
+import io.reactivex.annotations.NonNull;
 
 /**
  * Http请求方法构建器

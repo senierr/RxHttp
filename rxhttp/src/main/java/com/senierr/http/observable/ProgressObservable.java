@@ -10,7 +10,6 @@ import com.senierr.http.model.ProgressResponseBody;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.annotations.SchedulerSupport;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
@@ -42,7 +41,6 @@ public final class ProgressObservable<T> extends Observable<ProgressResponse<T>>
         this.openDownloadListener = openDownloadListener;
     }
 
-    @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
     public static <T> Observable<ProgressResponse<T>> upload(@NonNull RxHttp rxHttp,
                                                              @NonNull Request request,
@@ -50,7 +48,6 @@ public final class ProgressObservable<T> extends Observable<ProgressResponse<T>>
         return new ProgressObservable<>(rxHttp, request, true, false, converter);
     }
 
-    @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
     public static <T> Observable<ProgressResponse<T>> download(@NonNull RxHttp rxHttp,
                                                                @NonNull Request request,

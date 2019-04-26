@@ -1,10 +1,9 @@
 package com.senierr.http.converter;
 
-import android.support.annotation.NonNull;
-
 import java.io.File;
 import java.io.IOException;
 
+import io.reactivex.annotations.NonNull;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.Util;

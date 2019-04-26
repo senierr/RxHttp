@@ -1,12 +1,12 @@
 package com.senierr.http.interceptor;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.annotations.NonNull;
 import okhttp3.Connection;
 import okhttp3.Headers;
 import okhttp3.Interceptor;

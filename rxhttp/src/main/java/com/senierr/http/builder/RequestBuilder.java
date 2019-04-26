@@ -1,21 +1,22 @@
 package com.senierr.http.builder;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
-import com.senierr.http.listener.OnProgressListener;
 import com.senierr.http.model.ProgressResponse;
 import com.senierr.http.observable.ProgressObservable;
 import com.senierr.http.observable.ResultObservable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.annotations.Nullable;
+import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * HTTP请求构建器
@@ -32,12 +33,7 @@ public final class RequestBuilder<T> {
     private @NonNull HeaderBuilder headerBuilder;           // 请求头构建器
     private @NonNull RequestBodyBuilder requestBodyBuilder; // 请求体构建器
 
-    private @Nullable
-    OnProgressListener onUploadListener;
-    private @Nullable OnProgressListener onDownloadListener;
-
-    private boolean openUploadListener;
-    private boolean openDownloadListener;
+    private @NonNull Converter<T> converter;
 
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
@@ -45,10 +41,8 @@ public final class RequestBuilder<T> {
         this.urlBuilder = new UrlBuilder(url);
         this.headerBuilder = new HeaderBuilder();
         this.requestBodyBuilder = new RequestBodyBuilder();
-        this.openUploadListener = false;
-        this.openDownloadListener = false;
         // 设置基础请求地址
-        urlBuilder.setBaseUrl(rxHttp.getBaseUrl());
+        setBaseUrl(rxHttp.getBaseUrl());
         // 添加公共URL参数
         addUrlParams(rxHttp.getBaseUrlParams());
         // 添加公共请求头
@@ -157,30 +151,6 @@ public final class RequestBuilder<T> {
         return this;
     }
 
-    /** 设置上传进度监听 */
-    public @NonNull RequestBuilder<T> setOnUploadListener(@NonNull OnProgressListener onUploadListener) {
-        this.onUploadListener = onUploadListener;
-        return this;
-    }
-
-    /** 设置下载进度监听 */
-    public @NonNull RequestBuilder<T> setOnDownloadListener(@NonNull OnProgressListener onDownloadListener) {
-        this.onDownloadListener = onDownloadListener;
-        return this;
-    }
-
-    public @NonNull RequestBuilder<T> openUploadListener() {
-        this.openUploadListener = true;
-        return this;
-    }
-
-    public @NonNull RequestBuilder<T> openDownloadListener() {
-        this.openDownloadListener = true;
-        return this;
-    }
-
-    private @NonNull Converter<T> converter;
-
     public @NonNull RequestBuilder<T> addConverter(@NonNull Converter<T> converter) {
         this.converter = converter;
         return this;
@@ -195,21 +165,27 @@ public final class RequestBuilder<T> {
                 .build();
     }
 
-    /** 执行请求 */
+    /** 转换为带上传进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toUploadObservable() {
         return ProgressObservable.upload(rxHttp, build(), converter)
                 .onTerminateDetach();
     }
 
-    /** 执行请求 */
+    /** 转换为带下载进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toDownloadObservable() {
         return ProgressObservable.download(rxHttp, build(), converter)
                 .onTerminateDetach();
     }
 
-    /** 执行请求 */
+    /** 转换为普通被观察者 */
     public @NonNull Observable<T> toResultObservable() {
         return ResultObservable.result(rxHttp, build(), converter)
                 .onTerminateDetach();
+    }
+
+    /** 执行请求 */
+    public Response execute() throws IOException {
+        Call call = rxHttp.getOkHttpClient().newCall(build());
+        return call.execute();
     }
 }

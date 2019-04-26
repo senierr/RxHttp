@@ -1,7 +1,6 @@
 package com.senierr.http.converter;
 
-import android.support.annotation.NonNull;
-
+import io.reactivex.annotations.NonNull;
 import okhttp3.Response;
 
 /**

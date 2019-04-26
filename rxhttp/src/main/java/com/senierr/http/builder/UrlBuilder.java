@@ -1,10 +1,11 @@
 package com.senierr.http.builder;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import java.util.LinkedHashMap;
+
+import io.reactivex.annotations.NonNull;
+import io.reactivex.annotations.Nullable;
 
 /**
  * Http请求行构建器

@@ -1,10 +1,10 @@
 package com.senierr.http.builder;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.util.LinkedHashMap;
 
+import io.reactivex.annotations.NonNull;
 import okhttp3.Headers;
 
 /**

@@ -10,7 +10,7 @@ import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.SPCookieStore
 import com.senierr.http.interceptor.LogInterceptor
-import com.senierr.http.listener.OnDownloadListener
+import com.senierr.http.operator.DownloadProgressFilter
 import com.senierr.permission.PermissionManager
 import com.senierr.permission.RequestCallback
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
                 .addHeader("header", "header_value")
                 .setRequestBody4Text("This is a text.")
                 .addConverter(StringConverter())
-                .toResultObservable()
+                .toUploadObservable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -202,13 +202,13 @@ class MainActivity : AppCompatActivity() {
                 .ignoreBaseUrl()
                 .addConverter(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
                 .toDownloadObservable()
-                .compose(object : OnDownloadListener<File>() {
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(object : DownloadProgressFilter<File>() {
                     override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
                         Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
                     }
                 })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     Log.e(DEBUG_TAG, "${Thread.currentThread().name}: percent: ${it.path}")
                 }, {
