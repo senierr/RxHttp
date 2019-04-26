@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.annotations.Nullable;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -122,42 +121,43 @@ public final class RequestBuilder<T> {
     }
 
     /** 设置JSON格式请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody4JSon(@NonNull String jsonStr) {
+    public @NonNull RequestBuilder<T> requestBody4JSon(@NonNull String jsonStr) {
         requestBodyBuilder.setRequestBody4JSon(jsonStr);
         return this;
     }
 
     /** 设置文本格式请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody4Text(@NonNull String textStr) {
+    public @NonNull RequestBuilder<T> requestBody4Text(@NonNull String textStr) {
         requestBodyBuilder.setRequestBody4Text(textStr);
         return this;
     }
 
     /** 设置XML格式请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody4Xml(@NonNull String xmlStr) {
+    public @NonNull RequestBuilder<T> requestBody4Xml(@NonNull String xmlStr) {
         requestBodyBuilder.setRequestBody4Xml(xmlStr);
         return this;
     }
 
     /** 设置字节流请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody4Byte(@NonNull byte[] bytes) {
+    public @NonNull RequestBuilder<T> requestBody4Byte(@NonNull byte[] bytes) {
         requestBodyBuilder.setRequestBody4Byte(bytes);
         return this;
     }
 
     /** 设置文件请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody4File(@NonNull File file) {
+    public @NonNull RequestBuilder<T> requestBody4File(@NonNull File file) {
         requestBodyBuilder.setRequestBody4File(file);
         return this;
     }
 
     /** 设置请求体 */
-    public @NonNull RequestBuilder<T> setRequestBody(@NonNull RequestBody requestBody) {
+    public @NonNull RequestBuilder<T> requestBody(@NonNull RequestBody requestBody) {
         requestBodyBuilder.setRequestBody(requestBody);
         return this;
     }
 
-    public @NonNull RequestBuilder<T> addConverter(@NonNull Converter<T> converter) {
+    /** 设置转换器 */
+    public @NonNull RequestBuilder<T> converter(@NonNull Converter<T> converter) {
         this.converter = converter;
         return this;
     }
@@ -198,18 +198,21 @@ public final class RequestBuilder<T> {
 
     /** 转换为带上传进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toUploadObservable() {
+        if (converter == null) throw new NullPointerException("You must set up a converter");
         return ProgressObservable.upload(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为带下载进度的被观察者 */
     public @NonNull Observable<ProgressResponse<T>> toDownloadObservable() {
+        if (converter == null) throw new NullPointerException("You must set up a converter");
         return ProgressObservable.download(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为普通被观察者 */
     public @NonNull Observable<T> toResultObservable() {
+        if (converter == null) throw new NullPointerException("You must set up a converter");
         return ResultObservable.result(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }

@@ -11,7 +11,8 @@ import okhttp3.Response;
  */
 public class DefaultConverter implements Converter<Response> {
 
-    public @NonNull Response convertResponse(@NonNull Response response) throws Throwable {
+    public @NonNull
+    Response convertResponse(@NonNull Response response) throws Throwable {
         return response;
     }
 }
