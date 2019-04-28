@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
+import com.senierr.http.converter.DefaultConverter;
 import com.senierr.http.model.ProgressResponse;
 import com.senierr.http.observable.ProgressObservable;
 import com.senierr.http.observable.ResultObservable;
@@ -215,11 +216,5 @@ public final class RequestBuilder<T> {
         if (converter == null) throw new NullPointerException("You must set up a converter");
         return ResultObservable.result(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
-    }
-
-    /** 执行请求 */
-    public Response execute() throws IOException {
-        Call call = rxHttp.getOkHttpClient().newCall(build());
-        return call.execute();
     }
 }

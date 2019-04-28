@@ -6,17 +6,17 @@
 
 ### 目前支持
 
-* **普通get, post, put, delete, head, options, patch请求**
-* **自定义请求**
-* **自定义基础请求参数、请求头**
-* **自定义请求参数、请求头、请求体**
-* **任意请求进度监听**
-* **多种HTTPS验证**
-* **可扩展Cookie管理**
-* **多级别日志打印**
-* **可扩展数据解析**
-* **简洁的链式调用**
-* **同步支持RxJava2**
+**普通get, post, put, delete, head, options, patch请求**  
+**自定义请求**  
+**自定义基础请求参数、请求头**  
+**自定义请求参数、请求头、请求体**  
+**任意请求进度监听**  
+**多种HTTPS验证**  
+**可扩展Cookie管理**  
+**多级别日志打印**  
+**可扩展数据解析**  
+**简洁的链式调用**  
+**同步支持RxJava2**  
 
 ### 1.仓库导入
 
@@ -27,7 +27,6 @@ implementation 'com.senierr.http:rxhttp:最新版本'
 **`RxHttp`内部关联依赖：**
 
 ```
--- 'com.android.support:support-annotations:28.0.0'
 -- 'com.squareup.okhttp3:okhttp:3.11.0'
 -- 'io.reactivex.rxjava2:rxjava:2.1.10'
 ```
@@ -70,6 +69,8 @@ val rxHttp = RxHttp.Builder()
 rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、method(自定义请求)
         .setBaseUrl(...)                // 设置基础请求地址（只作用于当前请求，不会改变公共设置）
         .ignoreBaseUrl()                // 忽略基础请求地址（只作用于当前请求，不会改变公共设置）
+        .ignoreBaseUrlParams()          // 忽略基础请求参数（只作用于当前请求，不会改变公共设置）
+        .ignoreBaseHeaders()            // 忽略基础请求头（只作用于当前请求，不会改变公共设置）
         .addHeader(...)                 // 增加单个头
         .addHeaders(...)                // 增加多个头
         .addUrlParam(...)               // 增加单个URL参数
@@ -84,19 +85,22 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .setRequestBody4File(...)       // 设置File请求体
         .setRequestBody(...)            // 自定义请求体
         .isMultipart(...)               // 是否分片表单
-        .setOnUploadListener(...)       // 设置上传进度监听
-        .setOnDownloadListener(...)     // 设置下载进度监听
-        .execute(...)                   // 发起请求
+        .converter(...)                 // 设置解析器
+        .toUploadObservable(...)        // 转为带上传进度的Observable
+        .toDownloadObservable(...)      // 转为带下载进度的Observable
+        .toResultObservable(...)        // 转为普通结果的Observable
 ```
 
 ### 5.数据解析
 
-``RxHttp``在发起请求``execute(...)``时需要传入数据解析器：``Converter<T>``，以便返回所需的正确结果。
+在发起请求时，必须设置**Converter**，以便``RxHttp``能正确解析数据。
 
-``RxHttp``内置了两种``Converter``: ``StringConverter(字符串结果)``和``FileConverter(文件存储)``
+``RxHttp``内置了三种``Converter``：
+* **DefaultConverter**: 返回Response
+* **StringConverter**: 返回String
+* **FileConverter**: 下载文件并返回File
 
-当然，你也可以根据实际业务自定义``Converter<T>``，返回自己需要的数据类型：
-
+当然，您也可以实现``Converter<T>``接口，自定义数据解析规则：
 ```
 public interface Converter<T> {
     @NonNull T convertResponse(@NonNull Response response) throws Throwable;
@@ -111,17 +115,24 @@ public interface Converter<T> {
 
 ``RxHttp``将``上传进度监听``和``下载进度监听``进行了剥离，并使其适用于**任意请求**。
 
-**注：``onProgress``执行在UI线程**
+在发起请求时，您可以构建**带上传进度的Observable**以及**带下载进度的Observable**，并可通过内置的操作符监听进度。
 
-在发起请求时，可以分别设置：
+``RxHttp``当前提供两种操作符：
+* **UploadProgressFilter**
+* **DownloadProgressFilter**
+
+示例如下:
 ```
--- setOnUploadListener(...)       // 设置上传进度监听
--- setOnDownloadListener(...)     // 设置下载进度监听
-
-public interface OnProgressListener {
-    // 注：UI线程回调
-    void onProgress(long totalSize, long currentSize, int percent);
-}
+rxHttp.get<File>("...")
+        .converter(FileConverter(...))
+        .toDownloadObservable()
+        .compose(object : DownloadProgressFilter<File>() {
+            override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
+                // 下载进度回调
+                ...
+            }
+        })
+        .subscribe()
 ```
 
 ### 8.Cookie
