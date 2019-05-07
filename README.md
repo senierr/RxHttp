@@ -85,7 +85,6 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .setRequestBody4File(...)       // 设置File请求体
         .setRequestBody(...)            // 自定义请求体
         .isMultipart(...)               // 是否分片表单
-        .converter(...)                 // 设置解析器
         .toUploadObservable(...)        // 转为带上传进度的Observable
         .toDownloadObservable(...)      // 转为带下载进度的Observable
         .toResultObservable(...)        // 转为普通结果的Observable
@@ -109,7 +108,7 @@ public interface Converter<T> {
 
 ### 6.结果返回
 
-返回结果的类型为``Observable<T>``，其中泛型``<T>``就是解析的结果类型。
+返回结果的类型为``Observable<T>``，其中泛型``<T>``即为解析的结果类型。
 
 ### 7.进度监听
 
@@ -117,22 +116,19 @@ public interface Converter<T> {
 
 在发起请求时，您可以构建**带上传进度的Observable**以及**带下载进度的Observable**，并可通过内置的操作符监听进度。
 
-``RxHttp``当前提供两种操作符：
-* **UploadProgressFilter**
-* **DownloadProgressFilter**
+``RxHttp``提供了操作符**ProgressProcessor**，来进行进度处理。
 
 示例如下:
 ```
-rxHttp.get<File>("...")
-        .converter(FileConverter(...))
-        .toDownloadObservable()
-        .compose(object : DownloadProgressFilter<File>() {
-            override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
-                // 下载进度回调
-                ...
-            }
-        })
-        .subscribe()
+rxHttp.get("...")
+    .toDownloadObservable(FileConverter(...))
+    .compose(object : ProgressProcessor<File>() {
+        override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
+            // 进度处理
+            ...
+        }
+    })
+    .subscribe()
 ```
 
 ### 8.Cookie
