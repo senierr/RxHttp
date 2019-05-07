@@ -10,7 +10,7 @@ import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.SPCookieStore
 import com.senierr.http.interceptor.LogInterceptor
-import com.senierr.http.operator.DownloadProgressFilter
+import com.senierr.http.operator.ProgressProcessor
 import com.senierr.permission.PermissionManager
 import com.senierr.permission.RequestCallback
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
+        Log.e(DEBUG_TAG, "onDestroy")
     }
 
     private fun init() {
@@ -198,7 +199,16 @@ class MainActivity : AppCompatActivity() {
                 .toUploadObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({}, {})
+                .compose(object : ProgressProcessor<String>() {
+                    override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
+                        Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
+                    }
+                })
+                .subscribe({
+                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: $it")
+                }, {
+                    Log.e(DEBUG_TAG, it.message)
+                })
                 .bindToActivity()
     }
 
@@ -211,13 +221,13 @@ class MainActivity : AppCompatActivity() {
                 .toDownloadObservable(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(object : DownloadProgressFilter<File>() {
+                .compose(object : ProgressProcessor<File>() {
                     override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
                         Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
                     }
                 })
                 .subscribe({
-                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: percent: ${it.path}")
+                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: ${it.path}")
                 }, {
                     Log.e(DEBUG_TAG, it.message)
                 })
