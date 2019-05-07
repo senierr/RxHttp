@@ -91,10 +91,9 @@ class MainActivity : AppCompatActivity() {
      * 普通GET请求
      */
     private fun getNormal() {
-        rxHttp.get<String>("/getInfo")
+        rxHttp.get("/getInfo")
                 .addUrlParam("name", "tom")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -105,11 +104,10 @@ class MainActivity : AppCompatActivity() {
      * 忽略基础请求参数
      */
     private fun ignoreBaseUrlParams() {
-        rxHttp.get<String>("/getInfo")
+        rxHttp.get("/getInfo")
                 .ignoreBaseUrlParams()
                 .addUrlParam("name", "tom")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -120,11 +118,10 @@ class MainActivity : AppCompatActivity() {
      * 忽略基础请求头
      */
     private fun ignoreBaseHeaders() {
-        rxHttp.get<String>("/getInfo")
+        rxHttp.get("/getInfo")
                 .ignoreBaseHeaders()
                 .addUrlParam("name", "tom")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -135,11 +132,10 @@ class MainActivity : AppCompatActivity() {
      * 忽略基础请求地址
      */
     private fun ignoreBaseUrl() {
-        rxHttp.get<String>("https://api.test.ignore.cn/getInfo")
+        rxHttp.get("https://api.test.ignore.cn/getInfo")
                 .ignoreBaseUrl()
                 .addUrlParam("name", "tom")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -150,12 +146,11 @@ class MainActivity : AppCompatActivity() {
      * POST表单请求
      */
     private fun postNormal() {
-        rxHttp.post<String>("/updateInfo")
+        rxHttp.post("/updateInfo")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .addRequestParam("key", "value")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -166,12 +161,11 @@ class MainActivity : AppCompatActivity() {
      * POST Json请求
      */
     private fun postJson() {
-        rxHttp.post<String>("/updateInfo")
+        rxHttp.post("/updateInfo")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4JSon("{\"age\":0,\"msg\":\"ok\"}")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -182,12 +176,11 @@ class MainActivity : AppCompatActivity() {
      * POST Text请求
      */
     private fun postText() {
-        rxHttp.post<String>("/updateInfo")
+        rxHttp.post("/updateInfo")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4Text("This is a text.")
-                .converter(StringConverter())
-                .toResultObservable()
+                .toResultObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -198,12 +191,11 @@ class MainActivity : AppCompatActivity() {
      * 上传文件
      */
     private fun upload() {
-        rxHttp.post<String>("/updateInfo")
+        rxHttp.post("/updateInfo")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4Text("This is a text.")
-                .converter(StringConverter())
-                .toUploadObservable()
+                .toUploadObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -214,10 +206,9 @@ class MainActivity : AppCompatActivity() {
      * 下载文件
      */
     private fun download() {
-        rxHttp.get<File>("https://d1.music.126.net/dmusic/cloudmusicsetup_2.5.2.197409.exe")
+        rxHttp.get("https://d1.music.126.net/dmusic/cloudmusicsetup_2.5.2.197409.exe")
                 .ignoreBaseUrl()
-                .converter(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
-                .toDownloadObservable()
+                .toDownloadObservable(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(object : DownloadProgressFilter<File>() {

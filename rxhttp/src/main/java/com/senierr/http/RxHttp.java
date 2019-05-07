@@ -42,48 +42,48 @@ public final class RxHttp {
     }
 
     /** get请求 */
-    public @NonNull <T> RequestBuilder<T> get(@NonNull String urlStr) {
+    public @NonNull RequestBuilder get(@NonNull String urlStr) {
         return method(MethodBuilder.GET, urlStr);
     }
 
     /** post请求 */
-    public @NonNull <T> RequestBuilder<T> post(@NonNull String urlStr) {
+    public @NonNull RequestBuilder post(@NonNull String urlStr) {
         return method(MethodBuilder.POST, urlStr);
     }
 
     /** head请求 */
-    public @NonNull <T> RequestBuilder<T> head(@NonNull String urlStr) {
+    public @NonNull RequestBuilder head(@NonNull String urlStr) {
         return method(MethodBuilder.HEAD, urlStr);
     }
 
     /** delete请求 */
-    public @NonNull <T> RequestBuilder<T> delete(@NonNull String urlStr) {
+    public @NonNull RequestBuilder delete(@NonNull String urlStr) {
         return method(MethodBuilder.DELETE, urlStr);
     }
 
     /** put请求 */
-    public @NonNull <T> RequestBuilder<T> put(@NonNull String urlStr) {
+    public @NonNull RequestBuilder put(@NonNull String urlStr) {
         return method(MethodBuilder.PUT, urlStr);
     }
 
     /** patch请求 */
-    public @NonNull <T> RequestBuilder<T> patch(@NonNull String urlStr) {
+    public @NonNull RequestBuilder patch(@NonNull String urlStr) {
         return method(MethodBuilder.PATCH, urlStr);
     }
 
     /** options请求 */
-    public @NonNull <T> RequestBuilder<T> options(@NonNull String urlStr) {
+    public @NonNull RequestBuilder options(@NonNull String urlStr) {
         return method(MethodBuilder.OPTIONS, urlStr);
     }
 
     /** trace请求 */
-    public @NonNull <T> RequestBuilder<T> trace(@NonNull String urlStr) {
+    public @NonNull RequestBuilder trace(@NonNull String urlStr) {
         return method(MethodBuilder.TRACE, urlStr);
     }
 
     /** 自定义请求 */
-    public @NonNull <T> RequestBuilder<T> method(@NonNull String method, @NonNull String url) {
-        return new RequestBuilder<>(this, method, url);
+    public @NonNull RequestBuilder method(@NonNull String method, @NonNull String url) {
+        return new RequestBuilder(this, method, url);
     }
 
     public @Nullable String getBaseUrl() {

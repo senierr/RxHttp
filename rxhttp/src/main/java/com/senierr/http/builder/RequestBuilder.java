@@ -4,21 +4,17 @@ import android.text.TextUtils;
 
 import com.senierr.http.RxHttp;
 import com.senierr.http.converter.Converter;
-import com.senierr.http.converter.DefaultConverter;
 import com.senierr.http.model.ProgressResponse;
 import com.senierr.http.observable.ProgressObservable;
 import com.senierr.http.observable.ResultObservable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 
 import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
-import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * HTTP请求构建器
@@ -26,7 +22,7 @@ import okhttp3.Response;
  * @author zhouchunjie
  * @date 2017/3/27
  */
-public final class RequestBuilder<T> {
+public final class RequestBuilder {
 
     private @NonNull RxHttp rxHttp;
 
@@ -39,8 +35,6 @@ public final class RequestBuilder<T> {
     private boolean ignoreBaseUrlParams = false;
     private boolean ignoreBaseHeaders = false;
 
-    private @NonNull Converter<T> converter;
-
     public RequestBuilder(@NonNull RxHttp rxHttp, @NonNull String method, @NonNull String url) {
         this.rxHttp = rxHttp;
         this.methodBuilder = new MethodBuilder(method);
@@ -50,116 +44,110 @@ public final class RequestBuilder<T> {
     }
 
     /** 忽略基础请求地址 */
-    public @NonNull RequestBuilder<T> ignoreBaseUrl() {
+    public @NonNull RequestBuilder ignoreBaseUrl() {
         ignoreBaseUrl = true;
         return this;
     }
 
     /** 忽略基础请求参数 */
-    public @NonNull RequestBuilder<T> ignoreBaseUrlParams() {
+    public @NonNull RequestBuilder ignoreBaseUrlParams() {
         ignoreBaseUrlParams = true;
         return this;
     }
 
     /** 忽略基础请求头 */
-    public @NonNull RequestBuilder<T> ignoreBaseHeaders() {
+    public @NonNull RequestBuilder ignoreBaseHeaders() {
         ignoreBaseHeaders = true;
         return this;
     }
 
     /** 添加请求参数 */
-    public @NonNull RequestBuilder<T> addUrlParam(@NonNull String key, @NonNull String value) {
+    public @NonNull RequestBuilder addUrlParam(@NonNull String key, @NonNull String value) {
         urlBuilder.addUrlParam(key, value);
         return this;
     }
 
     /** 添加多个请求参数 */
-    public @NonNull RequestBuilder<T> addUrlParams(@NonNull LinkedHashMap<String, String> params) {
+    public @NonNull RequestBuilder addUrlParams(@NonNull LinkedHashMap<String, String> params) {
         urlBuilder.addUrlParams(params);
         return this;
     }
 
     /** 添加头部 */
-    public @NonNull RequestBuilder<T> addHeader(@NonNull String key, @NonNull String value) {
+    public @NonNull RequestBuilder addHeader(@NonNull String key, @NonNull String value) {
         headerBuilder.addHeader(key, value);
         return this;
     }
 
     /** 添加多个头部 */
-    public @NonNull RequestBuilder<T> addHeaders(@NonNull LinkedHashMap<String, String> headers) {
+    public @NonNull RequestBuilder addHeaders(@NonNull LinkedHashMap<String, String> headers) {
         headerBuilder.addHeaders(headers);
         return this;
     }
 
     /** 添加文件参数 */
-    public @NonNull RequestBuilder<T> addRequestParam(@NonNull String key, @NonNull File file) {
+    public @NonNull RequestBuilder addRequestParam(@NonNull String key, @NonNull File file) {
         requestBodyBuilder.addRequestParam(key, file);
         return this;
     }
 
     /** 添加多个文件参数 */
-    public @NonNull RequestBuilder<T> addRequestFileParams(@NonNull LinkedHashMap<String, File> fileParams) {
+    public @NonNull RequestBuilder addRequestFileParams(@NonNull LinkedHashMap<String, File> fileParams) {
         requestBodyBuilder.addRequestFileParams(fileParams);
         return this;
     }
 
     /** 添加字符串参数 */
-    public @NonNull RequestBuilder<T> addRequestParam(@NonNull String key, @NonNull String value) {
+    public @NonNull RequestBuilder addRequestParam(@NonNull String key, @NonNull String value) {
         requestBodyBuilder.addRequestParam(key, value);
         return this;
     }
 
     /** 添加多个字符串参数 */
-    public @NonNull RequestBuilder<T> addRequestStringParams(@NonNull LinkedHashMap<String, String> stringParams) {
+    public @NonNull RequestBuilder addRequestStringParams(@NonNull LinkedHashMap<String, String> stringParams) {
         requestBodyBuilder.addRequestStringParams(stringParams);
         return this;
     }
 
     /** 设置是否分片上传 */
-    public @NonNull RequestBuilder<T> isMultipart(boolean isMultipart) {
+    public @NonNull RequestBuilder isMultipart(boolean isMultipart) {
         requestBodyBuilder.isMultipart(isMultipart);
         return this;
     }
 
     /** 设置JSON格式请求体 */
-    public @NonNull RequestBuilder<T> requestBody4JSon(@NonNull String jsonStr) {
+    public @NonNull RequestBuilder requestBody4JSon(@NonNull String jsonStr) {
         requestBodyBuilder.setRequestBody4JSon(jsonStr);
         return this;
     }
 
     /** 设置文本格式请求体 */
-    public @NonNull RequestBuilder<T> requestBody4Text(@NonNull String textStr) {
+    public @NonNull RequestBuilder requestBody4Text(@NonNull String textStr) {
         requestBodyBuilder.setRequestBody4Text(textStr);
         return this;
     }
 
     /** 设置XML格式请求体 */
-    public @NonNull RequestBuilder<T> requestBody4Xml(@NonNull String xmlStr) {
+    public @NonNull RequestBuilder requestBody4Xml(@NonNull String xmlStr) {
         requestBodyBuilder.setRequestBody4Xml(xmlStr);
         return this;
     }
 
     /** 设置字节流请求体 */
-    public @NonNull RequestBuilder<T> requestBody4Byte(@NonNull byte[] bytes) {
+    public @NonNull RequestBuilder requestBody4Byte(@NonNull byte[] bytes) {
         requestBodyBuilder.setRequestBody4Byte(bytes);
         return this;
     }
 
     /** 设置文件请求体 */
-    public @NonNull RequestBuilder<T> requestBody4File(@NonNull File file) {
+    public @NonNull RequestBuilder requestBody4File(@NonNull File file) {
         requestBodyBuilder.setRequestBody4File(file);
         return this;
     }
 
     /** 设置请求体 */
-    public @NonNull RequestBuilder<T> requestBody(@NonNull RequestBody requestBody) {
+    public @NonNull RequestBuilder requestBody(@NonNull RequestBody requestBody) {
         requestBodyBuilder.setRequestBody(requestBody);
-        return this;
-    }
-
-    /** 设置转换器 */
-    public @NonNull RequestBuilder<T> converter(@NonNull Converter<T> converter) {
-        this.converter = converter;
         return this;
     }
 
@@ -198,22 +186,19 @@ public final class RequestBuilder<T> {
     }
 
     /** 转换为带上传进度的被观察者 */
-    public @NonNull Observable<ProgressResponse<T>> toUploadObservable() {
-        if (converter == null) throw new NullPointerException("You must set up a converter");
+    public @NonNull <T> Observable<ProgressResponse<T>> toUploadObservable(@NonNull Converter<T> converter) {
         return ProgressObservable.upload(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为带下载进度的被观察者 */
-    public @NonNull Observable<ProgressResponse<T>> toDownloadObservable() {
-        if (converter == null) throw new NullPointerException("You must set up a converter");
+    public @NonNull <T> Observable<ProgressResponse<T>> toDownloadObservable(@NonNull Converter<T> converter) {
         return ProgressObservable.download(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
 
     /** 转换为普通被观察者 */
-    public @NonNull Observable<T> toResultObservable() {
-        if (converter == null) throw new NullPointerException("You must set up a converter");
+    public @NonNull <T> Observable<T> toResultObservable(@NonNull Converter<T> converter) {
         return ResultObservable.result(rxHttp.getOkHttpClient(), build(), converter)
                 .onTerminateDetach();
     }
