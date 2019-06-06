@@ -78,12 +78,12 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .addRequestParam(...)           // 增加单个表单参数
         .addRequestStringParams(...)    // 增加多个字符串表单参数
         .addRequestFileParams(...)      // 增加多个文件表单参数
-        .setRequestBody4JSon(...)       // 设置Json请求体
-        .setRequestBody4Text(...)       // 设置Text请求体
-        .setRequestBody4Xml(...)        // 设置XML请求体
-        .setRequestBody4Byte(...)       // 设置Byte请求体
-        .setRequestBody4File(...)       // 设置File请求体
-        .setRequestBody(...)            // 自定义请求体
+        .requestBody4JSon(...)       // 设置Json请求体
+        .requestBody4Text(...)       // 设置Text请求体
+        .requestBody4Xml(...)        // 设置XML请求体
+        .requestBody4Byte(...)       // 设置Byte请求体
+        .requestBody4File(...)       // 设置File请求体
+        .requestBody(...)            // 自定义请求体
         .isMultipart(...)               // 是否分片表单
         .toUploadObservable(...)        // 转为带上传进度的Observable
         .toDownloadObservable(...)      // 转为带下载进度的Observable
