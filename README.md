@@ -1,6 +1,6 @@
 # RxHttp
 
-[![](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/senierr/RxHttp)
+[![](https://img.shields.io/badge/release-v1.2.0-blue.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
