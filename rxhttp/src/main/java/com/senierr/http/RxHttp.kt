@@ -1,7 +1,7 @@
-package com.senierr.http.kt
+package com.senierr.http
 
-import com.senierr.http.kt.builder.*
-import com.senierr.http.kt.interceptor.LogInterceptor
+import com.senierr.http.builder.*
+import com.senierr.http.interceptor.LogInterceptor
 import okhttp3.CookieJar
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -10,12 +10,12 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
 
 /**
- * KtHttp
+ * RxHttp
  *
  * @author zhouchunjie
  * @date 2017/3/27
  */
-class KtHttp private constructor(
+class RxHttp private constructor(
         // 基础请求地址
         private val baseUrl: String?,
         // 基础请求参数
@@ -145,8 +145,8 @@ class KtHttp private constructor(
             return this
         }
 
-        fun build(): KtHttp {
-            return KtHttp(baseUrl, baseUrlParams, baseHeaders, okHttpClientBuilder.build())
+        fun build(): RxHttp {
+            return RxHttp(baseUrl, baseUrlParams, baseHeaders, okHttpClientBuilder.build())
         }
     }
 }

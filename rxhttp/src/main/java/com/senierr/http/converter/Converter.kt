@@ -1,4 +1,4 @@
-package com.senierr.http.kt.converter
+package com.senierr.http.converter
 
 import okhttp3.Response
 

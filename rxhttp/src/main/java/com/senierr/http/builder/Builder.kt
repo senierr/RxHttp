@@ -1,4 +1,4 @@
-package com.senierr.http.kt.builder
+package com.senierr.http.builder
 
 /**
  *

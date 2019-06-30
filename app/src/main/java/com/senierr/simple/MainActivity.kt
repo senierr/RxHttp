@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.senierr.http.RxHttp
 import com.senierr.http.converter.FileConverter
-import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.SPCookieStore
 import com.senierr.http.interceptor.LogInterceptor
 import com.senierr.http.operator.ProgressProcessor

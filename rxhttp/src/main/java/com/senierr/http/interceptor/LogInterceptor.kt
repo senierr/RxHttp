@@ -1,4 +1,4 @@
-package com.senierr.http.kt.interceptor
+package com.senierr.http.interceptor
 
 import android.util.Log
 import okhttp3.Interceptor

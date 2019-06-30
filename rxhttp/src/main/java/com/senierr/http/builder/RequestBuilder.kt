@@ -1,9 +1,10 @@
-package com.senierr.http.kt.builder
+package com.senierr.http.builder
 
-import com.senierr.http.kt.converter.Converter
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import com.senierr.http.converter.Converter
+import com.senierr.http.model.ProgressResponse
+import com.senierr.http.observable.ProgressObservable
+import com.senierr.http.observable.ResultObservable
+import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -144,9 +145,21 @@ class RequestBuilder(
                 .build()
     }
 
-    fun <T> async(converter: Converter<T>): Deferred<T> = GlobalScope.async {
-        val call = okHttpClient.newCall(build())
-        val rawResponse = call.execute()
-        converter.convertResponse(rawResponse)
+    /** 转换为带上传进度的被观察者  */
+    fun <T> toUploadObservable(converter: Converter<T>): Observable<ProgressResponse<T>> {
+        return ProgressObservable.upload(okHttpClient, build(), converter)
+                .onTerminateDetach()
+    }
+
+    /** 转换为带下载进度的被观察者  */
+    fun <T> toDownloadObservable(converter: Converter<T>): Observable<ProgressResponse<T>> {
+        return ProgressObservable.download(okHttpClient, build(), converter)
+                .onTerminateDetach()
+    }
+
+    /** 转换为普通被观察者  */
+    fun <T> toResultObservable(converter: Converter<T>): Observable<T> {
+        return ResultObservable.result(okHttpClient, build(), converter)
+                .onTerminateDetach()
     }
 }
