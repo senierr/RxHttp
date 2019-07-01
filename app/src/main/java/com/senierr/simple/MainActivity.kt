@@ -77,8 +77,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
-        val sslFactory = SSLFactory()
-        sslFactory.sSLSocketFactory
         rxHttp = RxHttp.Builder()
                 .debug(DEBUG_TAG, LogInterceptor.LogLevel.BODY)
                 .connectTimeout(TIMEOUT)
@@ -87,7 +85,8 @@ class MainActivity : AppCompatActivity() {
                 .baseUrl("https://api.test.cn")
                 .addBaseHeader("header_base", "header_base")
                 .addBaseUrlParam("param_base", "param_base_value")
-                .cookieJar(CookieJarImpl(SPCookieStore(this)))
+                .cookieStore(SPCookieStore(this))
+                .sslFactory(SSLFactory())
                 .addInterceptor(MockInterceptor())
                 .build()
     }

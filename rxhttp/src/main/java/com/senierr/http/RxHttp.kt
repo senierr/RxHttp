@@ -1,8 +1,10 @@
 package com.senierr.http
 
 import com.senierr.http.builder.*
+import com.senierr.http.cookie.CookieJarImpl
+import com.senierr.http.cookie.store.CookieStore
+import com.senierr.http.https.SSLFactory
 import com.senierr.http.interceptor.LogInterceptor
-import okhttp3.CookieJar
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -84,7 +86,6 @@ class RxHttp private constructor(
         private val baseUrlParams = LinkedHashMap<String, String>()
         private val baseHeaders = LinkedHashMap<String, String>()
 
-        /** 自定义配置  */
         fun baseUrl(baseUrl: String): Builder {
             this.baseUrl = baseUrl
             return this
@@ -110,7 +111,6 @@ class RxHttp private constructor(
             return this
         }
 
-        /** OkHttp常用配置  */
         fun debug(tag: String, logLevel: LogInterceptor.LogLevel): Builder {
             okHttpClientBuilder.addInterceptor(LogInterceptor(tag, logLevel))
             return this
@@ -136,13 +136,17 @@ class RxHttp private constructor(
             return this
         }
 
-        fun sslSocketFactory(sslSocketFactory: SSLSocketFactory, trustManager: X509TrustManager): Builder {
-            okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager)
+        fun sslFactory(sslFactory: SSLFactory): Builder {
+            val sslSocketFactory = sslFactory.sSLSocketFactory
+            val trustManager = sslFactory.trustManager
+            if (sslSocketFactory != null && trustManager != null) {
+                okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager)
+            }
             return this
         }
 
-        fun cookieJar(cookieJar: CookieJar): Builder {
-            okHttpClientBuilder.cookieJar(cookieJar)
+        fun cookieStore(cookieStore: CookieStore): Builder {
+            okHttpClientBuilder.cookieJar(CookieJarImpl(cookieStore))
             return this
         }
 
