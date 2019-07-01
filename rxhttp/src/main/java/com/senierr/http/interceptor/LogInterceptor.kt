@@ -4,12 +4,11 @@ import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.http.promisesBody
 import okio.Buffer
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
-import okhttp3.ResponseBody.Companion.toResponseBody
 
 /**
  * 日志拦截器
@@ -28,26 +27,6 @@ class LogInterceptor(
 
     companion object {
         private val UTF8 = Charset.forName("UTF-8")
-
-        /**
-         * 判断body是否是文本内容
-         */
-        private fun isPlaintext(mediaType: MediaType?): Boolean {
-            if (mediaType == null) return false
-            if (mediaType.type == "text") {
-                return true
-            }
-            var subtype: String? = mediaType.subtype
-            if (subtype != null) {
-                subtype = subtype.toLowerCase()
-                return subtype.contains("x-www-form-urlencoded") ||
-                        subtype.contains("json") ||
-                        subtype.contains("xml") ||
-                        subtype.contains("plain") ||
-                        subtype.contains("html")
-            }
-            return false
-        }
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -62,51 +41,46 @@ class LogInterceptor(
         val logHeaders = logLevel == LogLevel.HEADERS || logLevel == LogLevel.BODY
         val logBody = logLevel == LogLevel.BODY
 
-        log(" ----------------------> 开始请求 <----------------------")
+        val requestLog = StringBuilder()
+
         val copyRequest = request.newBuilder().build()
         val requestBody = copyRequest.body
-        val hasRequestBody = requestBody != null
 
         // 打印基础信息
         if (logBasic) {
-            val connection = chain.connection()
-            val requestStartMessage = ("\u007C " + copyRequest.method
-                    + " " + copyRequest.url
-                    + " " + if (connection != null) connection.protocol() else "")
-            log(requestStartMessage)
+            requestLog.append(" \n--> ${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
         }
         // 打印Header信息
         if (logHeaders) {
-            log("\u007C Headers:")
+            requestLog.append("\u007C-Headers:\n")
             val headers = copyRequest.headers
-            var i = 0
-            val count = headers.size
-            while (i < count) {
-                log("\u007C     " + headers.name(i) + ": " + headers.value(i))
-                i++
+            for (i in 0 until headers.size) {
+                requestLog.append("\u007C\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
         // 打印Body信息
-        if (logBody && hasRequestBody) {
-            log("\u007C Body:")
-            if (isPlaintext(requestBody!!.contentType())) {
+        if (logBody && requestBody != null) {
+            requestLog.append("\u007C-Body: (${requestBody.contentLength()}-byte)\n")
+            if (isPlaintext(requestBody.contentType())) {
                 val buffer = Buffer()
                 requestBody.writeTo(buffer)
-
                 var charset: Charset? = UTF8
                 val contentType = requestBody.contentType()
                 if (contentType != null) {
                     charset = contentType.charset(UTF8)
                 }
                 if (charset != null) {
-                    log("\u007C     " + buffer.readString(charset))
+                    requestLog.append("\u007C\t${buffer.readString(charset)}\n")
                 }
             } else {
-                log("\u007C     Body maybe [file part] , too large too print , ignored!")
+                requestLog.append("\u007C\tBody maybe [file part] , too large too print , ignored!\n")
             }
         }
 
-        log(" ----------------------> 结束请求 <----------------------")
+        requestLog.append("--> END ${copyRequest.method}\n")
+
+        Log.d(tag, requestLog.toString())
+
         val startNs = System.nanoTime()
         val response: Response
         try {
@@ -160,11 +134,31 @@ class LogInterceptor(
     }
 
     /**
+     * 判断body是否是文本内容
+     */
+    private fun isPlaintext(mediaType: MediaType?): Boolean {
+        if (mediaType == null) return false
+        if (mediaType.type == "text") {
+            return true
+        }
+        var subtype: String? = mediaType.subtype
+        if (subtype != null) {
+            subtype = subtype.toLowerCase()
+            return subtype.contains("x-www-form-urlencoded") ||
+                    subtype.contains("json") ||
+                    subtype.contains("xml") ||
+                    subtype.contains("plain") ||
+                    subtype.contains("html")
+        }
+        return false
+    }
+
+    /**
      * 日志打印
      *
      * @param message
      */
     private fun log(message: String) {
-        Log.println(Log.DEBUG, tag, message)
+//        Log.println(Log.DEBUG, tag, message)
     }
 }
