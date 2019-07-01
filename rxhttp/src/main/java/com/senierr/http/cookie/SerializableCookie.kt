@@ -10,7 +10,7 @@ import java.io.ObjectOutputStream
 import java.io.Serializable
 
 import okhttp3.Cookie
-import okhttp3.internal.Util
+import okhttp3.internal.closeQuietly
 
 /**
  * 可序列化的Cookie
@@ -22,14 +22,14 @@ class SerializableCookie(@Transient private var cookie: Cookie? = null) : Serial
 
     private fun writeObject(out: ObjectOutputStream) {
         cookie?.let {
-            out.writeObject(it.name())
-            out.writeObject(it.value())
-            out.writeLong(if (it.persistent()) it.expiresAt() else NON_VALID_EXPIRES_AT)
-            out.writeObject(it.domain())
-            out.writeObject(it.path())
-            out.writeBoolean(it.secure())
-            out.writeBoolean(it.httpOnly())
-            out.writeBoolean(it.hostOnly())
+            out.writeObject(it.name)
+            out.writeObject(it.value)
+            out.writeLong(if (it.persistent) it.expiresAt else NON_VALID_EXPIRES_AT)
+            out.writeObject(it.domain)
+            out.writeObject(it.path)
+            out.writeBoolean(it.secure)
+            out.writeBoolean(it.httpOnly)
+            out.writeBoolean(it.hostOnly)
         }
     }
 
@@ -79,7 +79,7 @@ class SerializableCookie(@Transient private var cookie: Cookie? = null) : Serial
                 Log.d(TAG, "IOException in encodeCookie", e)
                 return null
             } finally {
-                Util.closeQuietly(objectOutputStream)
+                objectOutputStream?.closeQuietly()
             }
             return byteArrayToHexString(byteArrayOutputStream.toByteArray())
         }
@@ -101,7 +101,7 @@ class SerializableCookie(@Transient private var cookie: Cookie? = null) : Serial
             } catch (e: ClassNotFoundException) {
                 Log.d(TAG, "ClassNotFoundException in decodeCookie", e)
             } finally {
-                Util.closeQuietly(objectInputStream)
+                objectInputStream?.closeQuietly()
             }
             return cookie
         }

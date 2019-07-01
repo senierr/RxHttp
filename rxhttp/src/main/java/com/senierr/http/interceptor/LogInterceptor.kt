@@ -5,10 +5,11 @@ import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
-import okhttp3.internal.http.HttpHeaders
+import okhttp3.internal.http.promisesBody
 import okio.Buffer
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
+import okhttp3.ResponseBody.Companion.toResponseBody
 
 /**
  * 日志拦截器
@@ -33,10 +34,10 @@ class LogInterceptor(
          */
         private fun isPlaintext(mediaType: MediaType?): Boolean {
             if (mediaType == null) return false
-            if (mediaType.type() != null && mediaType.type() == "text") {
+            if (mediaType.type == "text") {
                 return true
             }
-            var subtype: String? = mediaType.subtype()
+            var subtype: String? = mediaType.subtype
             if (subtype != null) {
                 subtype = subtype.toLowerCase()
                 return subtype.contains("x-www-form-urlencoded") ||
@@ -63,23 +64,23 @@ class LogInterceptor(
 
         log(" ----------------------> 开始请求 <----------------------")
         val copyRequest = request.newBuilder().build()
-        val requestBody = copyRequest.body()
+        val requestBody = copyRequest.body
         val hasRequestBody = requestBody != null
 
         // 打印基础信息
         if (logBasic) {
             val connection = chain.connection()
-            val requestStartMessage = ("\u007C " + copyRequest.method()
-                    + " " + copyRequest.url()
+            val requestStartMessage = ("\u007C " + copyRequest.method
+                    + " " + copyRequest.url
                     + " " + if (connection != null) connection.protocol() else "")
             log(requestStartMessage)
         }
         // 打印Header信息
         if (logHeaders) {
             log("\u007C Headers:")
-            val headers = copyRequest.headers()
+            val headers = copyRequest.headers
             var i = 0
-            val count = headers.size()
+            val count = headers.size
             while (i < count) {
                 log("\u007C     " + headers.name(i) + ": " + headers.value(i))
                 i++
@@ -123,31 +124,31 @@ class LogInterceptor(
 
         // 打印基础信息
         if (logBasic) {
-            log("\u007C " + cloneResponse.code()
-                    + " " + cloneResponse.message()
-                    + " " + cloneResponse.request().url()
+            log("\u007C " + cloneResponse.code
+                    + " " + cloneResponse.message
+                    + " " + cloneResponse.request.url
                     + " (" + tookMs + "ms)")
         }
         // 打印Header信息
         if (logHeaders) {
             log("\u007C Headers:")
-            val headers = cloneResponse.headers()
+            val headers = cloneResponse.headers
             var i = 0
-            val count = headers.size()
+            val count = headers.size
             while (i < count) {
                 log("\u007C     " + headers.name(i) + ": " + headers.value(i))
                 i++
             }
         }
         // 打印Body信息
-        if (logBody && HttpHeaders.hasBody(cloneResponse)) {
+        if (logBody && cloneResponse.promisesBody()) {
             log("\u007C Body:")
-            var responseBody = cloneResponse.body()
+            var responseBody = cloneResponse.body
             if (responseBody != null && isPlaintext(responseBody.contentType())) {
                 val body = responseBody.string()
                 log("\u007C     $body")
                 log(" ----------------------> 结束响应 <----------------------")
-                responseBody = ResponseBody.create(responseBody.contentType(), body)
+                responseBody = body.toResponseBody(responseBody.contentType())
                 return response.newBuilder().body(responseBody).build()
             } else {
                 log("\u007C     body: maybe [file part] , too large too print , ignored!")

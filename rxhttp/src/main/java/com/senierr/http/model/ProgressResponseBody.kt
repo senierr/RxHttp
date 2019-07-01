@@ -27,7 +27,7 @@ class ProgressResponseBody(
     }
 
     override fun source(): BufferedSource {
-        val source = bufferedSource ?: Okio.buffer(CountingSource(delegate.source()))
+        val source = bufferedSource ?: CountingSource(delegate.source()).buffer()
         bufferedSource = source
         return source
     }

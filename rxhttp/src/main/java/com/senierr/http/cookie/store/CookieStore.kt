@@ -1,7 +1,6 @@
 package com.senierr.http.cookie.store
 
 import okhttp3.Cookie
-import okhttp3.CookieJar
 import okhttp3.HttpUrl
 
 /**

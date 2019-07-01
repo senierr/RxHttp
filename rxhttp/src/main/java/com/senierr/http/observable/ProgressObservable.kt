@@ -104,12 +104,12 @@ class ProgressObservable<T> private constructor(
      * 封装请求
      */
     private fun wrapRequest(rawRequest: Request, onUploadListener: OnProgressListener): Request {
-        var requestBody = rawRequest.body()
+        var requestBody = rawRequest.body
         if (requestBody != null) {
             requestBody = ProgressRequestBody(requestBody, onUploadListener)
         }
         return rawRequest.newBuilder()
-                .method(rawRequest.method(), requestBody)
+                .method(rawRequest.method, requestBody)
                 .build()
     }
 
@@ -117,7 +117,7 @@ class ProgressObservable<T> private constructor(
      * 封装返回
      */
     private fun wrapResponse(rawResponse: Response, onDownloadListener: OnProgressListener): Response {
-        var responseBody = rawResponse.body()
+        var responseBody = rawResponse.body
         if (responseBody != null) {
             responseBody = ProgressResponseBody(responseBody, onDownloadListener)
         }

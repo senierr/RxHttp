@@ -20,11 +20,11 @@ class ProgressResponse<T> constructor(
         const val TYPE_RESULT = 0
 
         fun <T> upload(totalSize: Long, currentSize: Long, percent: Int): ProgressResponse<T> {
-            return ProgressResponse<T>(TYPE_UPLOAD, totalSize, currentSize, percent, null)
+            return ProgressResponse(TYPE_UPLOAD, totalSize, currentSize, percent, null)
         }
 
         fun <T> download(totalSize: Long, currentSize: Long, percent: Int): ProgressResponse<T> {
-            return ProgressResponse<T>(TYPE_DOWNLOAD, totalSize, currentSize, percent, null)
+            return ProgressResponse(TYPE_DOWNLOAD, totalSize, currentSize, percent, null)
         }
 
         fun <T> result(t: T): ProgressResponse<T> {

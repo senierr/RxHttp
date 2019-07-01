@@ -31,7 +31,7 @@ class SSLFactory {
         }
     }
 
-    private var sSLSocketFactory: SSLSocketFactory? = null
+    var sSLSocketFactory: SSLSocketFactory? = null
     var trustManager: X509TrustManager? = null
 
     /**

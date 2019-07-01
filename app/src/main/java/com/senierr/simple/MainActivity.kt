@@ -10,6 +10,7 @@ import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.CookieJarImpl
 import com.senierr.http.cookie.store.SPCookieStore
+import com.senierr.http.https.SSLFactory
 import com.senierr.http.interceptor.LogInterceptor
 import com.senierr.http.operator.ProgressProcessor
 import com.senierr.permission.PermissionManager
@@ -76,6 +77,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+        val sslFactory = SSLFactory()
+        sslFactory.sSLSocketFactory
         rxHttp = RxHttp.Builder()
                 .debug(DEBUG_TAG, LogInterceptor.LogLevel.BODY)
                 .connectTimeout(TIMEOUT)
