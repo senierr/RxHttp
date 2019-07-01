@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import com.senierr.http.RxHttp
 import com.senierr.http.converter.FileConverter
-import com.senierr.http.cookie.SPCookieStore
+import com.senierr.http.converter.StringConverter
+import com.senierr.http.cookie.CookieJarImpl
+import com.senierr.http.cookie.store.SPCookieStore
 import com.senierr.http.interceptor.LogInterceptor
 import com.senierr.http.operator.ProgressProcessor
 import com.senierr.permission.PermissionManager
@@ -81,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                 .baseUrl("https://api.test.cn")
                 .addBaseHeader("header_base", "header_base")
                 .addBaseUrlParam("param_base", "param_base_value")
-                .cookieJar(SPCookieStore(this).cookieJar)
+                .cookieJar(CookieJarImpl(SPCookieStore(this)))
                 .addInterceptor(MockInterceptor())
                 .build()
     }

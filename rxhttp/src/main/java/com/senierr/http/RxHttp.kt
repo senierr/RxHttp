@@ -3,6 +3,7 @@ package com.senierr.http
 import com.senierr.http.builder.*
 import com.senierr.http.interceptor.LogInterceptor
 import okhttp3.CookieJar
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HostnameVerifier
@@ -142,6 +143,16 @@ class RxHttp private constructor(
 
         fun cookieJar(cookieJar: CookieJar): Builder {
             okHttpClientBuilder.cookieJar(cookieJar)
+            return this
+        }
+
+        fun addInterceptor(interceptor: Interceptor): Builder {
+            okHttpClientBuilder.addInterceptor(interceptor)
+            return this
+        }
+
+        fun addNetworkInterceptor(interceptor: Interceptor): Builder {
+            okHttpClientBuilder.addNetworkInterceptor(interceptor)
             return this
         }
 
