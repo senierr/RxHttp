@@ -8,7 +8,6 @@ import android.util.Log
 import com.senierr.http.RxHttp
 import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
-import com.senierr.http.cookie.CookieJarImpl
 import com.senierr.http.cookie.store.SPCookieStore
 import com.senierr.http.https.SSLFactory
 import com.senierr.http.interceptor.LogInterceptor
@@ -136,7 +135,7 @@ class MainActivity : AppCompatActivity() {
      * 忽略基础请求地址
      */
     private fun ignoreBaseUrl() {
-        rxHttp.get("https://api.test.ignore.cn/getInfo")
+        rxHttp.get("https://www.baidu.com")
                 .ignoreBaseUrl()
                 .addUrlParam("name", "tom")
                 .toResultObservable(StringConverter())

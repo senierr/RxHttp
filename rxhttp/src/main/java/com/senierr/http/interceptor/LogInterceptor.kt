@@ -48,16 +48,6 @@ class LogInterceptor(
     private val logBody = logLevel == LogLevel.BODY
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val startNs = System.nanoTime()
-        val response = request(chain)
-        val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
-        return response(response, tookMs)
-    }
-
-    /**
-     * 请求
-     */
-    private fun request(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (logLevel == LogLevel.NONE) {
             return chain.proceed(request)
@@ -67,7 +57,6 @@ class LogInterceptor(
         val requestBody = copyRequest.body
 
         val requestLog = StringBuilder()
-
         requestLog.append(" \n----------------------------------------\n")
         // 打印基础信息
         if (logBasic) {
@@ -100,27 +89,27 @@ class LogInterceptor(
             }
         }
         requestLog.append("----------------------------------------")
-
         logger.log(requestLog.toString())
 
+        val responseLog = StringBuilder()
+        responseLog.append(" \n----------------------------------------\n")
+        // 开始请求
+        val startNs = System.nanoTime()
+        var response: Response
         try {
-            return chain.proceed(request)
+            response = chain.proceed(request)
         } catch (e: Exception) {
-            logger.log("<-- HTTP FAILED: $e")
+            responseLog.append("\u007c-FAILED: $e\n")
+            responseLog.append("----------------------------------------")
+            logger.log(responseLog.toString())
             throw e
         }
-    }
-
-    /**
-     * 返回
-     */
-    private fun response(response: Response, tookMs: Long): Response {
-        val responseLog = StringBuilder()
+        val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
+        // 结束请求
 
         val builder = response.newBuilder()
         val cloneResponse = builder.build()
 
-        responseLog.append(" \n----------------------------------------\n")
         // 打印基础信息
         if (logBasic) {
             responseLog.append("\u007c-${cloneResponse.code} ${cloneResponse.message} ${cloneResponse.request.url} (${tookMs}ms)\n")
@@ -133,7 +122,6 @@ class LogInterceptor(
                 responseLog.append("\u007C\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
-        var rawResponse = response
         // 打印Body信息
         if (logBody && cloneResponse.promisesBody()) {
             var responseBody = cloneResponse.body
@@ -145,7 +133,7 @@ class LogInterceptor(
                     val body = responseBody.string()
                     responseLog.append("\u007C\t$body\n")
                     responseBody = body.toResponseBody(responseBody.contentType())
-                    rawResponse = response.newBuilder().body(responseBody).build()
+                    response = response.newBuilder().body(responseBody).build()
                 } else {
                     responseLog.append("\u007C\tbody: maybe [file part] , too large too print , ignored!\n")
                 }
@@ -153,7 +141,8 @@ class LogInterceptor(
         }
         responseLog.append("----------------------------------------")
         logger.log(responseLog.toString())
-        return rawResponse
+
+        return response
     }
 
     /**
