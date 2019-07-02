@@ -209,10 +209,8 @@ class MainActivity : AppCompatActivity() {
                 .toUploadObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(object : ProgressProcessor<String>() {
-                    override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
-                        Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
-                    }
+                .compose(ProgressProcessor{ totalSize, currentSize, percent ->
+                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
                 })
                 .subscribe({
                     Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: $it")
@@ -231,10 +229,8 @@ class MainActivity : AppCompatActivity() {
                 .toDownloadObservable(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(object : ProgressProcessor<File>() {
-                    override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
-                        Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
-                    }
+                .compose(ProgressProcessor{ totalSize, currentSize, percent ->
+                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
                 })
                 .subscribe({
                     Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: ${it.path}")

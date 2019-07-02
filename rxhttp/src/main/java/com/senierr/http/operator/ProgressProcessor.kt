@@ -1,6 +1,5 @@
 package com.senierr.http.operator
 
-import com.senierr.http.listener.OnProgressListener
 import com.senierr.http.model.ProgressResponse
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
@@ -12,7 +11,9 @@ import io.reactivex.ObservableTransformer
  * @author zhouchunjie
  * @date 2019/4/25 17:25
  */
-abstract class ProgressProcessor<T> : ObservableTransformer<ProgressResponse<T>, T>, OnProgressListener {
+class ProgressProcessor<T>(
+        private val listener: (totalSize: Long, currentSize: Long, percent: Int) -> Unit
+) : ObservableTransformer<ProgressResponse<T>, T> {
 
     override fun apply(upstream: Observable<ProgressResponse<T>>): ObservableSource<T> {
         return upstream
@@ -20,7 +21,7 @@ abstract class ProgressProcessor<T> : ObservableTransformer<ProgressResponse<T>,
                     if (it.type() == ProgressResponse.TYPE_RESULT) {
                         true
                     } else {
-                        onProgress(it.totalSize(), it.currentSize(), it.percent())
+                        listener(it.totalSize(), it.currentSize(), it.percent())
                         false
                     }
                 }
