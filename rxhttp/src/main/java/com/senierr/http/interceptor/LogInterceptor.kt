@@ -4,15 +4,12 @@ import android.util.Log
 import com.senierr.http.RxHttp
 import okhttp3.Interceptor
 import okhttp3.MediaType
-import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.http.promisesBody
-import okhttp3.internal.platform.Platform
 import okio.Buffer
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
-import java.util.logging.Logger
 
 /**
  * 日志拦截器
@@ -21,7 +18,7 @@ import java.util.logging.Logger
  * @date 2017/9/8
  */
 class LogInterceptor(
-        private val tag: String,
+        private val tag: String = RxHttp::class.java.simpleName,
         private val logLevel: LogLevel = LogLevel.BODY,
         private val logger: Logger = DEFAULT_LOGGER
 ) : Interceptor {
@@ -31,14 +28,14 @@ class LogInterceptor(
     }
 
     interface Logger {
-        fun log(message: String)
+        fun log(tag: String, message: String)
     }
 
     companion object {
         private val UTF8 = Charset.forName("UTF-8")
-        private val DEFAULT_LOGGER = object : Logger {
-            override fun log(message: String) {
-                Log.println(Log.DEBUG, RxHttp::class.java.name, message)
+        val DEFAULT_LOGGER = object : Logger {
+            override fun log(tag: String, message: String) {
+                Log.println(Log.DEBUG, tag, message)
             }
         }
     }
@@ -57,22 +54,22 @@ class LogInterceptor(
         val requestBody = copyRequest.body
 
         val requestLog = StringBuilder()
-        requestLog.append(" \n----------------------------------------\n")
+        requestLog.append(" \n┌─────────────────────────────────────────────────────────────────────────────────────\n")
         // 打印基础信息
         if (logBasic) {
-            requestLog.append("\u007c-${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
+            requestLog.append("├ ${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
         }
         // 打印Header信息
         if (logHeaders) {
-            requestLog.append("\u007C-Headers:\n")
+            requestLog.append("├ Headers:\n")
             val headers = copyRequest.headers
             for (i in 0 until headers.size) {
-                requestLog.append("\u007C\t${headers.name(i)}: ${headers.value(i)}\n")
+                requestLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
         // 打印Body信息
         if (logBody && requestBody != null) {
-            requestLog.append("\u007C-Body: (${requestBody.contentLength()}-byte)\n")
+            requestLog.append("├ Body: (${requestBody.contentLength()}-byte)\n")
             if (isPlaintext(requestBody.contentType())) {
                 val buffer = Buffer()
                 requestBody.writeTo(buffer)
@@ -82,26 +79,27 @@ class LogInterceptor(
                     charset = contentType.charset(UTF8)
                 }
                 if (charset != null) {
-                    requestLog.append("\u007C\t${buffer.readString(charset)}\n")
+                    requestLog.append("│\t${buffer.readString(charset)}\n")
                 }
             } else {
-                requestLog.append("\u007C\tBody maybe [file part] , too large too print , ignored!\n")
+                requestLog.append("│\tBody maybe [file part] , too large too print , ignored!\n")
             }
         }
-        requestLog.append("----------------------------------------")
-        logger.log(requestLog.toString())
+        requestLog.append("└─────────────────────────────────────────────────────────────────────────────────────")
+        logger.log(tag, requestLog.toString())
 
         val responseLog = StringBuilder()
-        responseLog.append(" \n----------------------------------------\n")
+        responseLog.append(" \n┌─────────────────────────────────────────────────────────────────────────────────────\n")
         // 开始请求
         val startNs = System.nanoTime()
         var response: Response
         try {
             response = chain.proceed(request)
         } catch (e: Exception) {
-            responseLog.append("\u007c-FAILED: $e\n")
-            responseLog.append("----------------------------------------")
-            logger.log(responseLog.toString())
+            responseLog.append("├ ${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
+            responseLog.append("├ FAILED: $e\n")
+            responseLog.append("└─────────────────────────────────────────────────────────────────────────────────────")
+            logger.log(tag, responseLog.toString())
             throw e
         }
         val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
@@ -112,14 +110,14 @@ class LogInterceptor(
 
         // 打印基础信息
         if (logBasic) {
-            responseLog.append("\u007c-${cloneResponse.code} ${cloneResponse.message} ${cloneResponse.request.url} (${tookMs}ms)\n")
+            responseLog.append("├ ${cloneResponse.code} ${cloneResponse.message} ${cloneResponse.request.url} (${tookMs}ms)\n")
         }
         // 打印Header信息
         if (logHeaders) {
-            responseLog.append("\u007C-Headers:\n")
+            responseLog.append("├ Headers:\n")
             val headers = cloneResponse.headers
             for (i in 0 until headers.size) {
-                responseLog.append("\u007C\t${headers.name(i)}: ${headers.value(i)}\n")
+                responseLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
         // 打印Body信息
@@ -128,19 +126,19 @@ class LogInterceptor(
             if (responseBody != null) {
                 val contentLength = responseBody.contentLength()
                 val bodySize = if (contentLength != -1L) "$contentLength-byte" else "unknown-length"
-                responseLog.append("\u007C-Body: ($bodySize)\n")
+                responseLog.append("├ Body: ($bodySize)\n")
                 if (isPlaintext(responseBody.contentType())) {
                     val body = responseBody.string()
-                    responseLog.append("\u007C\t$body\n")
+                    responseLog.append("│\t$body\n")
                     responseBody = body.toResponseBody(responseBody.contentType())
                     response = response.newBuilder().body(responseBody).build()
                 } else {
-                    responseLog.append("\u007C\tbody: maybe [file part] , too large too print , ignored!\n")
+                    responseLog.append("│\tbody: maybe [file part] , too large too print , ignored!\n")
                 }
             }
         }
-        responseLog.append("----------------------------------------")
-        logger.log(responseLog.toString())
+        responseLog.append("└─────────────────────────────────────────────────────────────────────────────────────")
+        logger.log(tag, responseLog.toString())
 
         return response
     }

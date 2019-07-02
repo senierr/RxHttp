@@ -8,6 +8,7 @@ import android.util.Log
 import com.senierr.http.RxHttp
 import com.senierr.http.converter.FileConverter
 import com.senierr.http.converter.StringConverter
+import com.senierr.http.cookie.CookieJarImpl
 import com.senierr.http.cookie.store.SPCookieStore
 import com.senierr.http.https.SSLFactory
 import com.senierr.http.interceptor.LogInterceptor
@@ -77,15 +78,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
         rxHttp = RxHttp.Builder()
-                .debug(DEBUG_TAG, LogInterceptor.LogLevel.BODY)
+                .debug(DEBUG_TAG)
                 .connectTimeout(TIMEOUT)
                 .readTimeout(TIMEOUT)
                 .writeTimeout(TIMEOUT)
                 .baseUrl("https://api.test.cn")
                 .addBaseHeader("header_base", "header_base")
                 .addBaseUrlParam("param_base", "param_base_value")
-                .cookieStore(SPCookieStore(this))
-                .sslFactory(SSLFactory())
+                .cookieStore(CookieJarImpl(SPCookieStore(this)))
+                .apply {
+                    val sslFactory = SSLFactory()
+                    val sslSocketFactory = sslFactory.sSLSocketFactory
+                    val trustManager = sslFactory.trustManager
+                    if (sslSocketFactory != null && trustManager != null) {
+                        sslFactory(sslSocketFactory, trustManager)
+                    }
+                }
                 .addInterceptor(MockInterceptor())
                 .build()
     }

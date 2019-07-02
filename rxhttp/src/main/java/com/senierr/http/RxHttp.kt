@@ -1,14 +1,14 @@
 package com.senierr.http
 
 import com.senierr.http.builder.*
-import com.senierr.http.cookie.CookieJarImpl
-import com.senierr.http.cookie.store.CookieStore
-import com.senierr.http.https.SSLFactory
 import com.senierr.http.interceptor.LogInterceptor
+import okhttp3.CookieJar
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.X509TrustManager
 
 /**
  * RxHttp
@@ -109,8 +109,11 @@ class RxHttp private constructor(
             return this
         }
 
-        fun debug(tag: String, logLevel: LogInterceptor.LogLevel): Builder {
-            okHttpClientBuilder.addInterceptor(LogInterceptor(tag, logLevel))
+        fun debug(tag: String = RxHttp::class.java.simpleName,
+                  logLevel: LogInterceptor.LogLevel = LogInterceptor.LogLevel.BODY,
+                  logger: LogInterceptor.Logger = LogInterceptor.DEFAULT_LOGGER
+        ): Builder {
+            okHttpClientBuilder.addInterceptor(LogInterceptor(tag, logLevel, logger))
             return this
         }
 
@@ -134,17 +137,13 @@ class RxHttp private constructor(
             return this
         }
 
-        fun sslFactory(sslFactory: SSLFactory): Builder {
-            val sslSocketFactory = sslFactory.sSLSocketFactory
-            val trustManager = sslFactory.trustManager
-            if (sslSocketFactory != null && trustManager != null) {
-                okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager)
-            }
+        fun sslFactory(sslSocketFactory: SSLSocketFactory, trustManager: X509TrustManager): Builder {
+            okHttpClientBuilder.sslSocketFactory(sslSocketFactory, trustManager)
             return this
         }
 
-        fun cookieStore(cookieStore: CookieStore): Builder {
-            okHttpClientBuilder.cookieJar(CookieJarImpl(cookieStore))
+        fun cookieStore(cookieJar: CookieJar): Builder {
+            okHttpClientBuilder.cookieJar(cookieJar)
             return this
         }
 
