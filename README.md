@@ -27,8 +27,9 @@ implementation 'com.senierr.http:rxhttp:最新版本'
 **`RxHttp`内部关联依赖：**
 
 ```
--- 'com.squareup.okhttp3:okhttp:3.11.0'
--- 'io.reactivex.rxjava2:rxjava:2.1.10'
+implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.40'
+implementation 'com.squareup.okhttp3:okhttp:4.0.0'
+implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
 ```
 
 ### 2.权限
@@ -94,8 +95,7 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
 
 在发起请求时，必须设置**Converter**，以便``RxHttp``能正确解析数据。
 
-``RxHttp``内置了三种``Converter``：
-* **DefaultConverter**: 返回Response
+``RxHttp``内置了两种``Converter``：
 * **StringConverter**: 返回String
 * **FileConverter**: 下载文件并返回File
 
@@ -122,11 +122,8 @@ public interface Converter<T> {
 ```
 rxHttp.get("...")
     .toDownloadObservable(FileConverter(...))
-    .compose(object : ProgressProcessor<File>() {
-        override fun onProgress(totalSize: Long, currentSize: Long, percent: Int) {
-            // 进度处理
-            ...
-        }
+    .compose(ProgressProcessor() { totalSize, currentSize, percent ->
+        // 进度处理
     })
     .subscribe()
 ```
@@ -135,7 +132,8 @@ rxHttp.get("...")
 
 ``RxHttp``提供以下方式持久化管理``Cookie``：
 ```
--- SPCookieJar      // SharedPreferences
+-- SPCookieStore        // SharedPreferences
+-- MemoryCookieStore    // 内存
 ```
 
 #### 8.1.配置
@@ -144,29 +142,35 @@ rxHttp.get("...")
 // 1. 实例化
 SPCookieStore cookieStore = new SPCookieStore(context);
 // 2. 配置
-new RxHttp.Builder()
-        .cookieJar(cookieStore.getCookieJar())
+RxHttp.Builder()
+        ...
+        .cookieJar(CookieJarImpl(cookieStore))
         .build();
 ```
 
 #### 8.2.接口说明
 ```
-// 获取Okhttp3的CookieJar
-CookieJar getCookieJar();
 // 是否过期
 boolean isExpired(Cookie cookie);
+
 // 保存多个Cookie
 void saveCookies(HttpUrl url, List<Cookie> cookies);
+
 // 保存单个Cookie
 void saveCookie(HttpUrl url, Cookie cookie);
+
 // 获取URL对应所有Cookie
 List<Cookie> getCookies(HttpUrl url);
+
 // 获取所有Cookie
 List<Cookie> getAllCookie();
+
 // 移除单个URL对应Cookie
 void removeCookie(HttpUrl url, Cookie cookie);
+
 // 移除URL对应所有Cookie
 void removeCookies(HttpUrl url);
+
 // 移除所有Cookie
 void clear();
 ```
@@ -198,16 +202,23 @@ public SSLFactory(InputStream bksFile, String password, InputStream... certifica
 public SSLFactory(InputStream bksFile, String password, X509TrustManager trustManager)
 ```
 
-### 10.混淆
+### 10.R8/ProGuard
 
 ```
-#okhttp
--dontwarn okhttp3.**
--keep class okhttp3.**{*;}
+# JSR 305 annotations are for embedding nullability information.
+-dontwarn javax.annotation.**
 
-#okio
--dontwarn okio.**
--keep class okio.**{*;}
+# A resource is loaded with a relative path so the package of this class must be preserved.
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+
+# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
+-dontwarn org.codehaus.mojo.animal_sniffer.*
+
+# OkHttp platform used only on JVM and when Conscrypt dependency is available.
+-dontwarn okhttp3.internal.platform.ConscryptPlatform
+
+# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
+-dontwarn org.codehaus.mojo.animal_sniffer.*
 ```
 
 ### License
