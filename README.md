@@ -4,6 +4,8 @@
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
+> RxHttp 2.0.0开始支持OkHttp4.0.0，需要Android 5.0以上，如果需要支持就版本设备，请使用RxHttp 1.2.0版本
+
 ### 目前支持
 
 **普通get, post, put, delete, head, options, patch请求**  
