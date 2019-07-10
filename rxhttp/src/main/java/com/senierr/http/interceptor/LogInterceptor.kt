@@ -2,11 +2,10 @@ package com.senierr.http.interceptor
 
 import android.util.Log
 import com.senierr.http.RxHttp
+import com.senierr.http.util.Utils
 import okhttp3.Interceptor
-import okhttp3.MediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
-import okhttp3.internal.http.HttpHeaders
 import okio.Buffer
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
@@ -32,7 +31,6 @@ class LogInterceptor(
     }
 
     companion object {
-        private val UTF8 = Charset.forName("UTF-8")
         val DEFAULT_LOGGER = object : Logger {
             override fun log(tag: String, message: String) {
                 Log.println(Log.DEBUG, tag, message)
@@ -61,8 +59,10 @@ class LogInterceptor(
         }
         // 打印Header信息
         if (logHeaders) {
-            requestLog.append("├ Headers:\n")
             val headers = copyRequest.headers()
+            if (headers.size() > 0) {
+                requestLog.append("├ Headers:\n")
+            }
             for (i in 0 until headers.size()) {
                 requestLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
@@ -70,13 +70,13 @@ class LogInterceptor(
         // 打印Body信息
         if (logBody && requestBody != null) {
             requestLog.append("├ Body: (${requestBody.contentLength()}-byte)\n")
-            if (isPlaintext(requestBody.contentType())) {
+            if (Utils.isPlaintext(requestBody.contentType())) {
                 val buffer = Buffer()
                 requestBody.writeTo(buffer)
-                var charset: Charset? = UTF8
+                var charset: Charset? = Utils.UTF8
                 val contentType = requestBody.contentType()
                 if (contentType != null) {
-                    charset = contentType.charset(UTF8)
+                    charset = contentType.charset(Utils.UTF8)
                 }
                 if (charset != null) {
                     requestLog.append("│\t${buffer.readString(charset)}\n")
@@ -114,20 +114,22 @@ class LogInterceptor(
         }
         // 打印Header信息
         if (logHeaders) {
-            responseLog.append("├ Headers:\n")
             val headers = cloneResponse.headers()
+            if (headers.size() > 0) {
+                responseLog.append("├ Headers:\n")
+            }
             for (i in 0 until headers.size()) {
                 responseLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
         // 打印Body信息
-        if (logBody && HttpHeaders.hasBody(cloneResponse)) {
+        if (logBody && Utils.hasBody(cloneResponse)) {
             var responseBody = cloneResponse.body()
             if (responseBody != null) {
                 val contentLength = responseBody.contentLength()
                 val bodySize = if (contentLength != -1L) "$contentLength-byte" else "unknown-length"
                 responseLog.append("├ Body: ($bodySize)\n")
-                if (isPlaintext(responseBody.contentType())) {
+                if (Utils.isPlaintext(responseBody.contentType())) {
                     val body = responseBody.string()
                     responseLog.append("│\t$body\n")
                     responseBody = ResponseBody.create(responseBody.contentType(), body)
@@ -141,25 +143,5 @@ class LogInterceptor(
         logger.log(tag, responseLog.toString())
 
         return response
-    }
-
-    /**
-     * 判断body是否是文本内容
-     */
-    private fun isPlaintext(mediaType: MediaType?): Boolean {
-        if (mediaType == null) return false
-        if (mediaType.type() == "text") {
-            return true
-        }
-        var subtype: String? = mediaType.subtype()
-        if (subtype != null) {
-            subtype = subtype.toLowerCase()
-            return subtype.contains("x-www-form-urlencoded") ||
-                    subtype.contains("json") ||
-                    subtype.contains("xml") ||
-                    subtype.contains("plain") ||
-                    subtype.contains("html")
-        }
-        return false
     }
 }

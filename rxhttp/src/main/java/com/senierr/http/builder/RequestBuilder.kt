@@ -1,9 +1,7 @@
 package com.senierr.http.builder
 
 import com.senierr.http.converter.Converter
-import com.senierr.http.model.ProgressResponse
-import com.senierr.http.observable.ProgressObservable
-import com.senierr.http.observable.ResultObservable
+import com.senierr.http.observable.RealObservable
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -28,6 +26,10 @@ class RequestBuilder(
         // 网络请求器
         private val okHttpClient: OkHttpClient
 ) : Builder<Request> {
+
+    private var uploadTag: String? = null
+    private var downloadTag: String? = null
+
     /** 忽略基础请求地址  */
     fun ignoreBaseUrl(): RequestBuilder {
         urlBuilder.ignoreBaseUrl()
@@ -136,6 +138,22 @@ class RequestBuilder(
         return this
     }
 
+    /**
+     * 上传标签
+     */
+    fun uploadTag(tag: String): RequestBuilder {
+        uploadTag = tag
+        return this
+    }
+
+    /**
+     * 下载标签
+     */
+    fun downloadTag(tag: String): RequestBuilder {
+        downloadTag = tag
+        return this
+    }
+
     /** 创建OkHttp请求  */
     override fun build(): Request {
         return Request.Builder()
@@ -145,21 +163,9 @@ class RequestBuilder(
                 .build()
     }
 
-    /** 转换为带上传进度的被观察者  */
-    fun <T> toUploadObservable(converter: Converter<T>): Observable<ProgressResponse<T>> {
-        return ProgressObservable.upload(okHttpClient, build(), converter)
-                .onTerminateDetach()
-    }
-
-    /** 转换为带下载进度的被观察者  */
-    fun <T> toDownloadObservable(converter: Converter<T>): Observable<ProgressResponse<T>> {
-        return ProgressObservable.download(okHttpClient, build(), converter)
-                .onTerminateDetach()
-    }
-
-    /** 转换为普通被观察者  */
-    fun <T> toResultObservable(converter: Converter<T>): Observable<T> {
-        return ResultObservable.result(okHttpClient, build(), converter)
+    /** 转换为被观察者  */
+    fun <T> toObservable(converter: Converter<T>): Observable<T> {
+        return RealObservable(okHttpClient, build(), uploadTag, downloadTag, converter)
                 .onTerminateDetach()
     }
 }

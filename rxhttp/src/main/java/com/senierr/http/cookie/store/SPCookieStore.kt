@@ -59,7 +59,7 @@ class SPCookieStore(context: Context) : CookieStore {
     }
 
     @Synchronized
-    override fun isExpired(cookie: Cookie): Boolean = cookie.expiresAt < System.currentTimeMillis()
+    override fun isExpired(cookie: Cookie): Boolean = cookie.expiresAt() < System.currentTimeMillis()
 
     @Synchronized
     override fun saveCookies(url: HttpUrl, cookies: MutableList<Cookie>) {
@@ -70,8 +70,8 @@ class SPCookieStore(context: Context) : CookieStore {
 
     @Synchronized
     override fun saveCookie(url: HttpUrl, cookie: Cookie) {
-        if (!cookies.containsKey(url.host)) {
-            cookies[url.host] = ConcurrentHashMap()
+        if (!cookies.containsKey(url.host())) {
+            cookies[url.host()] = ConcurrentHashMap()
         }
         //当前cookie是否过期
         if (isExpired(cookie)) {
@@ -79,11 +79,11 @@ class SPCookieStore(context: Context) : CookieStore {
         } else {
             val cookieToken = getCookieToken(cookie)
             //内存缓存
-            cookies[url.host]?.put(cookieToken, cookie)
+            cookies[url.host()]?.put(cookieToken, cookie)
             //文件缓存
             val prefsWriter = cookiePrefs.edit()
             // 增加索引
-            prefsWriter.putString(url.host, formatCookieTokens(url.host))
+            prefsWriter.putString(url.host(), formatCookieTokens(url.host()))
             // 增加值
             prefsWriter.putString(COOKIE_NAME_PREFIX + cookieToken, SerializableCookie.encode(cookie))
             prefsWriter.apply()
@@ -93,7 +93,7 @@ class SPCookieStore(context: Context) : CookieStore {
     @Synchronized
     override fun getCookies(url: HttpUrl): MutableList<Cookie> {
         val result = mutableListOf<Cookie>()
-        val mapCookie = cookies[url.host]
+        val mapCookie = cookies[url.host()]
         if (mapCookie != null) result.addAll(mapCookie.values)
         return result
     }
@@ -109,9 +109,9 @@ class SPCookieStore(context: Context) : CookieStore {
 
     @Synchronized
     override fun removeCookie(url: HttpUrl, cookie: Cookie) {
-        if (!cookies.containsKey(url.host)) return
+        if (!cookies.containsKey(url.host())) return
         val cookieToken = getCookieToken(cookie)
-        val cookieMap = cookies[url.host]
+        val cookieMap = cookies[url.host()]
         if (cookieMap != null && !cookieMap.containsKey(cookieToken)) return
 
         //内存移除
@@ -122,16 +122,16 @@ class SPCookieStore(context: Context) : CookieStore {
             prefsWriter.remove(COOKIE_NAME_PREFIX + cookieToken)
         }
         // 更新索引
-        prefsWriter.putString(url.host, formatCookieTokens(url.host))
+        prefsWriter.putString(url.host(), formatCookieTokens(url.host()))
         prefsWriter.apply()
     }
 
     @Synchronized
     override fun removeCookies(url: HttpUrl) {
-        if (!cookies.containsKey(url.host)) return
+        if (!cookies.containsKey(url.host())) return
 
         //内存移除
-        val urlCookies = cookies.remove(url.host) ?: return
+        val urlCookies = cookies.remove(url.host()) ?: return
         //文件移除
         val cookieTokens = urlCookies.keys
         val prefsWriter = cookiePrefs.edit()
@@ -141,7 +141,7 @@ class SPCookieStore(context: Context) : CookieStore {
             }
         }
         // 更新索引
-        prefsWriter.remove(url.host)
+        prefsWriter.remove(url.host())
         prefsWriter.apply()
     }
 
@@ -156,7 +156,7 @@ class SPCookieStore(context: Context) : CookieStore {
     }
 
     private fun getCookieToken(cookie: Cookie): String {
-        return cookie.name + "@" + cookie.domain
+        return cookie.name() + "@" + cookie.domain()
     }
 
     private fun formatCookieTokens(host: String): String {

@@ -24,6 +24,6 @@ object ProgressBus {
      * 订阅进度
      */
     fun toObservable(tag: String): Observable<Progress> {
-        return bus.filter { it.tag == tag }
+        return bus.filter { it.tag == tag }.onTerminateDetach()
     }
 }

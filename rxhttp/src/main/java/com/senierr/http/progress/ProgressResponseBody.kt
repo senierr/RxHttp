@@ -1,4 +1,4 @@
-package com.senierr.http.model
+package com.senierr.http.progress
 
 import com.senierr.http.listener.OnProgressListener
 import okhttp3.MediaType
@@ -27,7 +27,7 @@ class ProgressResponseBody(
     }
 
     override fun source(): BufferedSource {
-        val source = bufferedSource ?: CountingSource(delegate.source()).buffer()
+        val source = bufferedSource ?: Okio.buffer(CountingSource(delegate.source()))
         bufferedSource = source
         return source
     }

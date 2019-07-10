@@ -1,4 +1,4 @@
-package com.senierr.http.model
+package com.senierr.http.progress
 
 import com.senierr.http.listener.OnProgressListener
 import okhttp3.MediaType
@@ -25,7 +25,7 @@ class ProgressRequestBody(
     }
 
     override fun writeTo(sink: BufferedSink) {
-        val bufferedSink = CountingSink(sink).buffer()
+        val bufferedSink = Okio.buffer(CountingSink(sink))
         delegate.writeTo(bufferedSink)
         bufferedSink.flush()
     }

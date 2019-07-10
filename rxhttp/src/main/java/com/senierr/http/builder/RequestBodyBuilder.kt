@@ -1,11 +1,11 @@
 package com.senierr.http.builder
 
+import com.senierr.http.util.Utils
 import okhttp3.FormBody
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
-import java.net.URLConnection
 
 /**
  * Http请求体构建器
@@ -49,7 +49,7 @@ class RequestBodyBuilder : Builder<RequestBody?> {
     }
 
     fun setRequestBody4File(file: File) {
-        requestBody = RequestBody.create(guessMimeType(file.path), file)
+        requestBody = RequestBody.create(Utils.guessMimeType(file.path, MEDIA_TYPE_STREAM), file)
     }
 
     fun isMultipart(isMultipart: Boolean) {
@@ -82,7 +82,7 @@ class RequestBodyBuilder : Builder<RequestBody?> {
             for (key in fileParams.keys) {
                 val value = fileParams[key]
                 if (value != null) {
-                    val fileBody = RequestBody.create(guessMimeType(value.path), value)
+                    val fileBody = RequestBody.create(Utils.guessMimeType(value.path, MEDIA_TYPE_STREAM), value)
                     multipartBodybuilder.addFormDataPart(key, value.name, fileBody)
                 }
             }
@@ -120,15 +120,5 @@ class RequestBodyBuilder : Builder<RequestBody?> {
         } else {
             return null
         }
-    }
-
-    private fun guessMimeType(path: String): MediaType? {
-        val result = path.replace("#", "")   //解决文件名中含有#号异常的问题
-        val fileNameMap = URLConnection.getFileNameMap()
-        var contentType = fileNameMap.getContentTypeFor(result)
-        if (contentType == null) {
-            contentType = MEDIA_TYPE_STREAM
-        }
-        return MediaType.parse(contentType)
     }
 }

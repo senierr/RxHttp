@@ -11,8 +11,7 @@ import com.senierr.http.converter.StringConverter
 import com.senierr.http.cookie.CookieJarImpl
 import com.senierr.http.cookie.store.SPCookieStore
 import com.senierr.http.https.SSLFactory
-import com.senierr.http.interceptor.LogInterceptor
-import com.senierr.http.operator.ProgressProcessor
+import com.senierr.http.progress.ProgressBus
 import com.senierr.permission.PermissionManager
 import com.senierr.permission.RequestCallback
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,7 +19,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
 
 /**
  *
@@ -104,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     private fun getNormal() {
         rxHttp.get("/getInfo")
                 .addUrlParam("name", "tom")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -118,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         rxHttp.get("/getInfo")
                 .ignoreBaseUrlParams()
                 .addUrlParam("name", "tom")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -132,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         rxHttp.get("/getInfo")
                 .ignoreBaseHeaders()
                 .addUrlParam("name", "tom")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -146,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         rxHttp.get("https://www.baidu.com")
                 .ignoreBaseUrl()
                 .addUrlParam("name", "tom")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -161,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .addRequestParam("key", "value")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -176,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4JSon("{\"age\":0,\"msg\":\"ok\"}")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -191,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4Text("This is a text.")
-                .toResultObservable(StringConverter())
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({}, {})
@@ -202,16 +200,22 @@ class MainActivity : AppCompatActivity() {
      * 上传文件
      */
     private fun upload() {
+        ProgressBus.toObservable("upload")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    Log.e(DEBUG_TAG, "---${Thread.currentThread().name}: ${it.totalSize} ${it.currentSize} ${it.percent}")
+                }
+                .bindToActivity()
+
         rxHttp.post("/updateInfo")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .requestBody4Text("This is a text.")
-                .toUploadObservable(StringConverter())
+                .uploadTag("upload")
+                .toObservable(StringConverter())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(ProgressProcessor{ totalSize, currentSize, percent ->
-                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
-                })
                 .subscribe({
                     Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: $it")
                 }, {
@@ -224,14 +228,20 @@ class MainActivity : AppCompatActivity() {
      * 下载文件
      */
     private fun download() {
-        rxHttp.get("https://d1.music.126.net/dmusic/cloudmusicsetup_2.5.2.197409.exe")
-                .ignoreBaseUrl()
-                .toDownloadObservable(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
+        ProgressBus.toObservable("download")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .compose(ProgressProcessor{ totalSize, currentSize, percent ->
-                    Log.e(DEBUG_TAG, "${Thread.currentThread().name}: $totalSize $currentSize $percent")
-                })
+                .subscribe {
+                    Log.e(DEBUG_TAG, "---${Thread.currentThread().name}: ${it.totalSize} ${it.currentSize} ${it.percent}")
+                }
+                .bindToActivity()
+
+        rxHttp.get("https://d1.music.126.net/dmusic/cloudmusicsetup_2.5.2.197409.exe")
+                .ignoreBaseUrl()
+                .downloadTag("download")
+                .toObservable(FileConverter(Environment.getExternalStorageDirectory(), "cloud_music_setup.exe"))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     Log.e(DEBUG_TAG, "${Thread.currentThread().name}: path: ${it.path}")
                 }, {

@@ -1,7 +1,7 @@
 package com.senierr.http.converter
 
+import com.senierr.http.util.Utils
 import okhttp3.Response
-import okhttp3.internal.closeQuietly
 import java.io.IOException
 import java.nio.charset.Charset
 
@@ -14,14 +14,14 @@ import java.nio.charset.Charset
 class StringConverter(private val charset: Charset? = null) : Converter<String> {
 
     override fun convertResponse(response: Response): String {
-        val responseBody = response.body ?: throw IOException("ResponseBody is null!")
+        val responseBody = response.body() ?: throw IOException("ResponseBody is null!")
 
         return if (charset != null) {
             val source = responseBody.source()
             try {
                 source.readString(charset)
             } finally {
-                source.closeQuietly()
+                Utils.closeQuietly(source)
             }
         } else {
             responseBody.string()

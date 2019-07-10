@@ -1,8 +1,10 @@
 package com.senierr.http.converter
 
+import com.senierr.http.util.Utils
 import okhttp3.Response
-import okhttp3.internal.closeQuietly
-import okio.*
+import okio.BufferedSink
+import okio.BufferedSource
+import okio.Okio
 import java.io.File
 import java.io.IOException
 
@@ -49,10 +51,10 @@ class FileConverter : Converter<File> {
         var bufferedSink: BufferedSink? = null
 
         try {
-            val responseBody = response.body ?: throw IOException("ResponseBody is null!")
+            val responseBody = response.body() ?: throw IOException("ResponseBody is null!")
 
-            bufferedSource = responseBody.byteStream().source().buffer()
-            bufferedSink = destFile.sink().buffer()
+            bufferedSource = Okio.buffer(Okio.source(responseBody.byteStream()))
+            bufferedSink = Okio.buffer(Okio.sink(destFile))
 
             val bytes = ByteArray(1024)
             var len: Int
@@ -62,8 +64,7 @@ class FileConverter : Converter<File> {
             bufferedSink.flush()
             return destFile
         } finally {
-            bufferedSource?.closeQuietly()
-            bufferedSink?.closeQuietly()
+            Utils.closeQuietly(bufferedSource, bufferedSink)
         }
     }
 }

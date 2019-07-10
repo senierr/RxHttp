@@ -15,11 +15,11 @@ class MemoryCookieStore : CookieStore {
     private val memoryCookieMap = ConcurrentHashMap<String, MutableList<Cookie>>()
 
     @Synchronized
-    override fun isExpired(cookie: Cookie): Boolean = cookie.expiresAt < System.currentTimeMillis()
+    override fun isExpired(cookie: Cookie): Boolean = cookie.expiresAt() < System.currentTimeMillis()
 
     @Synchronized
     override fun saveCookies(url: HttpUrl, cookies: MutableList<Cookie>) {
-        val memoryCookies = memoryCookieMap[url.host] ?: return
+        val memoryCookies = memoryCookieMap[url.host()] ?: return
         val iterator = memoryCookies.iterator()
         while (iterator.hasNext()) {
             val item = iterator.next()
@@ -32,7 +32,7 @@ class MemoryCookieStore : CookieStore {
 
     @Synchronized
     override fun saveCookie(url: HttpUrl, cookie: Cookie) {
-        val memoryCookies = memoryCookieMap[url.host] ?: return
+        val memoryCookies = memoryCookieMap[url.host()] ?: return
         val iterator = memoryCookies.iterator()
         while (iterator.hasNext()) {
             val item = iterator.next()
@@ -46,7 +46,7 @@ class MemoryCookieStore : CookieStore {
     @Synchronized
     override fun getCookies(url: HttpUrl): MutableList<Cookie> {
         val cookies = mutableListOf<Cookie>()
-        val urlCookies = memoryCookieMap[url.host]
+        val urlCookies = memoryCookieMap[url.host()]
         if (urlCookies != null) cookies.addAll(urlCookies)
         return cookies
     }
@@ -62,7 +62,7 @@ class MemoryCookieStore : CookieStore {
 
     @Synchronized
     override fun removeCookie(url: HttpUrl, cookie: Cookie) {
-        val memoryCookies = memoryCookieMap[url.host] ?: return
+        val memoryCookies = memoryCookieMap[url.host()] ?: return
         if (memoryCookies.contains(cookie)) {
             memoryCookies.remove(cookie)
         }
@@ -70,8 +70,8 @@ class MemoryCookieStore : CookieStore {
 
     @Synchronized
     override fun removeCookies(url: HttpUrl) {
-        if (memoryCookieMap.contains(url.host)) {
-            memoryCookieMap.remove(url.host)
+        if (memoryCookieMap.contains(url.host())) {
+            memoryCookieMap.remove(url.host())
         }
     }
 
