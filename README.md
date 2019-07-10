@@ -1,18 +1,16 @@
 # RxHttp
 
-[![](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://github.com/senierr/RxHttp)
+[![](https://img.shields.io/badge/release-v2.1.0-blue.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-
-> RxHttp 2.0.0开始支持OkHttp4.0.0，需要Android 5.0以上，如果需要支持就版本设备，请使用RxHttp 1.2.0版本
 
 ### 目前支持
 
 **普通get, post, put, delete, head, options, patch请求**  
-**自定义请求**  
-**自定义基础请求参数、请求头**  
+**自定义请求方法**  
+**自定义基础请求地址、请求参数、请求头**  
 **自定义请求参数、请求头、请求体**  
-**任意请求进度监听**  
+**全局任意请求进度监听**  
 **多种HTTPS验证**  
 **可扩展Cookie管理**  
 **多级别日志打印**  
@@ -20,17 +18,19 @@
 **简洁的链式调用**  
 **同步支持RxJava2**  
 
+**[更新日志](CHANGE_LOG.md)**
+
 ### 1.仓库导入
 
 ```
-implementation 'com.senierr.http:rxhttp:2.0.0'
+implementation 'com.senierr.http:rxhttp:2.1.0'
 ```
 
 **`RxHttp`内部关联依赖：**
 
 ```
 implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.40'
-implementation 'com.squareup.okhttp3:okhttp:4.0.0'
+implementation 'com.squareup.okhttp3:okhttp:3.12.3'
 implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
 ```
 
@@ -81,16 +81,16 @@ rxHttp.get(...)  // 支持get、post、head、delete、put、options、trace、m
         .addRequestParam(...)           // 增加单个表单参数
         .addRequestStringParams(...)    // 增加多个字符串表单参数
         .addRequestFileParams(...)      // 增加多个文件表单参数
-        .requestBody4JSon(...)       // 设置Json请求体
-        .requestBody4Text(...)       // 设置Text请求体
-        .requestBody4Xml(...)        // 设置XML请求体
-        .requestBody4Byte(...)       // 设置Byte请求体
-        .requestBody4File(...)       // 设置File请求体
-        .requestBody(...)            // 自定义请求体
+        .requestBody4JSon(...)          // 设置Json请求体
+        .requestBody4Text(...)          // 设置Text请求体
+        .requestBody4Xml(...)           // 设置XML请求体
+        .requestBody4Byte(...)          // 设置Byte请求体
+        .requestBody4File(...)          // 设置File请求体
+        .requestBody(...)               // 自定义请求体
         .isMultipart(...)               // 是否分片表单
-        .toUploadObservable(...)        // 转为带上传进度的Observable
-        .toDownloadObservable(...)      // 转为带下载进度的Observable
-        .toResultObservable(...)        // 转为普通结果的Observable
+        .uploadTag(...)                 // 开启上传进度广播
+        .downloadTag(...)               // 开启下载进度广播
+        .toObservable(...)              // 转为Observable
 ```
 
 ### 5.数据解析
@@ -116,18 +116,20 @@ public interface Converter<T> {
 
 ``RxHttp``将``上传进度监听``和``下载进度监听``进行了剥离，并使其适用于**任意请求**。
 
-在发起请求时，您可以构建**带上传进度的Observable**以及**带下载进度的Observable**，并可通过内置的操作符监听进度。
+在发起请求时，您可以设置：
 
-``RxHttp``提供了操作符**ProgressProcessor**，来进行进度处理。
-
-示例如下:
 ```
-rxHttp.get("...")
-    .toDownloadObservable(FileConverter(...))
-    .compose(ProgressProcessor() { totalSize, currentSize, percent ->
-        // 进度处理
-    })
-    .subscribe()
+uploadTag(tag: String)      // 开启上传进度广播
+downloadTag(tag: String)    // 开启下载进度广播
+```
+
+您可以在任意位置监听进度：
+
+```
+ProgressBus.toObservable(tag)
+        .subscribe {
+            ...
+        }
 ```
 
 ### 8.Cookie
@@ -207,20 +209,18 @@ public SSLFactory(InputStream bksFile, String password, X509TrustManager trustMa
 ### 10.R8/ProGuard
 
 ```
-# JSR 305 annotations are for embedding nullability information.
--dontwarn javax.annotation.**
+# OkHttp3
+-dontwarn com.squareup.okhttp3.**
+-keep class com.squareup.okhttp3.** { *;}
+-dontwarn okio.**
 
-# A resource is loaded with a relative path so the package of this class must be preserved.
--keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+#okhttp
+-dontwarn okhttp3.**
+-keep class okhttp3.**{*;}
 
-# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
--dontwarn org.codehaus.mojo.animal_sniffer.*
-
-# OkHttp platform used only on JVM and when Conscrypt dependency is available.
--dontwarn okhttp3.internal.platform.ConscryptPlatform
-
-# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
--dontwarn org.codehaus.mojo.animal_sniffer.*
+#okio
+-dontwarn okio.**
+-keep class okio.**{*;}
 ```
 
 ### License
