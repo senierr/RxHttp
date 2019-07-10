@@ -6,9 +6,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 import java.net.URLConnection
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 
 /**
  * Http请求体构建器
@@ -27,11 +24,6 @@ class RequestBodyBuilder : Builder<RequestBody?> {
 
     private var requestBody: RequestBody? = null
 
-    private var mediaType: MediaType? = null
-    private var stringContent: String? = null
-    private var bytes: ByteArray? = null
-    private var file: File? = null
-
     private var isMultipart = false
     private val fileParams = LinkedHashMap<String, File>()
     private val stringParams = LinkedHashMap<String, String>()
@@ -41,28 +33,23 @@ class RequestBodyBuilder : Builder<RequestBody?> {
     }
 
     fun setRequestBody4Text(textStr: String) {
-        stringContent = textStr
-        mediaType = MEDIA_TYPE_PLAIN.toMediaTypeOrNull()
+        requestBody = RequestBody.create(MediaType.parse(MEDIA_TYPE_PLAIN), textStr)
     }
 
     fun setRequestBody4JSon(jsonStr: String) {
-        stringContent = jsonStr
-        mediaType = MEDIA_TYPE_JSON.toMediaTypeOrNull()
+        requestBody = RequestBody.create(MediaType.parse(MEDIA_TYPE_JSON), jsonStr)
     }
 
     fun setRequestBody4Xml(xmlStr: String) {
-        stringContent = xmlStr
-        mediaType = MEDIA_TYPE_XML.toMediaTypeOrNull()
+        requestBody = RequestBody.create(MediaType.parse(MEDIA_TYPE_XML), xmlStr)
     }
 
     fun setRequestBody4Byte(bytes: ByteArray) {
-        this.bytes = bytes
-        mediaType = MEDIA_TYPE_STREAM.toMediaTypeOrNull()
+        requestBody = RequestBody.create(MediaType.parse(MEDIA_TYPE_STREAM), bytes)
     }
 
     fun setRequestBody4File(file: File) {
-        this.file = file
-        mediaType = guessMimeType(file.path)
+        requestBody = RequestBody.create(guessMimeType(file.path), file)
     }
 
     fun isMultipart(isMultipart: Boolean) {
@@ -89,22 +76,13 @@ class RequestBodyBuilder : Builder<RequestBody?> {
         if (requestBody != null) {
             // 自定义
             return requestBody
-        } else if (stringContent != null && mediaType != null) {
-            // 字符串
-            return stringContent?.toRequestBody(mediaType)
-        } else if (bytes != null && mediaType != null) {
-            // 字节数组
-            return bytes?.toRequestBody(mediaType)
-        } else if (file != null && mediaType != null) {
-            // 文件
-            return file?.asRequestBody(mediaType)
         } else if (fileParams.isNotEmpty()) {
             // 分片提交
             val multipartBodybuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
             for (key in fileParams.keys) {
                 val value = fileParams[key]
                 if (value != null) {
-                    val fileBody = value.asRequestBody(guessMimeType(value.path))
+                    val fileBody = RequestBody.create(guessMimeType(value.path), value)
                     multipartBodybuilder.addFormDataPart(key, value.name, fileBody)
                 }
             }
@@ -151,6 +129,6 @@ class RequestBodyBuilder : Builder<RequestBody?> {
         if (contentType == null) {
             contentType = MEDIA_TYPE_STREAM
         }
-        return contentType.toMediaTypeOrNull()
+        return MediaType.parse(contentType)
     }
 }
