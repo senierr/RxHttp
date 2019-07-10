@@ -5,8 +5,8 @@ import com.senierr.http.RxHttp
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
-import okhttp3.ResponseBody.Companion.toResponseBody
-import okhttp3.internal.http.promisesBody
+import okhttp3.ResponseBody
+import okhttp3.internal.http.HttpHeaders
 import okio.Buffer
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
@@ -51,19 +51,19 @@ class LogInterceptor(
         }
 
         val copyRequest = request.newBuilder().build()
-        val requestBody = copyRequest.body
+        val requestBody = copyRequest.body()
 
         val requestLog = StringBuilder()
         requestLog.append(" \n┌─────────────────────────────────────────────────────────────────────────────────────\n")
         // 打印基础信息
         if (logBasic) {
-            requestLog.append("├ ${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
+            requestLog.append("├ ${copyRequest.method()} ${copyRequest.url()} ${(chain.connection()?.protocol() ?: "")}\n")
         }
         // 打印Header信息
         if (logHeaders) {
             requestLog.append("├ Headers:\n")
-            val headers = copyRequest.headers
-            for (i in 0 until headers.size) {
+            val headers = copyRequest.headers()
+            for (i in 0 until headers.size()) {
                 requestLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
@@ -96,7 +96,7 @@ class LogInterceptor(
         try {
             response = chain.proceed(request)
         } catch (e: Exception) {
-            responseLog.append("├ ${copyRequest.method} ${copyRequest.url} ${(chain.connection()?.protocol() ?: "")}\n")
+            responseLog.append("├ ${copyRequest.method()} ${copyRequest.url()} ${(chain.connection()?.protocol() ?: "")}\n")
             responseLog.append("├ FAILED: $e\n")
             responseLog.append("└─────────────────────────────────────────────────────────────────────────────────────")
             logger.log(tag, responseLog.toString())
@@ -110,19 +110,19 @@ class LogInterceptor(
 
         // 打印基础信息
         if (logBasic) {
-            responseLog.append("├ ${cloneResponse.code} ${cloneResponse.message} ${cloneResponse.request.url} (${tookMs}ms)\n")
+            responseLog.append("├ ${cloneResponse.code()} ${cloneResponse.message()} ${cloneResponse.request().url()} (${tookMs}ms)\n")
         }
         // 打印Header信息
         if (logHeaders) {
             responseLog.append("├ Headers:\n")
-            val headers = cloneResponse.headers
-            for (i in 0 until headers.size) {
+            val headers = cloneResponse.headers()
+            for (i in 0 until headers.size()) {
                 responseLog.append("│\t${headers.name(i)}: ${headers.value(i)}\n")
             }
         }
         // 打印Body信息
-        if (logBody && cloneResponse.promisesBody()) {
-            var responseBody = cloneResponse.body
+        if (logBody && HttpHeaders.hasBody(cloneResponse)) {
+            var responseBody = cloneResponse.body()
             if (responseBody != null) {
                 val contentLength = responseBody.contentLength()
                 val bodySize = if (contentLength != -1L) "$contentLength-byte" else "unknown-length"
@@ -130,7 +130,7 @@ class LogInterceptor(
                 if (isPlaintext(responseBody.contentType())) {
                     val body = responseBody.string()
                     responseLog.append("│\t$body\n")
-                    responseBody = body.toResponseBody(responseBody.contentType())
+                    responseBody = ResponseBody.create(responseBody.contentType(), body)
                     response = response.newBuilder().body(responseBody).build()
                 } else {
                     responseLog.append("│\tbody: maybe [file part] , too large too print , ignored!\n")
@@ -148,10 +148,10 @@ class LogInterceptor(
      */
     private fun isPlaintext(mediaType: MediaType?): Boolean {
         if (mediaType == null) return false
-        if (mediaType.type == "text") {
+        if (mediaType.type() == "text") {
             return true
         }
-        var subtype: String? = mediaType.subtype
+        var subtype: String? = mediaType.subtype()
         if (subtype != null) {
             subtype = subtype.toLowerCase()
             return subtype.contains("x-www-form-urlencoded") ||
