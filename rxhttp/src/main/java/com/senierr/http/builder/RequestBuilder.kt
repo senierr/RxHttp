@@ -6,6 +6,7 @@ import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.Response
 import java.io.File
 
 /**
@@ -161,6 +162,14 @@ class RequestBuilder(
                 .url(urlBuilder.build())
                 .headers(headerBuilder.build())
                 .build()
+    }
+
+    /**
+     * 同步执行
+     */
+    fun execute(): Response {
+        val call = okHttpClient.newCall(build())
+        return call.execute()
     }
 
     /** 转换为被观察者  */

@@ -1,6 +1,6 @@
 # RxHttp
 
-[![](https://img.shields.io/badge/release-v2.1.0-blue.svg)](https://github.com/senierr/RxHttp)
+[![](https://img.shields.io/badge/release-v2.1.1-blue.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/senierr/RxHttp)
 [![](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -23,7 +23,7 @@
 ### 1.仓库导入
 
 ```
-implementation 'com.senierr.http:rxhttp:2.1.0'
+implementation 'com.senierr.http:rxhttp:2.1.1'
 ```
 
 **`RxHttp`内部关联依赖：**
