@@ -35,8 +35,8 @@ def libName = "RxHttp"
 //发布到组织名称名字，必须填写
 group = "com.senierr.http"
 // 版本号，下次更新是只需要更改版本号即可
-version = "2.1.1"
-//上面配置后上传至JCenter后的编译路径是这样的： compile 'com.senierr.http:rxhttp:2.1.1'
+version = "2.1.2"
+//上面配置后上传至JCenter后的编译路径是这样的： compile 'com.senierr.http:rxhttp:2.1.2'
 
 //生成源文件
 task sourcesJar(type: Jar) {

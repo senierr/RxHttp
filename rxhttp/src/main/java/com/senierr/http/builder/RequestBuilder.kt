@@ -49,6 +49,12 @@ class RequestBuilder(
         return this
     }
 
+    /** 设置基础请求地址  */
+    fun baseUrl(baseUrl: String): RequestBuilder {
+        urlBuilder.baseUrl(baseUrl)
+        return this
+    }
+
     /** 添加请求参数  */
     fun addUrlParam(key: String, value: String): RequestBuilder {
         urlBuilder.addUrlParam(key, value)

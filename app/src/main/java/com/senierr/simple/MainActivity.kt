@@ -156,6 +156,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun postNormal() {
         rxHttp.post("/updateInfo")
+                .baseUrl("http://www.baidu.com")
                 .addUrlParam("name", "tom")
                 .addHeader("header", "header_value")
                 .addRequestParam("key", "value")
